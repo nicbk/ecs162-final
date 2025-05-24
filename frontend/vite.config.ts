@@ -9,8 +9,8 @@ export default defineConfig(({ mode }) => ({
         target: 'http://backend:8000',
         changeOrigin: true,
         secure: false,
-        configure: (proxy, options) => {
-          proxy.on('proxyReq', (proxyReq, req, res) => {
+        configure: (proxy, _options) => {
+          proxy.on('proxyReq', (_proxyReq, _req, _res) => {
             //console.log('Proxying request:', req.url)
           })
         }
