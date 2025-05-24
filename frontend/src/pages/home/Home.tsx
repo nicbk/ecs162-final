@@ -6,7 +6,6 @@ import { mockPublish } from '../../api_data/mock_data';
 export default function Home() {
   return (
       <div className={styles.home}>
-        <p> still working on it!!!</p>
         {mockResturantsData.map((rest: Restaurant) => (
           <div className={styles.card} key={rest.id}>
             <div className={styles.post}>

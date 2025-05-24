@@ -2,7 +2,7 @@ import Home from './pages/home/Home';
 import Layout from './components/Layout/Layout';
 import { Routes, Route } from 'react-router-dom'
 import Profile from './pages/profile/Profile';
-
+import './global_styles/_global.scss';
 export default function App() {
   return (
   <Routes>

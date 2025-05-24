@@ -4,6 +4,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  background-color: var(--background);
 }
 
 .navigation {
@@ -14,29 +15,25 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  border-bottom: black 1px solid;
+  border-bottom: var(--accent);
   border-radius: 100px;
-  width: 100%;
-  z-index: 1000;
+  width: 50%;
   padding: 0px 5px 10px 5px;
   margin: 10px 5px 10px 5px;
-  background-color: black;
-  box-shadow: 1px 6px 20px 0px rgb(105, 43, 221);
+  background-color: var(--background);
+  box-shadow: 1px 6px 20px 0px var(--accent);
 }
 .logo {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #010214da;
-  color: #ffffff;
-  border-radius: 15px 20px 15px 20px;
-  box-shadow: inset 1px 1px 10px 0px rgb(193 13 205 / 63%);
+  color: var(--text);
   padding: 0px 5px 0px 5px;
   margin: 5px 15px 0px 15px; 
   h2 {
     text-align: center;
     font-size: 2rem;
-    color: #ffffff;
+    color: var(--text);
     margin: 0.5rem 0;
   }
 }
@@ -48,13 +45,11 @@
   flex-wrap: wrap;
   margin: 0 auto;
   padding: 5px 2px 5px 2px;
-  border-radius: 5px 100px 5px 100px;
   padding: 10px 10px 1px 10px;
-  background: rgba(210, 210, 211, 0.8);
-  box-shadow: inset 2px 6px 7px 3px rgb(0, 0, 0);
 }
 .navbar button {
-  color: rgb(0, 0, 0);
+  background-color: var(--accent);
+  color: var(--text);
   border: none;
   padding: 5px 20px;
   border-radius: 5px 100px 5px 100px;
@@ -62,8 +57,9 @@
   cursor: pointer;
 }
 .navbar button:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-  box-shadow: inset 2px 6px 7px 3px rgb(59, 21, 85);
+  background-color: var(--secondary);
+  transition: all 0.3s ease-in-out;
+  transform: scale(1.1);
 }
 .main {
   display: flex;
