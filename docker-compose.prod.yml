@@ -1,0 +1,38 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    env_file:
+      - .env
+      - .env.prod
+    ports:
+      - "${PORT}:8000"
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:6
+    env_file:
+      - .env
+      - .env.prod
+    volumes:
+      - mongo_data:/data/db
+
+  dex:
+    build:
+      context: .
+      dockerfile: Dockerfile.dex
+    container_name: dex
+    volumes:
+      - ./config/dex:/etc/dex
+    ports:
+      - "5556:5556"
+    env_file:
+      - .env
+      - .env.dev
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["envsubst < /etc/dex/dex.yaml > /etc/dex/dex_final.yaml && dex serve /etc/dex/dex_final.yaml"]
+
+volumes:
+  mongo_data:

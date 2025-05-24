@@ -1,0 +1,10 @@
+FROM golang:1.20-bullseye
+
+RUN apt-get update && apt-get install -y git bash gcc libc6-dev gettext
+
+WORKDIR /app
+RUN git clone https://github.com/dexidp/dex.git .
+RUN git checkout v2.37.0
+
+RUN go build -o dex ./cmd/dex
+RUN cp dex /usr/bin/dex

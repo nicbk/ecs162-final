@@ -1,0 +1,38 @@
+issuer: http://localhost:5556
+
+# Storage configuration to use MongoDB
+storage:
+  type: memory
+
+web:
+  http: 0.0.0.0:5556
+
+staticClients:
+  - id: flask-app
+    redirectURIs:
+      - http://localhost:8000/authorize
+    name: Flask App
+    secret: flask-secret
+
+enablePasswordDB: true
+
+# Can create passwords using python
+# python -c "import bcrypt; print(bcrypt.hashpw(b'password', bcrypt.gensalt()).decode())"
+staticPasswords:
+  - email: admin@hw3.com
+    hash: "$2b$10$8NoCpIs/Z6v0s/pU9YxYIO10uWyhIVOS2kmNac9AD0HsqRhP5dUie" # password = "password"
+    username: admin
+    userID: "123"
+
+  - email: moderator@hw3.com
+    hash: "$2b$12$2aaoZyVjMWvoCq.DmCUECOGoW0oaBCyzSluUm3BpLrP26sVT71PSC" # password = "mpassword"
+    username: moderator
+    userID: "456"
+
+  - email: user@hw3.com
+    hash: "$2b$12$321HomfT164U9f5l.xQaYuHThGCss8PRPNy8t./tq8Frgr6UYeEka" # password = "upassword"
+    username: user
+    userID: "789"
+
+oauth2:
+  skipApprovalScreen: true

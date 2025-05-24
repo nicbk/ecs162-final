@@ -1,0 +1,58 @@
+services:
+  frontend:
+    image: node:18
+    working_dir: /frontend
+    volumes:
+      - ./frontend:/frontend
+    ports:
+      - "5173:5173"  # Vite (SvelteKit) dev server default port
+    depends_on:
+      - backend
+    command: sh -c "npm install && npm run dev -- --host"
+    env_file:
+      - .env
+      - .env.dev
+  backend:
+    image: python:3.10-slim
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    env_file:
+      - .env
+      - .env.dev
+    ports:
+      - "${PORT}:8000"
+    depends_on:
+      - mongo
+      - dex
+    command: sh -c "pip install --no-cache-dir -r requirements.txt && python -m flask run --host=0.0.0.0 --port=\$PORT --reload"
+    environment:
+      FLASK_APP: app.py
+
+  mongo:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    env_file:
+      - .env
+      - .env.dev
+    volumes:
+      - mongo_data:/data/db
+
+  dex:
+    build:
+      context: .
+      dockerfile: Dockerfile.dex
+    container_name: dex
+    volumes:
+      - ./config/dex:/etc/dex
+    ports:
+      - "5556:5556"
+    env_file:
+      - .env
+      - .env.dev
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["envsubst < /etc/dex/dex.yaml > /etc/dex/dex_final.yaml && dex serve /etc/dex/dex_final.yaml"]
+
+volumes:
+  mongo_data:
