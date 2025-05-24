@@ -1,0 +1,13 @@
+//this is how you use the scss please look at the Layout.tsx since this is connected to that.
+.container {
+  display: flex;
+  flex-direction: column;
+}
+.header {
+  background: black;
+  padding: 2rem;
+  color: rgb(199, 141, 141);
+}
+.main {
+  padding: 2rem;
+}
