@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 
 COMMENT_REMOVED_STR = 'Comment was removed by moderator'
 
-class MongoDBInterface(DBInterface):
+class MongoDBInterface():
     def __init__(self):
         mongo_uri = os.getenv("MONGO_URI")
         # Becomes the mock client during testing
