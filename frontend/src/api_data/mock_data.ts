@@ -2,7 +2,7 @@
 
 import { type Restaurant, type Publish } from "../interface_data/index.ts";
 
-fetch('/api/v3/restaurant')
+fetch('/api/v1/restaurant')
 export const mockResturantsData: Restaurant[] = [
     {
         id: '1',
@@ -38,7 +38,7 @@ export const mockResturantsData: Restaurant[] = [
     },
 
 ];
-fetch('/api/v3/Publish')
+fetch('/api/v1/Publish')
 export const mockPublish: Publish [] = [
     {
         id:'234',

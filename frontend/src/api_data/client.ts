@@ -1,7 +1,7 @@
 import type { Restaurant, Publish } from '../interface_data/index.ts';
 
 //mock data for now
-const BASE = '/api/v3';
+const BASE = '/api/v1';
 
 //not yet called but I will after the intial setup and checking the mock data
 //for now we just gonna use the mock data using the generic function
