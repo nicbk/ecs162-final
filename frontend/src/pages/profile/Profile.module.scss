@@ -32,6 +32,7 @@
   margin: 0 auto; 
   margin-top: 16px;
 }
+
 .galleryImageWrapper{   
   aspect-ratio: 1 / 1;
   width: 100%;
@@ -40,6 +41,7 @@
   align-items: center;
   justify-content: center; 
 }
+
 .galleryImageWrapper img {
   width: 100%;
   height: 100%;
@@ -47,6 +49,7 @@
   object-fit: contain;
   display: block;
 }
+
 .galleryImage {
   transition: transform 0.2s;
   &:hover {
@@ -66,11 +69,53 @@
 }
 
 .popupContent {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
   background: #fff;
   border-radius: 12px;
   padding: 24px;
-  max-width: 400px;
+  max-width: 51%;
   width: 100%;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
-  text-align: center;
+  text-align: left;
+}
+
+.popupContent img {
+  object-fit: contain;
+}
+
+.popupRightSide {
+  display: flex;
+  flex-direction: column;
+}
+
+.mainComment {
+  flex: 0 1 auto;
+  max-height: 40%;
+  font-weight: bold;
+}
+
+.commentsSection {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  background: #a1a1a1;
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 8px;
+  min-height: 45%;
+}
+
+.commentItem {
+  margin-bottom: 6px;
+}
+
+.commentInfo {
+  flex: 0 0 15%;
+  margin-top: auto;
+}
+
+.popupButtons {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
 }
