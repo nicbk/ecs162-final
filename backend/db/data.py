@@ -9,13 +9,23 @@ class Resource(NamedTuple):
     # Forward declaration of type hints https://stackoverflow.com/questions/55320236/does-python-evaluate-type-hinting-of-a-forward-reference
     comments: list['Comment']
 
+class User(NamedTuple):
+    username: str
+    email: str
+    oauth_id: str
+    # wish_list: list[str] # List of image IDs, optional
+
+class Image(NamedTuple):
+    id: str
+    data: str
+
 class Comment(NamedTuple):
-    comment_id: str
-    user_id: str
-    user_name: str
+    parent_id: str
+    id: str
+    creator_id: str
+    images: list[str] # List of image IDs
     body: str
-    is_deleted: bool
-    # According to https://docs.python.org/3/library/typing.html
-    # I type hint a list by doing "list[<base type name>]"
-    # Recursive type definition since comment replies are a list of comments
-    replies: list['Comment']
+    likes: int
+    deleted: bool
+    date: str
+

@@ -11,6 +11,7 @@ from pymongo import MongoClient
 from contextlib import contextmanager
 from db.interface import DBInterface
 from db.data import Resource, Comment
+from datetime import datetime, timezone
 
 COMMENT_REMOVED_STR = 'Comment was removed by moderator'
 
@@ -20,8 +21,10 @@ class MongoDBInterface(DBInterface):
         # Becomes the mock client during testing
         # PyMongo documentation followed for tutorial on how to use the library https://pymongo.readthedocs.io/en/stable/tutorial.html
         self.mongo = MongoClient(mongo_uri)
-        self.db = self.mongo["mydatabase"]
+        self.db = self.mongo["foodie_database"]
+        self.users = self.db['users']
         self.comments = self.db['comments']
+        self.images = self.db['images']
     
     # NOTE: The following function is taken from the following GitHub link
     # https://github.com/mongomock/mongomock/issues/569
@@ -35,128 +38,118 @@ class MongoDBInterface(DBInterface):
                     yield mongo
         except NotImplementedError:
             yield mongo
-    
-    # Helper function to get the content of a resource
-    # param parent_id: UUID of parent resource
-    # param include_comment: whether to include the actual comment data
-    # returns: pair of comment list and total number of comments found
-    # Applies DFS to perform exhaustive search of comment tree
-    def internal_get_comments(self, parent_id: str, include_comment_data: bool) -> tuple[list[any], int]:
-        count = 0
-        comments = []
 
-        # According to https://www.w3schools.com/python/python_mongodb_sort.asp
-        # I can sort using a function call on the result of a find() call
-        for db_comment in self.comments.find({'parent_id': parent_id}).sort('timestamp', 1):
-            # Increment count for the current comment
-            count += 1
+    ### Comments Collection Methods ###
+    ###################################
 
-            # Apply recursive DFS to get child comment data
-            # "dfs_replies" represents all replies down the rest of the tree
-            # "childCount" represents the total number of comments down the rest of the tree
-            dfs_replies, childCount = self.internal_get_comments(db_comment['comment_id'], include_comment_data)
-            # Add child count to current level count
-            count += childCount
+    def post_user_comment(self, parent_id: str, user_id: str, body: str, images: list[str]) -> str:
+        '''
+        Post a comment made by a user on a restaurant or another comment.
 
-            # If function is set to include comment data, then process and add the comment data
-            if include_comment_data:
-                # I can double-destructure a dict into a NamedTuple according to lecture slides
-                comment = Comment(**{
-                    'comment_id': db_comment['comment_id'],
-                    'user_id': db_comment['user_id'],
-                    'user_name': db_comment['user_name'],
-                    'body': COMMENT_REMOVED_STR if db_comment['is_deleted'] else db_comment['body'],
-                    'is_deleted': db_comment['is_deleted'],
-                    'replies': dfs_replies
-                })
+        Args:
+            parent_id (str): UUID of the parent resource (restaurant or comment).
+            user_id (str): UUID of the user posting the comment.
+            body (str): The content of the comment.
+            images (list[str]): List of image IDs associated with the comment.
 
-                # According to https://stackoverflow.com/questions/26180528/convert-a-namedtuple-into-a-dictionary
-                # I can use _asdict() to convert the NamedTuple to a dict
-                comments.append(comment._asdict())
-        
-        return (comments, count)
+        Returns:
+            str: The UUID of the newly created comment.
+        '''
 
-    # Get comment count for a resource
-    # A resource_id is defined as either an article_id or a comment_id
-    # param resource_id: UUID of resource
-    # returns: count
-    def get_resource_comment_count(self, resource_id: str) -> int:
-        # I use MongoDB Transactions https://pymongo.readthedocs.io/en/stable/api/pymongo/client_session.html
-        # in order to ensure ACID compliance
-        countResult = None
         with self.transaction_wrapper(self.mongo) as session:
-            # Return the count for the total number of comments
-            countResult = self.internal_get_comments(resource_id, False)[1]
-        
-        if countResult is None:
-            raise Exception('Unable to complete get_resource_comment_count() transaction')
+            # Generate a new UUIDv4 ID for the comment
+            comment_id = str(uuid4())
 
-        return countResult
-
-    # Get a resource
-    # A resource_id is defined as either an article_id or a comment_id
-    # param resource_id: UUID of resource
-    # returns: Resource
-    def get_resource(self, resource_id: str) -> Resource:
-        # Get the forest of comments for the specified resource
-        resource = None
-        with self.transaction_wrapper(self.mongo) as session:
-            resource_comments = self.internal_get_comments(resource_id, True)[0]
-            resource = Resource(**{
-                'resource_id': resource_id,
-                'comments': resource_comments
-            })
-
-        if resource is None:
-            raise Exception('Unable to complete get_resource() transaction')
-
-        # According to https://stackoverflow.com/questions/26180528/convert-a-namedtuple-into-a-dictionary
-        # I can use _asdict() to convert the NamedTuple to a dict
-        return resource._asdict()
-
-    # Create a comment
-    # param parent_id: UUID of parent resource
-    # param comment: comment content
-    # returns: Nothing
-    def create_comment(self, parent_id: str, comment: Comment) -> None:
-        with self.transaction_wrapper(self.mongo) as session:
+            # Insert the comment into the database
             self.comments.insert_one({
                 'parent_id': parent_id,
-                # When inserting a new comment, we can ignore the comment_id field, and instead generate a new UUIDv4 ID
-                # We use UUIDv4.
-                # Its distributed stochastic nature means that we do not need centralized bookkeeping.
-                # The tradeoff is accepted because a technically possible bug due to chance of collision is considered adequately infeasible
-                # given the low volume of comments on this homework.
-                # Source: https://en.wikipedia.org/wiki/Universally_unique_identifier#:~:text=Thus%2C%20the%20probability%20to%20find,later%20in%20the%20manufacturing%20process.
-                # Generate an UUIDv4 according to https://pymongo.readthedocs.io/en/stable/examples/uuid.html
-                'comment_id': str(uuid4()),
-                # According to https://www.geeksforgeeks.org/python-time-time_ns-method/
-                # I can get the time in nanoseconds.
-                # Then, I cast this to a string and it can be used for sorting comments by creation time.
-                # It is unlikely that comments will be created at the same time.
-                # Even if that happens, the ambiguous order of a single pair of comments is not a mission-critical or security-vulnerable bug.
-                'timestamp': str(time.time_ns()),
-                'user_id': comment.user_id,
-                'user_name': comment.user_name,
-                'body': comment.body,
-                'is_deleted': False
+                'id': comment_id,
+                'creator_id': user_id,
+                'images': images,
+                'body': body,
+                'likes': 0,
+                'deleted': False,
+                'date': datetime.now(timezone.utc),
             })
-
-    # Delete a comment (not a true delete, but rather mark entire comment as redacted)
-    # param comment_id: UUID of comment
-    # returns: Nothing
-    # This method should set a flag in the database that specifies the comment is deleted.
-    # When the get_resource() call constructs a tree of comments, then comments specified as deleted will
-    # have the body containing a default deleted message.
-    def delete_comment(self, comment_id: str) -> None:
+            return comment_id
+        
+    def add_comment_like(self, comment_id: str):
+        '''Add a like to a comment'''
         with self.transaction_wrapper(self.mongo) as session:
-            # According to https://www.w3schools.com/python/python_mongodb_update.asp
-            # I can update a single document using update_one().
-            # I guarantee that comment_id is approximately unique (see the create_comment() handler), so I query by it.
-            comment_query = { 'comment_id': comment_id }
-            comment_update = {
-                '$set': {
-                    'is_deleted': True
-                }
-            }
-            self.comments.update_one(comment_query, comment_update)
+            # Increment the like count for the comment
+            self.comments.update_one(
+                {'id': comment_id},
+                {'$inc': {'likes': 1}}
+            )
+
+    def remove_comment_like(self, comment_id: str):
+        '''Remove a like from a comment'''
+        with self.transaction_wrapper(self.mongo) as session:
+            # Decrement the like count for the comment
+            self.comments.update_one(
+                {'id': comment_id},
+                {'$inc': {'likes': -1}}
+            )
+    
+    def delete_comment_by_id(self, comment_id: str):
+        '''
+        Delete a comment by its ID
+        Also removes corresponding images from the database
+        '''
+        with self.transaction_wrapper(self.mongo) as session:
+            # Find image ids associated with the comment
+            comment = self.comments.find_one({'id': comment_id})
+            if comment is None:
+                raise Exception('Comment not found')
+            
+            # Remove images associated with the comment
+            for image_id in comment['images']:
+                self.images.delete_one({'image_id': image_id})
+
+            # Mark the comment as deleted
+            self.comments.update_one(
+                {'id': comment_id},
+                {'$set': {'deleted': True}}
+            )
+
+    def get_user_comments(self, parent_id: str):
+        '''Get all comments made on a restaurant or comment by all users'''
+        with self.transaction_wrapper(self.mongo) as session:
+            comments = list(self.comments.find({'parent_id': parent_id}).sort('date', 1))
+            return comments
+        
+    ### Image Collection Methods ###
+    ################################
+
+    def upload_image(self, image: str) -> str:
+        '''Upload an image to the database and return the image ID'''
+        with self.transaction_wrapper(self.mongo) as session:
+            # Generate a new UUIDv4 ID for the image
+            image_id = str(uuid4())
+
+            # Insert the image into the database
+            self.images.insert_one({
+                'image_id': image_id,
+                'data': Binary(image.encode('utf-8'), UuidRepresentation.STANDARD)
+            })
+            return image_id
+        
+    def get_image(self, image_id: str) -> str:
+        '''Get an image from the database by its ID'''
+        with self.transaction_wrapper(self.mongo) as session:
+            # Find the image in the database
+            image = self.images.find_one({'image_id': image_id})
+            if image is None:
+                raise Exception('Image not found')
+            return image['data'].decode('utf-8')
+        
+    def delete_image(self, image_id: str):
+        '''Delete an image from the database by its ID'''
+        with self.transaction_wrapper(self.mongo) as session:
+            # Check if the image exists
+            image = self.images.find_one({'image_id': image_id})
+            if image is None:
+                raise Exception('Image not found')
+            
+            # Delete the image from the database
+            self.images.delete_one({'image_id': image_id})
