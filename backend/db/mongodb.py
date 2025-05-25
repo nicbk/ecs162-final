@@ -25,7 +25,7 @@ class MongoDBInterface():
         self.users = self.db['users']
         self.comments = self.db['comments']
         self.images = self.db['images']
-    
+
     # NOTE: The following function is taken from the following GitHub link
     # https://github.com/mongomock/mongomock/issues/569
     #
@@ -72,7 +72,7 @@ class MongoDBInterface():
                 'date': datetime.now(timezone.utc),
             })
             return comment_id
-        
+
     def add_comment_like(self, comment_id: str):
         '''Add a like to a comment'''
         with self.transaction_wrapper(self.mongo) as session:
@@ -90,7 +90,7 @@ class MongoDBInterface():
                 {'id': comment_id},
                 {'$inc': {'likes': -1}}
             )
-    
+
     def delete_comment_by_id(self, comment_id: str):
         '''
         Delete a comment by its ID
@@ -101,7 +101,7 @@ class MongoDBInterface():
             comment = self.comments.find_one({'id': comment_id})
             if comment is None:
                 raise Exception('Comment not found')
-            
+
             # Remove images associated with the comment
             for image_id in comment['images']:
                 self.images.delete_one({'image_id': image_id})
@@ -117,7 +117,7 @@ class MongoDBInterface():
         with self.transaction_wrapper(self.mongo) as session:
             comments = list(self.comments.find({'parent_id': parent_id}).sort('date', 1))
             return comments
-        
+
     ### Image Collection Methods ###
     ################################
 
@@ -133,7 +133,7 @@ class MongoDBInterface():
                 'data': Binary(image.encode('utf-8'), UuidRepresentation.STANDARD)
             })
             return image_id
-        
+
     def get_image(self, image_id: str) -> str:
         '''Get an image from the database by its ID'''
         with self.transaction_wrapper(self.mongo) as session:
@@ -142,7 +142,7 @@ class MongoDBInterface():
             if image is None:
                 raise Exception('Image not found')
             return image['data'].decode('utf-8')
-        
+
     def delete_image(self, image_id: str):
         '''Delete an image from the database by its ID'''
         with self.transaction_wrapper(self.mongo) as session:
@@ -150,6 +150,6 @@ class MongoDBInterface():
             image = self.images.find_one({'image_id': image_id})
             if image is None:
                 raise Exception('Image not found')
-            
+
             # Delete the image from the database
             self.images.delete_one({'image_id': image_id})
