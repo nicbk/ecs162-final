@@ -2,12 +2,70 @@
 .container {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--background);
 }
-.header {
-  background: black;
-  padding: 2rem;
-  color: rgb(199, 141, 141);
+
+.navigation {
+  display: flex;
+  position: sticky;
+  top: 0;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  border-bottom: var(--accent);
+  border-radius: 100px;
+  width: 50%;
+  padding: 0px 5px 10px 5px;
+  margin: 10px 5px 10px 5px;
+  background-color: var(--background);
+  box-shadow: 1px 6px 20px 0px var(--accent);
+}
+.logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text);
+  padding: 0px 5px 0px 5px;
+  margin: 5px 15px 0px 15px; 
+  h2 {
+    text-align: center;
+    font-size: 2rem;
+    color: var(--text);
+    margin: 0.5rem 0;
+  }
+}
+.navbar{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0 auto;
+  padding: 5px 2px 5px 2px;
+  padding: 10px 10px 1px 10px;
+}
+.navbar button {
+  background-color: var(--accent);
+  color: var(--text);
+  border: none;
+  padding: 5px 20px;
+  border-radius: 5px 100px 5px 100px;
+  margin: 5px;
+  cursor: pointer;
+}
+.navbar button:hover {
+  background-color: var(--secondary);
+  transition: all 0.3s ease-in-out;
+  transform: scale(1.1);
 }
 .main {
-  padding: 2rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin: 10px 5px 10px 5px;
+  padding: 10px;
 }

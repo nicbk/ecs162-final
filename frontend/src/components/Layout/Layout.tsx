@@ -1,17 +1,39 @@
 //this is where the layout will be and including the header and any nvaigation bars please keep it simple and clean
-import type { ReactNode } from 'react';
-import styles from './Layout.module.scss';
+import { useNavigate, Outlet } from 'react-router-dom'
+import styles from './Layout.module.scss'
+import { useState, useEffect } from 'react';
 
-interface LayoutProps { children: ReactNode; }
+export default function Layout() {
+  const navigate = useNavigate()
+  // added theme toggle functionality but we will make it more optimized later for this is good enough 
+  const [theme, setTheme] = useState<'light'|'dark'>(() => (localStorage.getItem('theme') as 'light'|'dark') || 'light');
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+  const toggleTheme = () => {
+    setTheme(current => (current === 'light' ? 'dark' : 'light'));
+  };
+  return (
+    <div className={styles.container}>
+      <header className={styles.navigation}>
+        <div className={styles.logo}>
+          <h2>Foodie</h2>
+        </div>
+        <nav className={styles.navbar}>
+            <button className={styles.navButton} onClick={toggleTheme}>
+              {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+            </button>
+            <button className={styles.navButton} onClick={() => navigate('/Home')}> Home</button>
+            {/* added profile for now in navigation bar but we have to change to avatar icon after */}
+            <button className={styles.navButton} onClick={() => navigate('/Profile')}> Profile</button>
+        </nav>
+      </header>
 
-const Layout: React.FC<LayoutProps> = ({ children }) => (
-  <div className={styles.container}>
-    <header className={styles.header}>
-      <h1>my layout</h1>
-    </header>
-    <main className={styles.main}>{children}</main>
-    <footer>Team foodie copyrights</footer>
-  </div>
-);
+      <main className={styles.main}>
+        <Outlet />
+      </main>
 
-export default Layout;
+    </div>
+  )
+}

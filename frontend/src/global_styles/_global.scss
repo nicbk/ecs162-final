@@ -1,0 +1,35 @@
+//everyone should add the global fonts and colors here to keep it clean and organized
+// this will be filled as we go.
+@use "sass:map" as map;
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+$themes: (
+ light: (
+   text: #121517,
+   background: #e8eff3,
+   primary: #2c566d,
+   secondary: #72b5da,
+   accent: #208cc5,
+   inverse-background:  #0c1317,
+ ),
+ dark: (
+   text: #e8ebed,
+   background: #0c1317,
+   primary: #92bcd3,
+   secondary: #25698d,
+   accent: #3aa5df,
+   inverse-background:  #e8eff3,
+ ),
+);
+
+@each $name, $palette in $themes {
+  :root[data-theme="#{$name}"] {
+    @each $key, $color in $palette {
+      --#{$key}: #{$color};
+    }
+  }
+}

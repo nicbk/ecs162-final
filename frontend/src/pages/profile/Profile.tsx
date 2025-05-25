@@ -1,31 +1,33 @@
+
+import styles from './Profile.module.scss';
 import React, { useState } from "react";
-import defaultAvatar from './assets/default-avatar.png';
-import food from './assets/food.jpg';
-import "./Profile.css"
+import defaultAvatar from '../../assets/default-avatar.png';
+import food from '../../assets/food.jpg';
 
 interface Post {
   id: number;
   imageUrl: string;
-  caption: string;
+  comment: string;
   likes: number;
   commentsCount: number;
 }
 {/* later we will make get request on pageload*/}
 const testPosts: Post[] = [ 
-  {id: 1, imageUrl: food, caption: "1 this pizza sucked", likes: 12, commentsCount: 3},
-  {id: 2, imageUrl: food, caption: "2 this pizza sucked", likes: 12, commentsCount: 3},
-  {id: 3, imageUrl: food, caption: "3 this pizza sucked", likes: 12, commentsCount: 3},
-  {id: 4, imageUrl: food, caption: "4 this pizza sucked", likes: 12, commentsCount: 3},
+  {id: 1, imageUrl: food, comment: "1 this pizza sucked", likes: 12, commentsCount: 3},
+  {id: 2, imageUrl: food, comment: "2 this pizza sucked", likes: 12, commentsCount: 3},
+  {id: 3, imageUrl: food, comment: "3 this pizza sucked", likes: 12, commentsCount: 3},
+  {id: 4, imageUrl: food, comment: "4 this pizza sucked", likes: 12, commentsCount: 3},
 ];
 
 const Profile = () => {
   const [posts, setPosts] = useState<Post[]>(testPosts);
   const [username] = useState("foodie123");
-  const [displayName, setDisplayName] = useState("glizzygulper99");
+  const [displayName, setDisplayName] = useState("glizzygulper");
   const [bio, setBio] = useState("test bio");
   const [isEditing, setIsEditing] = useState(false);
   const [tempDisplayName, setTempDisplayName] = useState(displayName);
   const [tempBio, setTempBio] = useState(bio);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [followers] = useState(2);
   const [following] = useState(1);
 
@@ -76,17 +78,30 @@ const Profile = () => {
         <h3>Your Posts</h3>
         {posts.length === 0 ? (<p>No posts yet.</p>) : 
         (
-        <div className="comments-grid">
-        {posts.map((post) => (
-          <div className="comment-card" key={post.id}>
-          <img src={post.imageUrl} alt={post.caption} width={400} style={{borderRadius: '8px', objectFit: 'cover', width: '100%', height: '180px'}} />
-          <p>{post.caption.length > 50 ? post.caption.slice(0, 50) + "..." : post.caption}</p>
-          <p>Likes: {post.likes} | Comments: {post.commentsCount}</p>
-          <button onClick={() => deletePost(post.id)}>Delete Post</button>
-          </div>
-        ))}
-          </div>
+        <div className={styles.galleryGrid}>
+          {posts.map((post) => (
+            <div className={styles.galleryImageWrapper} key={post.id}>
+              <img
+                src={post.imageUrl}
+                alt={post.comment}
+                className={styles.galleryImage}
+                onClick={() => setSelectedPost(post)}
+              />
+            </div>
+          ))}
+        </div>
         )}
+        {selectedPost && (
+        <div className={styles.popupOverlay} onClick={() => setSelectedPost(null)}>
+          <div className={styles.popupContent} onClick={e => e.stopPropagation()}>
+            <img src={selectedPost.imageUrl} alt={selectedPost.comment} style={{width: '100%', borderRadius: '8px'}} />
+            <p>{selectedPost.comment}</p>
+            <p>Likes: {selectedPost.likes} | Comments: {selectedPost.commentsCount}</p>
+            <button onClick={() => { deletePost(selectedPost.id); setSelectedPost(null); }}>Delete Post</button>
+            <button onClick={() => setSelectedPost(null)} style={{marginLeft: "8px"}}>Close</button>
+          </div>
+        </div>
+      )}
       </section>
     </div>
   );

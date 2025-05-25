@@ -1,0 +1,76 @@
+
+.profile {
+  background-color: var(--background);
+  color: var(--text);
+}
+// .commentGrid {
+//   display: grid;
+//   grid-template-columns: repeat(3, 1fr); 
+//   gap: 1px; 
+//   width: 80vw;
+//   max-width: 80vw; 
+//   margin: 0 auto; 
+//   padding: 1px 0;
+// }
+
+// .commentCard {
+//   border-radius: 12px;
+//   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+//   padding: 1px;
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   color:black;
+// }
+
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 1px;
+  width: 80vw;
+  max-width: 60vw; 
+  margin: 0 auto; 
+  margin-top: 16px;
+}
+.galleryImageWrapper{   
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  // border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center; 
+}
+.galleryImageWrapper img {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  object-fit: contain;
+  display: block;
+}
+.galleryImage {
+  transition: transform 0.2s;
+  &:hover {
+    transform: scale(1.03);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+}
+
+.popupOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.popupContent {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+  text-align: center;
+}
