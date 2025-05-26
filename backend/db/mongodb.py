@@ -9,8 +9,9 @@ from bson import Binary, UuidRepresentation
 from uuid import uuid4
 from pymongo import MongoClient
 from contextlib import contextmanager
-from db.interface import DBInterface
-from db.data import Resource, Comment
+# db.data didnt work for me - Andrew
+# from db.data import Resource, Comment
+from data import Resource, Comment
 from datetime import datetime, timezone
 
 COMMENT_REMOVED_STR = 'Comment was removed by moderator'
@@ -69,7 +70,7 @@ class MongoDBInterface():
             user = self.users.find_one({'username': username})
             if user is None:
                 raise Exception('User not found')
-            
+
             oauthId = user.get('oauthId', None)
 
             return {
@@ -77,7 +78,7 @@ class MongoDBInterface():
                 "profileImage": user.get('profileImage', None),
                 "comments": list(self.comments.find({'creatorId': oauthId})),
             }
- 
+
     def update_user_bio(self, user_id: str, bio: str):
         '''Update the bio of a user'''
         with self.transaction_wrapper(self.mongo) as session:
@@ -177,7 +178,7 @@ class MongoDBInterface():
         with self.transaction_wrapper(self.mongo) as session:
             comments = list(self.comments.find({'parentId': parent_id}).sort('date', 1))
             return comments
-        
+
     def get_comment_by_id(self, comment_id: str) -> Comment:
         '''
         Get a comments and its replies by its ID.
@@ -186,11 +187,11 @@ class MongoDBInterface():
             comment = self.comments.find_one({'id': comment_id})
             if comment is None:
                 raise Exception('Comment not found')
-            
+
             comment['replies'] = self.get_all_comments_on_parent(comment_id)
-            
+
             return Comment(**comment)
-        
+
     def get_all_comments_on_parent(self, parent_id: str) -> list[Comment]:
         '''
         Get all comments made on a restaurant or comment by all users.
