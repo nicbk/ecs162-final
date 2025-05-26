@@ -66,7 +66,31 @@ def removeLikeFromComment(comment_id):
     mongo_instance.remove_comment_like(comment_id)
     return jsonify({'status': 'removed like from comment'})
 
+################# user routes #################
+###############################################
 
+@app.route('/api/v1/user/<string:username>', methods=['GET'])
+def getUserByUsername(username):
+    user = mongo_instance.get_user_by_username(username)
+    if user is None:
+        return jsonify({'error': 'User not found'}), 404
+    return jsonify(user), 200
 
+@app.route('/api/v1/user/<string:username>/bio', methods=['GET'])
+def getUserBioByUsername(username):
+    bio = mongo_instance.update_user_bio(username)
+    if bio is None:
+        return jsonify({'error': 'User not found'}), 404
+    return jsonify(bio), 200
+
+@app.route('/api/v1/user/<string:username>/profile-image', methods=['POST'])
+def updateUserProfileImage(username):
+    data = request.get_json()
+    profileImage = data.get('profileImage', None)
+    if profileImage is None:
+        return jsonify({'error': 'profileImage is required'}), 400
+    
+    mongo_instance.update_user_profile_image(username, profileImage)
+    return jsonify({'status': 'Profile image updated successfully'}), 200
 
 print("finished")

@@ -41,15 +41,6 @@ class MongoDBInterface():
 
     ### Users Collection Methods ###
     ################################
-    def update_user_bio(self, user_id: str, bio: str):
-        '''Update the bio of a user'''
-        with self.transaction_wrapper(self.mongo) as session:
-            # Update the user's bio in the database
-            self.users.update_one(
-                {'id': user_id},
-                {'$set': {'bio': bio}}
-            )
-
     def add_new_user(self, username: str, email: str, oauth_id: str):
         '''
         Add a new user to the database.
@@ -65,10 +56,48 @@ class MongoDBInterface():
             self.users.insert_one({
                 'username': username,
                 'email': email,
-                'oauth_id': oauth_id,
+                'oauthId': oauth_id,
                 'bio': '',
-                'wish_list': []
+                'profileImage': None,
+                'wishList': []
             })
+
+    def get_user_by_username(self, username: str):
+        ''' Get a user by their username.'''
+        with self.transaction_wrapper(self.mongo) as session:
+            # Find the user in the database
+            user = self.users.find_one({'username': username})
+            if user is None:
+                raise Exception('User not found')
+            
+            oauthId = user.get('oauthId', None)
+
+            return {
+                "bio": user.get('bio', ''),
+                "profileImage": user.get('profileImage', None),
+                "comments": list(self.comments.find({'creatorId': oauthId})),
+            }
+ 
+    def update_user_bio(self, user_id: str, bio: str):
+        '''Update the bio of a user'''
+        with self.transaction_wrapper(self.mongo) as session:
+            # Update the user's bio in the database
+            self.users.update_one(
+                {'id': user_id},
+                {'$set': {'bio': bio}}
+            )
+
+    def update_user_profile_image(self, user_id: str, image_data: str):
+        '''
+        Update the profile image of a user.
+        '''
+
+        with self.transaction_wrapper(self.mongo) as session:
+            # Update the user's profile image in the database
+            self.users.update_one(
+                {'id': user_id},
+                {'$set': {'profileImage': image_data}}
+            )
 
     ### Comments Collection Methods ###
     ###################################
@@ -93,9 +122,9 @@ class MongoDBInterface():
 
             # Insert the comment into the database
             self.comments.insert_one({
-                'parent_id': parent_id,
+                'parentId': parent_id,
                 'id': comment_id,
-                'creator_id': user_id,
+                'creatorId': user_id,
                 'images': images,
                 'body': body,
                 'likes': 0,
@@ -135,7 +164,7 @@ class MongoDBInterface():
 
             # Remove images associated with the comment
             for image_id in comment['images']:
-                self.images.delete_one({'image_id': image_id})
+                self.images.delete_one({'imageId': image_id})
 
             # Mark the comment as deleted
             self.comments.update_one(
@@ -146,7 +175,7 @@ class MongoDBInterface():
     def get_comments_on_parent(self, parent_id: str):
         '''Get all comments made on a restaurant or comment by all users'''
         with self.transaction_wrapper(self.mongo) as session:
-            comments = list(self.comments.find({'parent_id': parent_id}).sort('date', 1))
+            comments = list(self.comments.find({'parentId': parent_id}).sort('date', 1))
             return comments
         
     def get_comment_by_id(self, comment_id: str) -> Comment:
@@ -168,7 +197,7 @@ class MongoDBInterface():
         Returns a list of Comment objects with replies included.
         '''
         with self.transaction_wrapper(self.mongo) as session:
-            comments = self.comments.find({'parent_id': parent_id}).sort('date', 1)
+            comments = self.comments.find({'parentId': parent_id}).sort('date', 1)
             for comment in comments:
                 comment['replies'] = self.get_all_comments_on_parent(comment['id'])
 
@@ -185,7 +214,7 @@ class MongoDBInterface():
 
             # Insert the image into the database
             self.images.insert_one({
-                'image_id': image_id,
+                'imageId': image_id,
                 'data': Binary(image.encode('utf-8'), UuidRepresentation.STANDARD)
             })
             return image_id
@@ -194,7 +223,7 @@ class MongoDBInterface():
         '''Get an image from the database by its ID'''
         with self.transaction_wrapper(self.mongo) as session:
             # Find the image in the database
-            image = self.images.find_one({'image_id': image_id})
+            image = self.images.find_one({'imageId': image_id})
             if image is None:
                 raise Exception('Image not found')
             return image['data'].decode('utf-8')
@@ -203,9 +232,9 @@ class MongoDBInterface():
         '''Delete an image from the database by its ID'''
         with self.transaction_wrapper(self.mongo) as session:
             # Check if the image exists
-            image = self.images.find_one({'image_id': image_id})
+            image = self.images.find_one({'imageId': image_id})
             if image is None:
                 raise Exception('Image not found')
 
             # Delete the image from the database
-            self.images.delete_one({'image_id': image_id})
+            self.images.delete_one({'imageId': image_id})
