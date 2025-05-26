@@ -149,6 +149,19 @@ class MongoDBInterface():
             comments = list(self.comments.find({'parent_id': parent_id}).sort('date', 1))
             return comments
         
+    def get_comment_by_id(self, comment_id: str) -> Comment:
+        '''
+        Get a comments and its replies by its ID.
+        '''
+        with self.transaction_wrapper(self.mongo) as session:
+            comment = self.comments.find_one({'id': comment_id})
+            if comment is None:
+                raise Exception('Comment not found')
+            
+            comment['replies'] = self.get_all_comments_on_parent(comment_id)
+            
+            return Comment(**comment)
+        
     def get_all_comments_on_parent(self, parent_id: str) -> list[Comment]:
         '''
         Get all comments made on a restaurant or comment by all users.
