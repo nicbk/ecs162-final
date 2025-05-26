@@ -28,4 +28,5 @@ class Comment(NamedTuple):
     likes: int
     deleted: bool
     date: str
+    replies: list['Comment']  # List of reply comments
 

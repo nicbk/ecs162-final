@@ -39,6 +39,37 @@ class MongoDBInterface():
         except NotImplementedError:
             yield mongo
 
+    ### Users Collection Methods ###
+    ################################
+    def update_user_bio(self, user_id: str, bio: str):
+        '''Update the bio of a user'''
+        with self.transaction_wrapper(self.mongo) as session:
+            # Update the user's bio in the database
+            self.users.update_one(
+                {'id': user_id},
+                {'$set': {'bio': bio}}
+            )
+
+    def add_new_user(self, username: str, email: str, oauth_id: str):
+        '''
+        Add a new user to the database.
+
+        Args:
+            username (str): The username of the user.
+            email (str): The email of the user.
+            oauth_id (str): The OAuth ID of the user.
+        '''
+
+        with self.transaction_wrapper(self.mongo) as session:
+            # Insert the new user into the database
+            self.users.insert_one({
+                'username': username,
+                'email': email,
+                'oauth_id': oauth_id,
+                'bio': '',
+                'wish_list': []
+            })
+
     ### Comments Collection Methods ###
     ###################################
 
@@ -112,11 +143,23 @@ class MongoDBInterface():
                 {'$set': {'deleted': True}}
             )
 
-    def get_user_comments(self, parent_id: str):
+    def get_comments_on_parent(self, parent_id: str):
         '''Get all comments made on a restaurant or comment by all users'''
         with self.transaction_wrapper(self.mongo) as session:
             comments = list(self.comments.find({'parent_id': parent_id}).sort('date', 1))
             return comments
+        
+    def get_all_comments_on_parent(self, parent_id: str) -> list[Comment]:
+        '''
+        Get all comments made on a restaurant or comment by all users.
+        Returns a list of Comment objects with replies included.
+        '''
+        with self.transaction_wrapper(self.mongo) as session:
+            comments = self.comments.find({'parent_id': parent_id}).sort('date', 1)
+            for comment in comments:
+                comment['replies'] = self.get_all_comments_on_parent(comment['id'])
+
+            return [Comment(**comment) for comment in comments]
 
     ### Image Collection Methods ###
     ################################
