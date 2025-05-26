@@ -31,12 +31,15 @@ class MongoDBInterface():
     #
     # This is because the mock Python Mongo server does not support sessions for transactions.
     @contextmanager
-    def transaction_wrapper(self, mongo: MongoClient):
-        try:
-            with mongo.start_session() as session:
-                with session.start_transaction():
-                    yield mongo
-        except NotImplementedError:
+    def transaction_wrapper(self, mongo: MongoClient, recursive_use_transaction: bool = True):
+        if recursive_use_transaction:
+            try:
+                with mongo.start_session() as session:
+                    with session.start_transaction():
+                        yield mongo
+            except NotImplementedError:
+                yield mongo
+        else:
             yield mongo
 
     ### Users Collection Methods ###
@@ -162,15 +165,15 @@ class MongoDBInterface():
             
             return Comment(**comment)
         
-    def get_all_comments_on_parent(self, parent_id: str) -> list[Comment]:
+    def get_all_comments_on_parent(self, parent_id: str, is_root_call = True) -> list[Comment]:
         '''
         Get all comments made on a restaurant or comment by all users.
         Returns a list of Comment objects with replies included.
         '''
-        with self.transaction_wrapper(self.mongo) as session:
+        with self.transaction_wrapper(self.mongo, recursive_use_transaction=is_root_call) as session:
             comments = self.comments.find({'parent_id': parent_id}).sort('date', 1)
             for comment in comments:
-                comment['replies'] = self.get_all_comments_on_parent(comment['id'])
+                comment['replies'] = self.get_all_comments_on_parent(comment['id'], is_root_call = False)
 
             return [Comment(**comment) for comment in comments]
 
