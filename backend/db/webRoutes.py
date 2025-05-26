@@ -17,11 +17,23 @@ CORS(app)
 def getRestaurantInformation():
     pass
 
+
+#Gets a comment, as well as all nested replies for that comment.
+@app.route('/api/v1/comment/<string:comment_id>', methods=['GET'])
+def getCommentById(comment_id):
+    comment = mongo_instance.get_comment_by_id(comment_id)
+    return jsonify(comment), 200
+
 # Gets the tree of comments (comments and replies) for either a restaurant or parent comment
 @app.route('/api/v1/comments', methods=['GET'])
 def getListofComments():
-    pass
-
+    data = request.get_json()
+    parent_id = data.get('parent_id', None)
+    if parent_id is None:
+        return jsonify({'error': 'parent_id is required'}), 400
+    
+    comments = mongo_instance.get_all_comments_on_parent(parent_id)
+    return jsonify(comments), 200
 
 # Posts a comment to the restaurant
 @app.route('/api/v1/comment/<string:restaurant_id>', methods=['POST'])
