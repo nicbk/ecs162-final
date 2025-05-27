@@ -1,4 +1,4 @@
-import type { Restaurant, Publish } from '../interface_data/index.ts';
+import type { Restaurant, Comment } from '../interface_data/index.ts';
 
 //mock data for now
 const BASE = '/api/v1';
@@ -15,4 +15,4 @@ async function fetchAPI<T>(paths: string): Promise<T> {
 }
 
 export const getRestaurants = () => fetchAPI<Restaurant[]>('/restaurant');
-export const getPublishes  = () => fetchAPI<Publish[]>('/publish')
+export const getPublishes  = () => fetchAPI<Comment[]>('/Comment')
