@@ -4,6 +4,9 @@ from authlib.integrations.flask_client import OAuth
 from authlib.common.security import generate_token
 from flask_cors import CORS
 import werkzeug
+import requests
+from werkzeug.exceptions import BadRequest
+import json
 from mongodb import MongoDBInterface
 
 
@@ -118,10 +121,82 @@ def app_get_user():
 ## Restaurant/Comment API ##
 ##########################
 
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
+GOOGLE_PLACES_ENDPOINT = 'https://places.googleapis.com/v1/places'
+
 # Get information on restaurants nearby to the requesting user.
 @app.route('/api/v1/restaurants', methods=['GET'])
 def getRestaurantInformation():
-    pass
+    latitude_raw = request.args.get('latitude')
+    if latitude_raw is None:
+        raise BadRequest('latitude must be provided')
+    latitude = float(latitude_raw)
+    
+    longitude_raw = request.args.get('longitude')
+    if longitude_raw is None:
+        raise BadRequest('longitude must be provided')
+    longitude = float(longitude_raw)
+    
+    limit_raw = request.args.get('limit')
+    if limit_raw is None:
+        raise BadRequest('limit must be provided')
+    limit = int(limit_raw)
+
+    if limit > 30:
+        raise BadRequest('limit must be less than 30')
+    
+    radius_raw = request.args.get('radius')
+    if radius_raw is None:
+        raise BadRequest('radius must be provided')
+    radius = float(radius_raw)
+
+    if radius > 50000:
+        raise BadRequest('radius must be less than 500000 meters')
+
+    # https://developers.google.com/maps/documentation/places/web-service/nearby-search?apix_params=%7B%22fields%22%3A%22*%22%2C%22resource%22%3A%7B%22includedTypes%22%3A%5B%22restaurant%22%5D%2C%22maxResultCount%22%3A10%2C%22locationRestriction%22%3A%7B%22circle%22%3A%7B%22center%22%3A%7B%22latitude%22%3A37.7937%2C%22longitude%22%3A-122.3965%7D%2C%22radius%22%3A500%7D%7D%7D%7D
+    payload = {
+        'includedTypes': [ 'restaurant' ],
+        'maxResultCount': limit,
+        'locationRestriction': {
+            'circle': {
+                'center': {
+                    'latitude': latitude,
+                    'longitude': longitude
+                },
+                'radius': radius
+            }
+        }
+    }
+
+    # https://stackoverflow.com/questions/8685790/adding-headers-to-requests-module
+    headers = {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': GOOGLE_API_KEY,
+        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.rating,places.googleMapsUri,places.photos'
+    }
+
+    # Retrieve image URI for each image ID in restaurant
+    def get_image(placeId: str, imageId: str):
+        image_req_headers = {
+            'X-Goog-Api-Key': GOOGLE_API_KEY
+        }
+
+        # https://developers.google.com/maps/documentation/places/web-service/reference/rest/v1/places.photos/getMedia
+        image_response_raw = requests.get(f'{GOOGLE_PLACES_ENDPOINT}/${placeId}/photos/${imageId}/media', headers=image_req_headers)
+        return image_response_raw.json()['photoUri']
+
+    google_response = requests.post(f'{GOOGLE_PLACES_ENDPOINT}:searchNearby', data=json.dumps(payload), headers=headers)
+    restaurants_raw = google_response.json()['places']
+    restaurants = list(map(lambda restaurant: {
+        'restaurantId': restaurant['id'],
+        'restaurantTitle': restaurant['displayName']['text'],
+        'rating': restaurant['rating'],
+        'address': restaurant['formattedAddress'],
+        'googleMapsUrl': restaurant['googleMapsUri'],
+        'images': list(map(lambda image_obj: get_image(restaurant['id'], image_obj['name']), restaurant['photos']))
+    }, restaurants_raw))
+    
+    return jsonify(restaurants), 200
 
 #Gets a comment, as well as all nested replies for that comment.
 @app.route('/api/v1/comment/<string:comment_id>', methods=['GET'])
