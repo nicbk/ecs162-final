@@ -97,27 +97,6 @@ def logout():
         return redirect(originUrl)
     return redirect('/')
 
-
-# Get authenticated user information
-#
-# GET <API root>/user
-# User information is derived from the stored JWT auth token.
-@app.route('/user', methods=['GET'])
-def app_get_user():
-    user_jwt = session.get('user')
-
-    try:
-        user_jwt['sub'] # Ensure that sub exists on user JWT
-        return jsonify({
-            'logged_in': True,
-            'email': user_jwt['email'],
-            'name': user_jwt['name']
-        })
-    except Exception:
-        return jsonify({
-            'logged_in': False
-        })
-
 ##########################
 ## Restaurant/Comment API ##
 ##########################
@@ -133,12 +112,12 @@ def getRestaurantInformation():
     if latitude_raw is None:
         raise BadRequest('latitude must be provided')
     latitude = float(latitude_raw)
-    
+
     longitude_raw = request.args.get('longitude')
     if longitude_raw is None:
         raise BadRequest('longitude must be provided')
     longitude = float(longitude_raw)
-    
+
     limit_raw = request.args.get('limit')
     if limit_raw is None:
         raise BadRequest('limit must be provided')
@@ -146,7 +125,7 @@ def getRestaurantInformation():
 
     if limit > 30:
         raise BadRequest('limit must be less than 30')
-    
+
     radius_raw = request.args.get('radius')
     if radius_raw is None:
         raise BadRequest('radius must be provided')
@@ -210,7 +189,7 @@ def getRestaurantInformation():
         'googleMapsUrl': restaurant['googleMapsUri'],
         'images': list(map(lambda image_obj: get_image(image_obj['name']), restaurant['photos'][:GOOGLE_PLACE_IMAGES_LIMIT]))
     }, restaurants_raw))
-    
+
     return jsonify(restaurants), 200
 
 #Gets a comment, as well as all nested replies for that comment.
@@ -292,6 +271,27 @@ def updateUserProfileImage(username):
 
     mongo_instance.update_user_profile_image(username, profileImage)
     return jsonify({'status': 'Profile image updated successfully'}), 200
+
+@app.route('/api/v1/authed-user', methods=['GET'])
+def getUserInformation():
+    user_jwt = session.get('user')
+    if not user_jwt:
+        return jsonify({'error': 'User not logged in'}), 401
+
+    user_id = user_jwt['sub']
+
+    user_name = user_jwt.get('name')
+    bio, profile_image, comments = mongo_instance.get_user_by_username(user_name)
+
+    result = {
+        user_name: user_name,
+        bio: bio,
+        profile_image: profile_image,
+        comments: comments
+    }
+
+    return jsonify(result), 200
+
 
 # To run app
 if __name__ == '__main__':
