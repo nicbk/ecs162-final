@@ -89,8 +89,14 @@ def authorize():
 
     user_info = oauth.dex_client.parse_id_token(token, nonce=nonce)  # or use .get('userinfo').json()
     session['user'] = user_info
+
+    # Original URL was 8000 which was flask port
+    frontend_url = os.getenv('FRONTEND_URL', f"http://localhost:{os.getenv('FRONTEND_PORT', '5173')}")
+    
     if 'originUrl' in session:
-        return redirect(session['originUrl'])
+        redirect_url = f"{frontend_url}{session['originUrl']}"
+        return redirect(redirect_url)
+
     return redirect('/')
 
 # Path for logging out
