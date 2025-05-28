@@ -14,7 +14,7 @@ export const mockResturantsData: Restaurant[] = [
         address: "234 Davis St",
         images: [bonappetit],
         googleMapsUrl: "google.com/maps/In-N-Out",
-       },
+    },
     {
         restaurantId: '2',
         restaurantTitle: "MAC Burger",
@@ -73,5 +73,4 @@ export const mockPublish: Comment [] = [
             }
         ]
     },
-
 ];
