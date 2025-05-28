@@ -262,6 +262,16 @@ def getUserBioByUsername(username):
         return jsonify({'error': 'User not found'}), 404
     return jsonify(bio), 200
 
+@app.route('/api/v1/user/<string:username>/bio', methods=['POST'])
+def updateUserBio(username):
+    bio = request.get_json['bio']
+    user_jwt = session.get('user')
+    if not user_jwt:
+        return jsonify({'error': 'User not found'}), 404
+    user_id = user_jwt['sub']
+    mongo_instance.update_user_bio(user_id, bio)
+    return jsonify({'status': 'Bio updated successfully'}), 200
+
 @app.route('/api/v1/user/<string:username>/profile-image', methods=['POST'])
 def updateUserProfileImage(username):
     data = request.get_json()
@@ -272,6 +282,7 @@ def updateUserProfileImage(username):
     mongo_instance.update_user_profile_image(username, profileImage)
     return jsonify({'status': 'Profile image updated successfully'}), 200
 
+# kind of the same as getUserByUsername?
 @app.route('/api/v1/authed-user', methods=['GET'])
 def getUserInformation():
     user_jwt = session.get('user')
