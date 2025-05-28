@@ -1,6 +1,5 @@
 //This wil be used for the data interfaces and also fields that we will get from the backend for now it is all mock data
 
-export type ImageUrl = string; // example: [ 'google.com/image-1', 'google.com/image-2' ]
 export type Base64Data = string; // example: [ 'data:image/jpeg;base64,sdifjaijewfijaisefjawje9fja8wjef...', 'data:image/jpeg;base64,aifwjwjefijaweifjaiwejf' ]
 export type CommentId = string; // UUID of a comment
 
@@ -9,7 +8,7 @@ export interface Restaurant {
     restaurantTitle: string;
     rating: number;
     address: string;
-    images: ImageUrl[];
+    images: Base64Data[];
     googleMapsUrl: string;
 }
 
