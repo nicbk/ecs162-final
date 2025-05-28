@@ -63,12 +63,6 @@ class MongoDBInterface():
                 'wishList': []
             })
 
-    def get_user_by_userID(self, userID: str):
-        ''' Get a user by their ID'''
-        with self.transaction_wrapper(self.mongo) as session:
-            
-
-
     def get_user_by_username(self, username: str):
         ''' Get a user by their username.'''
         with self.transaction_wrapper(self.mongo) as session:
