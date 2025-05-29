@@ -152,6 +152,7 @@ const Profile = () => {
   }
   function deletePost(id: string) { // FIX THIS CALL API DELETE
     setImagePosts(posts.filter((post) => post.id !== id));
+    fetch(`/api/v1/comment/${id}`, {method: 'DELETE'});
   }
 
   useEffect(() => {
@@ -183,7 +184,7 @@ const Profile = () => {
       c.replies.forEach(reply => countRecursive(reply));
     };
     countRecursive(comment);
-    return count;
+    return count - 1;
   }
 
   // RATHER THAN RECURSIVELY RENDERING, REDIRECT TO RESTAURANT PAGE
@@ -221,6 +222,7 @@ const Profile = () => {
   //   );
   // }
 
+  /* function that, given an array of Post objects (replies to a comment), will render the top level ones */
   function ReplyList({ replies }: { replies: Post[] }) {
     if (!replies || replies.length === 0) {
       return <div>No comments yet, be the first to comment!</div>;
@@ -240,8 +242,12 @@ const Profile = () => {
                 />
               ))}
             </div>
-            <div className={styles.replyBody}>{reply.body}</div>
-            <div>See more replies...(will eventually redirect to restaurant page with all comments)</div>
+            <span className={styles.replyBody}>{reply.body}</span>
+            <button onClick={() => fetch(`/api/v1/comment/${reply.id}/add_like`)}>Like</button>
+            <span>{reply.likes}</span>
+            <br></br>
+            {reply.replies.length > 0 && <button onClick={() => { fetch(`/api/v1/comment/${reply.id}/`) }}>See more replies...</button>}
+            {/*eventually need endpoint for restaurant page that we will get redirected to + issue: we lose the comment we were tracking*/}
           </div>
         ))}
       </div>
@@ -291,6 +297,7 @@ const Profile = () => {
           ))}
         </div>
         )}
+        {/* shows all the top level comments with images in a gallery format */}
         {selectedPost && ( /* FIX THIS PART TO SHOW ALL THE IMAGES IN THE ARRAY */
         <div className={styles.popupOverlay} onClick={() => setSelectedPost(null)}> 
           <div className={styles.popupContent} onClick={e => e.stopPropagation()}>
@@ -347,4 +354,3 @@ const Profile = () => {
 
 export default Profile;
 
-// TO DO: likes, 
