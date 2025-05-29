@@ -1,37 +1,141 @@
 
 import styles from './Profile.module.scss';
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import defaultAvatar from '../../assets/default-avatar.png';
 import food from '../../assets/food.jpg';
 
+interface authedUser {
+  username: string;
+  bio?: string;
+  profileImage?: string;
+  comments?: string[];
+}
+
 interface Post {
-  id: number;
-  imageUrl: string;
-  comment: string;
+  parent_id: string;
+  id: string;
+  creator_id: string;
+  images: string[];
+  body: string; 
+  deleted: boolean;
+  date: string; 
   likes: number;
-  commentsCount: number;
-  rating: number;
-  commentReply: {user: string, text: string}[];
+  // rating: number; // rating out of 10?
+  replies: Post[];
 }
 {/* later we will make get request on pageload*/}
-const testPosts: Post[] = [ 
-  {id: 1, imageUrl: food, comment: "1 this pizza sucked", likes: 12, commentsCount: 3, rating: 3, commentReply: [{user: "user1", text: "good post"}]},
-  {id: 2, imageUrl: food, comment: "2 this pizza sucked", likes: 12, commentsCount: 3, rating: 3, commentReply: [{user: "user1", text: "good post"}]},
-  {id: 3, imageUrl: food, comment: "3 this pizza sucked", likes: 12, commentsCount: 3, rating: 3, commentReply: [{user: "user1", text: "good post"}]},
-  {id: 4, imageUrl: food, comment: "4 this pizza sucked", likes: 12, commentsCount: 3, rating: 3, commentReply: [{user: "user1", text: "good post"}]},
+// const testPosts: Post[] = [ 
+//   {parent_id: "1", id: "1", creator_id: "user1", images: [food], body: "This is a comment", likes: 10, deleted: false, date: "2023-10-01", replies: []},
+//   {parent_id: "1", id: "2", creator_id: "user2", images: [], body: "comment without an image", likes: 5, deleted: false, date: "2023-10-02", replies: []},
+//   {parent_id: "1", id: "3", creator_id: "user3", images: [food], body: "comment with an image", likes: 2, deleted: false, date: "2023-10-03", replies: []},
+// ];
+
+const mockPosts: Post[] = [
+  {
+    parent_id: "0",
+    id: "1",
+    creator_id: "user_001",
+    images: [food],
+    body: "top level comment (post)",
+    deleted: false,
+    date: "2025-05-29T12:30:00Z",
+    likes: 0,
+    replies: [
+      {
+        parent_id: "1",
+        id: "2",
+        creator_id: "user_002",
+        images: [food],
+        body: "top level reply 1",
+        deleted: false,
+        date: "2025-05-29",
+        likes: 5,
+        replies: [
+          {
+            parent_id: "2",
+            id: "3",
+            creator_id: "user_003",
+            images: [],
+            body: "unshown reply",
+            deleted: false,
+            date: "2025-05-29",
+            likes: 0,
+            replies: []
+          }
+        ]
+      },
+      {
+        parent_id: "1",
+        id: "4",
+        creator_id: "user_004",
+        images: [food],
+        body: "top level reply 2",
+        deleted: false,
+        date: "2025-05-29",
+        likes: 30,
+        replies: []
+      }
+    ]
+  },
+  {
+    parent_id: "0",
+    id: "5",
+    creator_id: "user_005",
+    images: [],
+    body: "other top level comment text only",
+    deleted: false,
+    date: "2025-05-29",
+    likes: 80,
+    replies: [
+      {
+        parent_id: "5",
+        id: "6",
+        creator_id: "user_006",
+        images: [],
+        body: "top level reply 1",
+        deleted: false,
+        date: "2025-05-29",
+        likes: 25,
+        replies: [
+          {
+            parent_id: "6",
+            id: "7",
+            creator_id: "user_007",
+            images: [],
+            body: "dont show",
+            deleted: false,
+            date: "2025-05-29",
+            likes: 15,
+            replies: []
+          }
+        ]
+      }
+    ]
+  }
 ];
 
+
+//     parent_id: str
+//     id: str
+//     creator_id: str
+//     images: list[str] # List of image IDs
+//     body: str
+//     likes: int
+//     deleted: bool
+//     date: str
+//     replies: list['Comment']
+
 const Profile = () => {
-  const [posts, setPosts] = useState<Post[]>(testPosts);
-  const [username] = useState("foodie123");
-  const [displayName, setDisplayName] = useState("glizzygulper");
-  const [bio, setBio] = useState("test bio");
+  const [posts, setImagePosts] = useState<Post[]>(mockPosts.filter(post => post.images.length > 0));
+  const [textPosts, setTextPosts] = useState<Post[]>(mockPosts.filter(post => post.images.length === 0));
+  const [username, setUsername] = useState("tempuser");
+  const [bio, setBio] = useState("");
   const [isEditing, setIsEditing] = useState(false);
-  const [tempDisplayName, setTempDisplayName] = useState(displayName);
   const [tempBio, setTempBio] = useState(bio);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [favoritesOpen, setFavoritesOpen] = useState(false);
   const [favorites, setFavorites] = useState<string[]>(["in n out", "mcdonalds"]);
+  const [profileImage, setProfileImage] = useState();
   const [followers] = useState(2);
   const [following] = useState(1);
 
@@ -41,14 +145,107 @@ const Profile = () => {
   function cancelEdit() {
     setIsEditing(false);
   }
-  // we need the setTempDisplayName and setTempBio stuff so it doesn't save if we want to cancel: intermediate values
+  // we need the setTempuserName and setTempBio stuff so it doesn't save if we want to cancel: intermediate values
   function saveProfile() {
-    setDisplayName(tempDisplayName);
     setBio(tempBio);
     setIsEditing(false);
   }
-  function deletePost(id: number) {
-      setPosts(posts.filter((post) => post.id !== id));
+  function deletePost(id: string) { // FIX THIS CALL API DELETE
+    setImagePosts(posts.filter((post) => post.id !== id));
+  }
+
+  useEffect(() => {
+    fetch('/api/v1/authed-user') // api endpoint but not complete yet?
+    .then(response => response.json())
+    .then(async (user) => {
+      setUsername(user.username);
+      setBio(user.bio || "");
+      setProfileImage(user.profileImage || defaultAvatar); // maybe refactor this later but right now probably works
+      if (user.comments && user.comments.length > 0){
+        const commentList = user.comments.map((id : string) => {
+          fetch(`/api/v1/comment/${id}`)
+          .then(response => response.json())
+        });
+        let comments = await Promise.all(commentList);
+        comments = comments.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        const imagePosts = comments.filter(post => post.images.length > 0 && !post.deleted);
+        const textPosts = comments.filter(post => post.images.length === 0 && !post.deleted);
+        setImagePosts(imagePosts);
+        setTextPosts(textPosts);
+      }
+    })
+  });
+
+  function countReplies(comment: Post){
+    let count = 0;
+    const countRecursive = (c: Post) => {
+      count++;
+      c.replies.forEach(reply => countRecursive(reply));
+    };
+    countRecursive(comment);
+    return count;
+  }
+
+  // RATHER THAN RECURSIVELY RENDERING, REDIRECT TO RESTAURANT PAGE
+
+  // const CommentComponent = ({comment} : {comment: Post}) => {
+  //   return (
+  //     <div>
+  //     {comment.deleted ? (
+  //       <div>[Deleted comment]</div>
+  //     ) : (
+  //       <div>
+  //       <strong>{comment.creator_id}:</strong>
+  //       <p>{comment.body}</p>
+  //       {comment.images?.length > 0 && (
+  //         <div>
+  //           {comment.images.map((base64Img, i) => (
+  //             <img 
+  //               key={i}
+  //               src={`data:image/jpeg;base64,${base64Img}`} 
+  //               alt={`Comment image ${i + 1}`}
+  //             />
+  //           ))}
+  //         </div>
+  //       )}
+  //       </div>
+  //     )}
+  //     {comment.replies.length > 0 && (
+  //       <div>
+  //         {comment.replies.map((reply) => (
+  //           <CommentComponent key={reply.id} comment={reply} />
+  //         ))}
+  //       </div>
+  //     )}
+  //   </div>
+  //   );
+  // }
+
+  function ReplyList({ replies }: { replies: Post[] }) {
+    if (!replies || replies.length === 0) {
+      return <div>No comments yet, be the first to comment!</div>;
+    }
+    return (
+      <div>
+        {replies.map(reply => (
+          <div key={reply.id} className={styles.reply}>
+            <div>{reply.creator_id} at {reply.date}</div>
+            <div className={styles.replyImages}>
+              {reply.images.map((img, idx) => (
+                <img
+                  key={idx}
+                  src={img}
+                  alt={reply.body}
+                  style={{width: '50px', height: '50px', marginRight: '8px'}}
+                />
+              ))}
+            </div>
+            <div className={styles.replyBody}>{reply.body}</div>
+            <div>See more replies...(will eventually redirect to restaurant page with all comments)</div>
+          </div>
+        ))}
+      </div>
+    );
   }
 
   return (
@@ -57,24 +254,22 @@ const Profile = () => {
     <section style={{textAlign: 'center',}}>
       <img src={defaultAvatar} alt="Profile picture" width={100} height={100} />
       {isEditing ? (
-        <>
-          <input type="text"value={tempDisplayName} onChange={e => setTempDisplayName(e.target.value)} style={{fontSize: "1.5em", marginBottom: "8px"}}/>
-          <br/>
+        <div>
           <textarea value={tempBio} onChange={e => setTempBio(e.target.value)} rows={3} style={{width: "100%", marginBottom: "8px"}}/>
           <br/>
           <button onClick={saveProfile}>Save</button>
           <button onClick={cancelEdit} style={{marginLeft: "8px"}}>Cancel</button>
-        </>
+        </div>
       ) : (
-        <>
-          <h2>{displayName} (@{username})</h2>
+        <div>
+          <h2>{username}</h2>
           <p>{bio}</p>
           <p>
             Followers: {followers} | Following: {following}
           </p>
           <button onClick={editProfile}>Edit Profile</button>
           <button style={{marginLeft: "8px"}} onClick={() => setFavoritesOpen(true)}>Favorites</button>
-        </>
+        </div>
       )}
     </section>
 
@@ -83,12 +278,12 @@ const Profile = () => {
         <h3 style={{textAlign: 'center'}}>Your Comments</h3>
         {posts.length === 0 ? (<p>No posts yet.</p>) : 
         (
-        <div className={styles.galleryGrid}>
-          {posts.map((post) => (
+        <div className={styles.galleryGrid}> 
+          {posts.map((post) => ( 
             <div className={styles.galleryImageWrapper} key={post.id}>
-              <img
-                src={post.imageUrl}
-                alt={post.comment}
+              <img 
+                src={post.images[0]}
+                alt={post.body}
                 className={styles.galleryImage}
                 onClick={() => setSelectedPost(post)}
               />
@@ -96,27 +291,19 @@ const Profile = () => {
           ))}
         </div>
         )}
-        {selectedPost && (
-        <div className={styles.popupOverlay} onClick={() => setSelectedPost(null)}>
+        {selectedPost && ( /* FIX THIS PART TO SHOW ALL THE IMAGES IN THE ARRAY */
+        <div className={styles.popupOverlay} onClick={() => setSelectedPost(null)}> 
           <div className={styles.popupContent} onClick={e => e.stopPropagation()}>
-            <img src={selectedPost.imageUrl} alt={selectedPost.comment} style={{width: '100%', borderRadius: '8px'}} />
+            <img src={selectedPost.images[0]} alt={selectedPost.body} style={{width: '100%', borderRadius: '8px'}} />
             <div className={styles.popupRightSide}> 
               <div className={styles.mainComment}>
-                <p>{selectedPost.comment}</p> 
+                <p>{selectedPost.body}</p> 
               </div>
-              <div className={styles.commentsSection}>
-                {selectedPost.commentReply && selectedPost.commentReply.length > 0 ? (
-                  selectedPost.commentReply.map((c, i) => (
-                  <div key={i} className={styles.commentItem}>
-                    <strong>{c.user}:</strong> {c.text}
-                  </div>
-                ))
-              ) : (
-                <div>No comments yet, be the first to comment!</div>
-              )}
+              <div className={styles.commentsSection}> 
+                <ReplyList replies={selectedPost.replies}/>
               </div>
-              <div className={styles.commentInfo}>
-                <p>Likes: {selectedPost.likes} | Comments: {selectedPost.commentsCount} | Overall Rating: {selectedPost.rating}/10</p>
+              <div className={styles.commentInfo}>         
+                <p>Likes: {selectedPost.likes} | Comments: {countReplies(selectedPost)} {/* should be total tree size */}</p>
                 <button onClick={() => { deletePost(selectedPost.id); setSelectedPost(null); }}>Delete Post</button>
                 <button onClick={() => setSelectedPost(null)} style={{marginLeft: "8px"}}>Close</button>
               </div>
@@ -124,6 +311,22 @@ const Profile = () => {
           </div>
         </div>
       )}
+      <div className={styles.textPostsSection}>
+        <h3>Text Posts</h3>
+        {textPosts.length > 0 ? (
+          textPosts.map(post => (
+            <div key={post.id} className={styles.textPost}>
+              <p>{post.creator_id} at {post.date}</p>
+              <p>{post.body}</p>
+              <div style={{paddingLeft: 8}}>
+                <ReplyList replies={post.replies} />
+              </div>
+            </div>
+          ))
+        ) : (
+          <p>No text-only posts yet.</p>
+        )}
+      </div>
       </section>
       {favoritesOpen && (
         <div className={styles.popupOverlay} onClick={() => setFavoritesOpen(false)}>
@@ -143,3 +346,5 @@ const Profile = () => {
 };
 
 export default Profile;
+
+// TO DO: likes, 
