@@ -9,9 +9,10 @@ export default function App() {
     {/* for now temp we will have the login stuff here but we need to remove it after it is done */}
     <Route path="/Login" element={<div>dex stuff will be used here</div>} />
     <Route element={<Layout />}>
+      <Route path="/" element={<Home />} />
       <Route path="/Home"           element={<Home />} />
       <Route path="/Profile"       element={<Profile />} />
-      <Route path="*" element={<div><strong>COMING SOON!!! FOR NOW WORKING ON HOMEPAGE</strong></div>} />
+      <Route path="404" element={<div><strong>COMING SOON!!! FOR NOW WORKING ON HOMEPAGE</strong></div>} />
     </Route>
   </Routes>
   )

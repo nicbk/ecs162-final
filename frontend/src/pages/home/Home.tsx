@@ -10,10 +10,12 @@ import { getRestaurants, getComments } from '../../api_data/client.ts';
 
 export default function Home() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
-  const [, setComments] = useState<Comment[]>([])
+  const [comments, setComments] = useState<Comment[]>([])
   const [liked, setLiked] = useState<Record<string, boolean>>({})
   const [activeRest, setActiveRest] = useState<Restaurant | null>(null)
   const [popupType, setpopupType] = useState<'comment' | 'share' | null>(null)
+  const [text, setText] = useState('')
+  const [likedCom, setlikedCom] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     const loadTheData = async () => {
@@ -34,28 +36,58 @@ export default function Home() {
   const toggleLike = (id: string) =>
     setLiked((prev) => ({ ...prev, [id]: !prev[id] }))
 
-  const openModal = (rest: Restaurant, type: 'comment' | 'share') => {
+  const toggleLikeCom = (id: string) => {
+    setlikedCom((prev) => ({ ...prev, [id]: !prev[id] }));
+  }
+
+  const openModal = (rest: Restaurant) => {
     setActiveRest(rest)
-    setpopupType(type)
+    setpopupType('comment')
+    setText('')
+  }
+  const openShareModal = (rest: Restaurant) => {
+    setActiveRest(rest)
+    setpopupType('share')
   }
   const closeModal = () => {
     setActiveRest(null)
     setpopupType(null)
   }
 
-  const subComment = (text: string) => {
-    console.log('POST /api/v1/comment', {
-      restaurantId: activeRest?.restaurantId,
-      body: text,
-    })
-    closeModal()
-  }
   // We need to come up with a way of sharing the restaurant.
   const giveShare = () => {
     console.log('POST /api/v1/haven"t yet decided', {
       restaurantId: activeRest?.restaurantId,
     })
+    if (!activeRest) return;
+    //If there is a better way I will change it for now lets keep it simple.
+    const shareUrl = `${window.location.origin}/Home`;
+    console.log('POST /api/v1/haven"t yet decided', {
+      restaurantId: activeRest.restaurantId,
+      url: shareUrl,
+    })
     closeModal()
+  }
+
+  const firstLayerForActive = activeRest
+    ? comments.filter((comm) => comm.restaurantId === activeRest.restaurantId)
+    : [];
+
+  const handlePostComment = () => {
+    if (!activeRest || !text.trim()) return;
+
+    const newComment: Comment = {
+      id: crypto.randomUUID(),
+      username: 'me ayub for now',
+      body: text.trim(),
+      images: [],
+      likes: 3,
+      deleted: false,
+      replies: [],
+      restaurantId: activeRest.restaurantId,
+    }
+    setComments((prev) => [newComment, ...prev]);
+    setText('');
   }
 
   return (
@@ -93,7 +125,7 @@ export default function Home() {
 
               <span
                 className={styles.commentIcon}
-                onClick={() => openModal(rest, 'comment')}
+                onClick={() => openModal(rest)}
                 role="button"
                 aria-label="Comment"
               >
@@ -102,7 +134,7 @@ export default function Home() {
 
               <span
                 className={styles.shareIcon}
-                onClick={() => openModal(rest, 'share')}
+                onClick={() => openShareModal(rest)}
                 role="button"
                 aria-label="Share"
               >
@@ -119,14 +151,39 @@ export default function Home() {
             className={styles.popupBody}
             onClick={(event) => event.stopPropagation()}
           >
-            <h3>
-              {popupType === 'comment'
-                ? `Comment on ${activeRest.restaurantTitle}`
-                : `Share ${activeRest.restaurantTitle}`}
-            </h3>
-            {popupType === 'comment' ? (<CommentingPost onSubmit={subComment} onCancel={closeModal} />
-            ) : (
-              <SharingURL restaurant={activeRest} onShare={giveShare} onCancel={closeModal} />
+            {popupType === 'share' && (
+              <>
+                <h3>
+                Share {activeRest.restaurantTitle}
+                </h3>
+                <div className={styles.popupBoxBody}>
+                  <p>place holder but maybe we can put:</p>
+                  <input
+                    readOnly
+                    value={`${window.location.origin}/Home`}
+                    onFocus={(event) => event.target.select()}
+                  />
+                  <div className={styles.popupBoxFooter}>
+                    {/* I will add something to copy later, for now it is jhust here for placeholde */}
+                    <button onClick={giveShare}>Copy!</button>
+                    <button onClick={closeModal}>Cancel</button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {popupType === 'comment' && activeRest && (
+              <CommentingPost
+                // onSubmit ={subComment} 
+                onCancel={closeModal}
+                activeRest={activeRest}
+                comments={firstLayerForActive}
+                likedCom={likedCom}
+                toggleLikeCom={toggleLikeCom}
+                text={text}
+                setText={setText}
+                handlePostComment={handlePostComment}
+              />
             )}
           </div>
         </div>
@@ -136,45 +193,102 @@ export default function Home() {
 }
 
 function CommentingPost({
-  onSubmit, onCancel
+  // onSubmit,
+  onCancel, activeRest, comments, likedCom, toggleLikeCom, text, setText, handlePostComment,
 }: {
-  onSubmit: (text: string) => void, onCancel: () => void
+  // onSubmit: (text: string) => void,
+  onCancel: () => void
+  activeRest: Restaurant;
+  comments: Comment[];
+  likedCom: Record<string, boolean>;
+  toggleLikeCom: (id: string) => void;
+  text: string;
+  setText: (s: string) => void;
+  handlePostComment: () => void;
 }) {
-  const [text, setText] = useState('')
   return (
-    <div className={styles.popupBoxBody}>
-      <textarea
-        className={styles.textarea}
-        placeholder="Write a Comment. . . ."
-        value={text}
-        onChange={(event) => setText(event.target.value)}
-      />
-      <div className={styles.popupBoxFooter}>
-        <button
-          onClick={() => onSubmit(text)}
-          disabled={!text}
-        >
-          Post!
-        </button>
-        <button onClick={onCancel}>Cancel</button>
-      </div>
-    </div>
-  )
-}
+    <div>
+      <div className={styles.popupModelBody}>
+        <div className={styles.commentListCon}>
+          {comments.length === 0 ? (
+            <p className={styles.solo}>No comments yet.</p>
+          ) : (
+            comments.map((comm) => (
 
-function SharingURL({
-  restaurant, onShare,onCancel
-}: {
-  restaurant: Restaurant, onShare: () => void, onCancel: () => void
-}) {
-  return (
-    <div className={styles.popupBoxBody}>
-      <p>place holder but maybe we can put:</p>
-      <a href="https://g.co/kgs/ASVooP7" >{restaurant.restaurantTitle}</a>
-      <div className={styles.popupBoxFooter}>
-        {/* I will add something to copy later, for now it is jhust here for placeholde */}
-        <button onClick={onShare}>Copy!</button>
-        <button onClick={onCancel}>Cancel</button>
+              <div key={comm.id} className={styles.commentCard}>
+
+                <div className={styles.commentHeader}>
+                  <strong>{comm.username}</strong>
+                </div>
+
+                <div className={styles.description}>
+                  <p>{comm.body}</p>
+                </div>
+                
+                    {comm.images && comm.images.length > 0 && (
+                      <div className={styles.commentimgs}>
+                        {comm.images.map((img, index) => (
+                          <img key={index} src={img} alt={`Comment Image ${index + 1}`} />
+                        ))}
+                      </div>
+                  )}
+                <div className={styles.commentFoot}>
+                  <span
+                    className={`${styles.likeIcon} ${
+                      likedCom[comm.id] ? styles.liked : ''
+                    }`}
+                    onClick={() => toggleLikeCom(comm.id)}
+                    role="button"
+                    aria-label="Like Comment"
+                  >
+                    <FaHeart />
+                  </span>
+
+                  <span
+                    className={styles.commentIcon}
+                    onClick={() => {/* not yet started on it*/}}
+                    role="button"
+                    aria-label="will be threads"
+                  >
+                    <FaRegComment />
+                  </span>
+
+                  <span
+                    className={styles.shareIcon}
+                    onClick={() => {
+                      const Url = `${window.location.origin}/some kind of connection with threads/${comm.id}`;
+                      navigator.clipboard.writeText(Url);
+                      alert('copied!');
+                    }}
+                    role="button"
+                    aria-label="Share Comment"
+                  >
+                    <FaShareSquare />
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className={styles.popupBoxBody}>
+          <h3>Comments for {activeRest.restaurantTitle}</h3>
+          <textarea
+            className={styles.textarea}
+            placeholder="Write a Comment. . . ."
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+          />
+          <div className={styles.popupBoxFooter}>
+            <button
+              onClick={handlePostComment}
+              disabled={!text}
+            >
+              Post!
+            </button>
+            <button onClick={onCancel}>Cancel</button>
+          </div>
+        </div>
       </div>
     </div>
   )
