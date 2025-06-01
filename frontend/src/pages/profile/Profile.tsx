@@ -46,7 +46,7 @@ const mockPosts: Post[] = [
         id: "2",
         creator_id: "user_002",
         images: [food],
-        body: "top level reply 1",
+        body: "top level reply 1 with replies",
         deleted: false,
         date: "2025-05-29",
         likes: 5,
@@ -69,7 +69,7 @@ const mockPosts: Post[] = [
         id: "4",
         creator_id: "user_004",
         images: [food],
-        body: "top level reply 2",
+        body: "top level reply 2 no replies",
         deleted: false,
         date: "2025-05-29",
         likes: 30,
@@ -92,7 +92,7 @@ const mockPosts: Post[] = [
         id: "6",
         creator_id: "user_006",
         images: [],
-        body: "top level reply 1",
+        body: "top level reply 1 with replies",
         deleted: false,
         date: "2025-05-29",
         likes: 25,
@@ -129,7 +129,7 @@ const Profile = () => {
   const [posts, setImagePosts] = useState<Post[]>(mockPosts.filter(post => post.images.length > 0));
   const [textPosts, setTextPosts] = useState<Post[]>(mockPosts.filter(post => post.images.length === 0));
   const [username, setUsername] = useState("tempuser");
-  const [bio, setBio] = useState("");
+  const [bio, setBio] = useState("testbio");
   const [isEditing, setIsEditing] = useState(false);
   const [tempBio, setTempBio] = useState(bio);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
@@ -231,7 +231,7 @@ const Profile = () => {
       <div>
         {replies.map(reply => (
           <div key={reply.id} className={styles.reply}>
-            <div>{reply.creator_id} at {reply.date}</div>
+            <div>{reply.creator_id} on {reply.date}</div>
             <div className={styles.replyImages}>
               {reply.images.map((img, idx) => (
                 <img
@@ -258,23 +258,33 @@ const Profile = () => {
     <div>
     {/* user info */}
     <section style={{textAlign: 'center',}}>
-      <img src={defaultAvatar} alt="Profile picture" width={100} height={100} />
-      {isEditing ? (
+      <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center'}}>
+        <img src={defaultAvatar} alt="Profile picture" width={100} height={100} style={{marginRight: 20}} />
+        <div style={{display: 'flex', flexDirection: 'column'}}>
+          <div style={{display: 'flex', flexDirection: 'row', alignItems: 'flex-start', height: 'fit-content'}}>
+            <h2 style={{marginRight: 10, alignSelf: 'center', marginBottom: 0, marginTop: 0, height:'fit-content'}}>{username}</h2>
+            <button onClick={editProfile} style={{height: 22.5, alignSelf: 'center', marginRight: 10}}>Edit Profile</button>
+            <button style={{height: 22.5, alignSelf: 'center'}} onClick={() => setFavoritesOpen(true)}>Favorites</button>
+          </div>
+          <div style={{textAlign: 'left'}}>
+            <p>
+              <span style={{marginRight: 15}}>{posts.length + textPosts.length} Posts</span> 
+              <span style={{marginRight: 15}}>{followers} Followers</span> 
+              <span style={{marginRight: 15}}>{following} Following</span> 
+            </p>
+            <p>{bio}</p>
+          </div>
+        </div>
+      </div>
+      {isEditing && (
         <div>
           <textarea value={tempBio} onChange={e => setTempBio(e.target.value)} rows={3} style={{width: "100%", marginBottom: "8px"}}/>
           <br/>
-          <button onClick={saveProfile}>Save</button>
-          <button onClick={cancelEdit} style={{marginLeft: "8px"}}>Cancel</button>
-        </div>
-      ) : (
-        <div>
-          <h2>{username}</h2>
-          <p>{bio}</p>
-          <p>
-            Followers: {followers} | Following: {following}
-          </p>
-          <button onClick={editProfile}>Edit Profile</button>
-          <button style={{marginLeft: "8px"}} onClick={() => setFavoritesOpen(true)}>Favorites</button>
+          <div style={{display: 'flex', flexDirection: 'row'}}>          
+            <button onClick={saveProfile}>Save</button>
+            <button onClick={cancelEdit} style={{marginLeft: "8px"}}>Cancel</button>
+          </div>
+
         </div>
       )}
     </section>
@@ -311,8 +321,10 @@ const Profile = () => {
               </div>
               <div className={styles.commentInfo}>         
                 <p>Likes: {selectedPost.likes} | Comments: {countReplies(selectedPost)} {/* should be total tree size */}</p>
-                <button onClick={() => { deletePost(selectedPost.id); setSelectedPost(null); }}>Delete Post</button>
-                <button onClick={() => setSelectedPost(null)} style={{marginLeft: "8px"}}>Close</button>
+                <div style={{display: 'flex', flexDirection: 'row'}}> 
+                  <button onClick={() => { deletePost(selectedPost.id); setSelectedPost(null); }}>Delete Post</button>
+                  <button onClick={() => setSelectedPost(null)} style={{marginLeft: "8px"}}>Close</button>
+                </div>
               </div>
             </div>
           </div>
@@ -323,7 +335,7 @@ const Profile = () => {
         {textPosts.length > 0 ? (
           textPosts.map(post => (
             <div key={post.id} className={styles.textPost}>
-              <p>{post.creator_id} at {post.date}</p>
+              <p>{post.creator_id} on {post.date}</p>
               <p>{post.body}</p>
               <div style={{paddingLeft: 8}}>
                 <ReplyList replies={post.replies} />

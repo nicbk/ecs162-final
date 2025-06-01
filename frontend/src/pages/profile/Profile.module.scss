@@ -3,24 +3,22 @@
   background-color: var(--background);
   color: var(--text);
 }
-// .commentGrid {
-//   display: grid;
-//   grid-template-columns: repeat(3, 1fr); 
-//   gap: 1px; 
-//   width: 80vw;
-//   max-width: 80vw; 
-//   margin: 0 auto; 
-//   padding: 1px 0;
-// }
 
-// .commentCard {
-//   border-radius: 12px;
-//   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-//   padding: 1px;
-//   display: flex;
-//   flex-direction: column;
-//   align-items: center;
-//   color:black;
+section button{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 15px 10px 15px;
+  background-color: var(--inverse-background);
+  color: var(--background);
+  border-radius: 1000px;
+  cursor: pointer;
+}
+
+// section button:hover {
+//   background: linear-gradient(90deg, #000000, #000000);
+//   // box-shadow: 0 4px 16px rgba(0,0,0,0.12);
 // }
 
 .galleryGrid {
@@ -36,7 +34,6 @@
 .galleryImageWrapper{   
   aspect-ratio: 1 / 1;
   width: 100%;
-  // border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center; 
@@ -68,11 +65,24 @@
   z-index: 1000;
 }
 
+$themes: (
+  light: (
+    text: #121517,
+    background: #e8eff3,
+    modal-background: #fff,
+  ),
+  dark: (
+    text: #e8ebed,
+    background: #0c1317,
+    modal-background: #18222b, 
+  ),
+);
+
 .popupContent {
   display: flex;
   flex-direction: row;
   gap: 16px;
-  background: #fff;
+  background: var(--background);
   border-radius: 12px;
   padding: 24px;
   max-width: 51%;
