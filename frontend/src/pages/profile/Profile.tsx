@@ -36,7 +36,7 @@ const mockPosts: Post[] = [
     id: "1",
     creator_id: "user_001",
     images: [food],
-    body: "top level comment (post)",
+    body: "top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)",
     deleted: false,
     date: "2025-05-29T12:30:00Z",
     likes: 0,
@@ -46,7 +46,7 @@ const mockPosts: Post[] = [
         id: "2",
         creator_id: "user_002",
         images: [food],
-        body: "top level reply 1 with replies",
+        body: "top level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with replies",
         deleted: false,
         date: "2025-05-29",
         likes: 5,
@@ -68,7 +68,7 @@ const mockPosts: Post[] = [
         parent_id: "1",
         id: "4",
         creator_id: "user_004",
-        images: [food],
+        images: [],
         body: "top level reply 2 no replies",
         deleted: false,
         date: "2025-05-29",
@@ -231,8 +231,13 @@ const Profile = () => {
       <div>
         {replies.map(reply => (
           <div key={reply.id} className={styles.reply}>
-            <div>{reply.creator_id} on {reply.date}</div>
-            <div className={styles.replyImages}>
+            <div style={{marginBottom:4, display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+              <span><strong>{reply.creator_id}</strong> on {reply.date}</span>
+              <span style={{marginLeft: 'auto', display: 'flex', alignItems: 'center'}}>
+                <span><button style={{marginRight:8, alignItems:'flex-end'}} onClick={() => fetch(`/api/v1/comment/${reply.id}/add_like`)}>♡</button></span>
+              </span>
+            </div>
+            <div style={{marginLeft:8}}>
               {reply.images.map((img, idx) => (
                 <img
                   key={idx}
@@ -242,11 +247,16 @@ const Profile = () => {
                 />
               ))}
             </div>
-            <span className={styles.replyBody}>{reply.body}</span>
-            <button onClick={() => fetch(`/api/v1/comment/${reply.id}/add_like`)}>Like</button>
-            <span>{reply.likes}</span>
-            <br></br>
-            {reply.replies.length > 0 && <button onClick={() => { fetch(`/api/v1/comment/${reply.id}/`) }}>See more replies...</button>}
+            <div style={{marginLeft:8, paddingBottom:4, display: 'flex', flexDirection: 'column'}}>
+              {reply.body}
+              <strong>
+                <span className={styles.likeCount}>
+                  {reply.likes} likes 
+                  <a className={styles.replyLink} onClick={() => fetch(`/api/v1/comment/${reply.id}/??????`)}>Reply</a> {/* need endpoint for replying to a comment */}
+                </span>
+              </strong>
+            </div>
+            {reply.replies.length > 0 && <button style={{marginBottom:10}} onClick={() => { fetch(`/api/v1/comment/${reply.id}/??????`) }}>See more replies ({reply.replies.length})</button>}
             {/*eventually need endpoint for restaurant page that we will get redirected to + issue: we lose the comment we were tracking*/}
           </div>
         ))}
@@ -259,18 +269,18 @@ const Profile = () => {
     {/* user info */}
     <section style={{textAlign: 'center',}}>
       <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center'}}>
-        <img src={defaultAvatar} alt="Profile picture" width={100} height={100} style={{marginRight: 20}} />
+        <img src={defaultAvatar} alt="Profile picture" width={100} height={100} style={{marginRight: 20}}/>
         <div style={{display: 'flex', flexDirection: 'column'}}>
           <div style={{display: 'flex', flexDirection: 'row', alignItems: 'flex-start', height: 'fit-content'}}>
             <h2 style={{marginRight: 10, alignSelf: 'center', marginBottom: 0, marginTop: 0, height:'fit-content'}}>{username}</h2>
-            <button onClick={editProfile} style={{height: 22.5, alignSelf: 'center', marginRight: 10}}>Edit Profile</button>
-            <button style={{height: 22.5, alignSelf: 'center'}} onClick={() => setFavoritesOpen(true)}>Favorites</button>
+            <button onClick={editProfile} style={{alignSelf: 'center', marginRight: 10}}>Edit Profile</button>
+            <button style={{alignSelf: 'center'}} onClick={() => setFavoritesOpen(true)}>Favorites</button>
           </div>
           <div style={{textAlign: 'left'}}>
             <p>
-              <span style={{marginRight: 15}}>{posts.length + textPosts.length} Posts</span> 
-              <span style={{marginRight: 15}}>{followers} Followers</span> 
-              <span style={{marginRight: 15}}>{following} Following</span> 
+              <span style={{marginRight: 15}}><strong>{posts.length + textPosts.length}</strong> Posts</span> 
+              <span style={{marginRight: 15}}><strong>{followers}</strong> Followers</span> 
+              <span style={{marginRight: 15}}><strong>{following}</strong> Following</span> 
             </p>
             <p>{bio}</p>
           </div>
@@ -284,7 +294,6 @@ const Profile = () => {
             <button onClick={saveProfile}>Save</button>
             <button onClick={cancelEdit} style={{marginLeft: "8px"}}>Cancel</button>
           </div>
-
         </div>
       )}
     </section>
@@ -311,7 +320,9 @@ const Profile = () => {
         {selectedPost && ( /* FIX THIS PART TO SHOW ALL THE IMAGES IN THE ARRAY */
         <div className={styles.popupOverlay} onClick={() => setSelectedPost(null)}> 
           <div className={styles.popupContent} onClick={e => e.stopPropagation()}>
-            <img src={selectedPost.images[0]} alt={selectedPost.body} style={{width: '100%', borderRadius: '8px'}} />
+            <div className={styles.imageWrapper}>
+              <img src={selectedPost.images[0]} alt={selectedPost.body} style={{width: '100%', borderRadius: '8px'}} />
+            </div>
             <div className={styles.popupRightSide}> 
               <div className={styles.mainComment}>
                 <p>{selectedPost.body}</p> 

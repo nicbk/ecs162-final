@@ -6,20 +6,38 @@
 
 section button{
   display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  padding: 10px 15px 10px 15px;
-  background-color: var(--inverse-background);
-  color: var(--background);
-  border-radius: 1000px;
+  background: #3a3a3a;                
+  color: #fafafa;                     
+  border: 1px solid #363636;          
+  border-radius: 8px;                
+  padding: 4px 8px;                  
   cursor: pointer;
+  transition: background 0.15s, border 0.15s;
+  outline: none;
 }
 
-// section button:hover {
-//   background: linear-gradient(90deg, #000000, #000000);
-//   // box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-// }
+section button:hover {
+  transform: scale(0.96);
+}
+
+section button:active {
+  transform: scale(1);
+}
+
+.likeCount{
+  margin-right: 8px; 
+  align-items:'flex-end';
+  font-size: .8rem;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+}
+
+.replyLink{
+  margin-left: 6px;
+    &:hover {
+      cursor: pointer;
+      text-decoration: underline;;
+  }
+}
 
 .galleryGrid {
   display: grid;
@@ -85,34 +103,60 @@ $themes: (
   background: var(--background);
   border-radius: 12px;
   padding: 24px;
-  max-width: 51%;
-  width: 100%;
+  max-width: 60vw;
+  max-height: 80vh;
+  width: fit-content;
   text-align: left;
+  box-sizing: border-box;
+}
+
+.popupContent > * {
+  outline: 1px dashed red;
+}
+
+.imageWrapper {
+  flex: 0 1 auto;
+  width: 75vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
 
 .popupContent img {
-  object-fit: contain;
+  // height: 100%;
+  width: auto; 
+  object-fit: cover;
+  display: block;
+  // max-height: 120%;
+  // max-width: 120%;
+  aspect-ratio: 1 / 1;
 }
 
-.popupRightSide {
-  display: flex;
-  flex-direction: column;
-}
+// .popupRightSide {
+//   display: flex;
+//   flex-direction: column;
+//   width: 40%;
+// }
 
 .mainComment {
   flex: 0 1 auto;
-  max-height: 40%;
+  max-height: 20%;
   font-weight: bold;
+  overflow-y: auto;
+  // max-width: 40%
 }
 
 .commentsSection {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   overflow-y: auto;
   background: #a1a1a1;
   border-radius: 6px;
   padding: 8px;
+  // max-width: 0%;
   margin-bottom: 8px;
   min-height: 45%;
+  max-height: 60%;
 }
 
 .commentItem {
