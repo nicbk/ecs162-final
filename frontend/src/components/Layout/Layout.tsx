@@ -1,10 +1,12 @@
 //this is where the layout will be and including the header and any nvaigation bars please keep it simple and clean
-import { useNavigate, Outlet } from 'react-router-dom'
+import { useNavigate, Outlet, useLocation } from 'react-router-dom'
 import styles from './Layout.module.scss'
 import { useState, useEffect } from 'react';
 
 export default function Layout() {
   const navigate = useNavigate()
+  const location = useLocation();
+
   // added theme toggle functionality but we will make it more optimized later for this is good enough 
   const [theme, setTheme] = useState<'light'|'dark'>(() => (localStorage.getItem('theme') as 'light'|'dark') || 'light');
   useEffect(() => {
@@ -19,21 +21,23 @@ export default function Layout() {
       <header className={styles.navigation}>
         <div className={styles.logo}>
           <h2>Foodie</h2>
+          <button className={styles.theme} onClick={toggleTheme}>
+            {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+          </button>
         </div>
-        <nav className={styles.navbar}>
-            <button className={styles.navButton} onClick={toggleTheme}>
-              {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-            </button>
-            <button className={styles.navButton} onClick={() => navigate('/Home')}> Home</button>
-            {/* added profile for now in navigation bar but we have to change to avatar icon after */}
-            <button className={styles.navButton} onClick={() => navigate('/Profile')}> Profile</button>
-        </nav>
-      </header>
 
+        <div className={styles.naviButtons}>
+          {location.pathname === '/Profile' ? (
+            <button className={styles.Home} onClick={() => navigate('/Home')}>Home</button>
+          ) : (
+            <button className={styles.profile} onClick={() => navigate('/Profile')}>Profile</button>
+          )}
+        </div>
+      </header>
+      
       <main className={styles.main}>
         <Outlet />
       </main>
-
     </div>
   )
 }
