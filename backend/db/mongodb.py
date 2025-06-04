@@ -63,7 +63,8 @@ class MongoDBInterface():
                 'oauthId': oauth_id,
                 'bio': '',
                 'profileImage': None,
-                'wishList': []
+                'wishList': [],
+                'likedPosts': [],
             })
 
     def get_user_by_username(self, username: str):
@@ -137,7 +138,7 @@ class MongoDBInterface():
             })
             return comment_id
 
-    def add_comment_like(self, comment_id: str):
+    def add_comment_like(self, comment_id: str, user_id: str):
         '''Add a like to a comment'''
         with self.transaction_wrapper(self.mongo) as session:
             # Increment the like count for the comment
@@ -146,13 +147,23 @@ class MongoDBInterface():
                 {'$inc': {'likes': 1}}
             )
 
-    def remove_comment_like(self, comment_id: str):
+            self.users.update_one(
+                {'oauthId': user_id},
+                {'$addToSet': {'likedPosts': comment_id}}
+            )
+
+    def remove_comment_like(self, comment_id: str, user_id: str):
         '''Remove a like from a comment'''
         with self.transaction_wrapper(self.mongo) as session:
             # Decrement the like count for the comment
             self.comments.update_one(
                 {'id': comment_id},
                 {'$inc': {'likes': -1}}
+            )
+
+            self.users.update_one(
+                {'oauthId': user_id},
+                {'$pull': {'likedPosts': comment_id}}
             )
 
     def delete_comment_by_id(self, comment_id: str):

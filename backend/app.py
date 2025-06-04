@@ -235,14 +235,24 @@ def deleteComment(comment_id):
 # Add a like to a specified comment
 @app.route('/api/v1/comment/<string:comment_id>/add_like', methods=['POST'])
 def addLikeToComment(comment_id):
-    mongo_instance.add_comment_like(comment_id)
+    user_jwt = session.get('user')
+    if not user_jwt:
+        return jsonify({'error': 'User must be authenticated to add likes'}), 401
+    user_id = user_jwt['sub']
+
+    mongo_instance.add_comment_like(comment_id, user_id)
     return jsonify({'status': 'added like to comment'})
 
 
 # Remove a like from a specified comment
 @app.route('/api/v1/comment/<string:comment_id>/remove_like', methods=['POST'])
 def removeLikeFromComment(comment_id):
-    mongo_instance.remove_comment_like(comment_id)
+    user_jwt = session.get('user')
+    if not user_jwt:
+        return jsonify({'error': 'User must be authenticated to remove likes'}), 401
+    user_id = user_jwt['sub']
+
+    mongo_instance.remove_comment_like(comment_id, user_id)
     return jsonify({'status': 'removed like from comment'})
 
 ################# user routes #################
