@@ -196,8 +196,6 @@ class MongoDBInterface():
             return Comment(**comment)
         
     def get_all_comments_on_parent(self, parent_id: str, is_root_call = True) -> list[Comment]:
-
-    def get_all_comments_on_parent(self, parent_id: str) -> list[Comment]:
         '''
         Get all comments made on a restaurant or comment by all users.
         Returns a list of Comment objects with replies included.
