@@ -81,6 +81,8 @@ class MongoDBInterface():
                 "bio": user.get('bio', ''),
                 "profileImage": user.get('profileImage', None),
                 "comments": list(self.comments.find({'creatorId': oauthId})),
+                "wishList": user.get('wishList', []),
+                "likedPosts": user.get('likedPosts', []),
             }
 
     def update_user_bio(self, user_id: str, bio: str):
@@ -103,6 +105,24 @@ class MongoDBInterface():
                 {'id': user_id},
                 {'$set': {'profileImage': image_data}}
             )
+
+    def get_user_by_oauth_id(self, oauth_id: str):
+        '''Get a user by their OAuth ID.'''
+        with self.transaction_wrapper(self.mongo) as session:
+            # Find the user in the database
+            user = self.users.find_one({'oauthId': oauth_id})
+            if user is None:
+                raise Exception('User not found')
+            return {
+                "username": user.get('username', ''),
+                "email": user.get('email', ''),
+                "bio": user.get('bio', ''),
+                "profileImage": user.get('profileImage', None),
+                "comments": list(self.comments.find({'creatorId': oauth_id})),
+                "wishList": user.get('wishList', []),
+                "likedPosts": user.get('likedPosts', []),
+            }
+        
 
     ### Comments Collection Methods ###
     ###################################

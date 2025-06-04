@@ -292,26 +292,17 @@ def updateUserProfileImage(username):
     mongo_instance.update_user_profile_image(username, profileImage)
     return jsonify({'status': 'Profile image updated successfully'}), 200
 
-# kind of the same as getUserByUsername?
+# Gets Current Logged In User Information
 @app.route('/api/v1/authed-user', methods=['GET'])
 def getUserInformation():
     user_jwt = session.get('user')
     if not user_jwt:
         return jsonify({'error': 'User not logged in'}), 401
-
     user_id = user_jwt['sub']
 
-    user_name = user_jwt.get('name')
-    bio, profile_image, comments = mongo_instance.get_user_by_username(user_name)
+    user_data = mongo_instance.get_user_by_oauth_id(user_id)
 
-    result = {
-        user_name: user_name,
-        bio: bio,
-        profile_image: profile_image,
-        comments: comments
-    }
-
-    return jsonify(result), 200
+    return jsonify(user_data), 200
 
 
 # To run app
