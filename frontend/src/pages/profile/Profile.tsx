@@ -264,6 +264,19 @@ const Profile = () => {
     );
   }
 
+  function windowWidth() {
+    const [width, setWidth] = useState(window.innerWidth);
+    useEffect(() => {
+      const handleResize = () => setWidth(window.innerWidth);
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }, []);
+    return width;
+}
+  const width = windowWidth();
+  const full = width >= 1200;
+  const tablet = width < 1200 && width >= 768;
+  const mobile = width < 768;
   return (
     <div>
     {/* user info */}
@@ -320,17 +333,23 @@ const Profile = () => {
         {selectedPost && ( /* FIX THIS PART TO SHOW ALL THE IMAGES IN THE ARRAY */
         <div className={styles.popupOverlay} onClick={() => setSelectedPost(null)}> 
           <div className={styles.popupContent} onClick={e => e.stopPropagation()}>
-            <div className={styles.imageWrapper}>
-              <img src={selectedPost.images[0]} alt={selectedPost.body} style={{width: '100%', borderRadius: '8px'}} />
-            </div>
-            <div className={styles.popupRightSide}> 
-              <div className={styles.mainComment}>
-                <p>{selectedPost.body}</p> 
+            {/* <div className={styles.popupleftSide}> */}
+              <div className={styles.imageWrapper}>
+                <img src={selectedPost.images[0]} alt={selectedPost.body} style={{width: '100%', borderRadius: '8px'}} />
+                {(tablet || mobile) && (<div className={styles.mainComment}>
+                  <p>{selectedPost.body}</p>
+                </div>)}
               </div>
+            {/* </div> */}
+            <div className={styles.popupRightSide}> 
+              {full && (
+                <div className={styles.mainComment}>
+                  <p>{selectedPost.body}</p> 
+                </div>)}
               <div className={styles.commentsSection}> 
                 <ReplyList replies={selectedPost.replies}/>
               </div>
-              <div className={styles.commentInfo}>         
+              <div className={styles.commentInfo}>
                 <p>Likes: {selectedPost.likes} | Comments: {countReplies(selectedPost)} {/* should be total tree size */}</p>
                 <div style={{display: 'flex', flexDirection: 'row'}}> 
                   <button onClick={() => { deletePost(selectedPost.id); setSelectedPost(null); }}>Delete Post</button>
@@ -349,7 +368,7 @@ const Profile = () => {
               <p>{post.creator_id} on {post.date}</p>
               <p>{post.body}</p>
               <div style={{paddingLeft: 8}}>
-                <ReplyList replies={post.replies} />
+                <ReplyList replies={post.replies}/>
               </div>
             </div>
           ))

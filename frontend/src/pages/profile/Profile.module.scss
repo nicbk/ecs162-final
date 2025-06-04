@@ -103,24 +103,31 @@ $themes: (
   background: var(--background);
   border-radius: 12px;
   padding: 24px;
-  max-width: 60vw;
-  max-height: 80vh;
-  width: fit-content;
+  // max-width: 60vw;
+  // max-height: 80vh;
+  // width: fit-content;
   text-align: left;
   box-sizing: border-box;
+  width: clamp(400px, 80vw, 1200px); //min, ideal, max
+  height: clamp(300px, 80vh, 1800px);
 }
 
 .popupContent > * {
   outline: 1px dashed red;
 }
+.popupRightSide > *{
+  outline: 1px dashed blue;
+}
 
 .imageWrapper {
   flex: 0 1 auto;
-  width: 75vw;
+  width: 100vw;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
+  outline: 1px dashed green;
 }
 
 .popupContent img {
@@ -133,14 +140,16 @@ $themes: (
   aspect-ratio: 1 / 1;
 }
 
-// .popupRightSide {
-//   display: flex;
-//   flex-direction: column;
-//   width: 40%;
-// }
+.popupRightSide {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  height: 100%;
+}
 
 .mainComment {
   flex: 0 1 auto;
+  // min-height: 20%;
   max-height: 20%;
   font-weight: bold;
   overflow-y: auto;
@@ -148,15 +157,15 @@ $themes: (
 }
 
 .commentsSection {
-  flex: 0 1 auto;
+  flex: 1;
   overflow-y: auto;
   background: #a1a1a1;
   border-radius: 6px;
   padding: 8px;
   // max-width: 0%;
   margin-bottom: 8px;
-  min-height: 45%;
-  max-height: 60%;
+  min-height: 60%;
+  // max-height: 80%;
 }
 
 .commentItem {
@@ -164,12 +173,87 @@ $themes: (
 }
 
 .commentInfo {
-  flex: 0 0 15%;
-  margin-top: auto;
+  justify-content: flex-end;
+  // flex: 0 0 15%;
+  // margin-top: auto;
 }
 
 .popupButtons {
+  overflow-y: auto;
   margin-top: 8px;
   display: flex;
   gap: 8px;
+}
+
+@media (min-width: 724px) and (max-width: 1200px) {
+  .galleryGrid {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 80vw;
+  }
+  .popupContent {
+    flex-direction: row;
+    width: 90vw;
+    height: auto;
+    max-height: 90vh;
+    padding: 16px;
+
+    .imageWrapper {
+      width: 100%;
+      height: auto;
+      margin-bottom: 16px;
+      align-items: flex-start;
+        .mainComment {
+          max-height: none;
+      }
+    }
+
+    .popupRightSide {
+      width: 100%;
+      height: auto;
+    }
+  }
+  .popupContent img {
+    width: 100%;
+    height: auto;
+  }
+
+  section button {
+    padding: 8px 12px;
+  }
+}
+
+@media(max-width: 723px) {
+  .galleryGrid {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 80vw;
+  }
+  .popupContent {
+    flex-direction: column;
+    width: 80vw;
+    height: auto;
+    max-height: 90vh;
+    padding: 16px;
+    overflow-y: auto;
+
+    .imageWrapper {
+      width: 100%;
+      height: auto;
+      margin-bottom: 16px;
+      align-items: center;
+        .mainComment {
+          max-height: none;
+      }
+    }
+    .imageWrapper img{
+      display: none;
+    }
+  .popupContent img {
+    display: none;
+  }
+
+    .popupRightSide {
+      width: 100%;
+      height: auto;
+    }
+  }
 }
