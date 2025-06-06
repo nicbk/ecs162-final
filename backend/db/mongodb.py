@@ -161,30 +161,34 @@ class MongoDBInterface():
     def add_comment_like(self, comment_id: str, user_id: str):
         '''Add a like to a comment'''
         with self.transaction_wrapper(self.mongo) as session:
-            # Increment the like count for the comment
-            self.comments.update_one(
-                {'id': comment_id},
-                {'$inc': {'likes': 1}}
-            )
-
-            self.users.update_one(
-                {'oauthId': user_id},
-                {'$addToSet': {'likedPosts': comment_id}}
-            )
+            # Only add like if user hasn't already liked the comment
+            user = self.users.find_one({'oauthId': user_id, 'likedPosts': comment_id})
+            if user is None:
+                self.comments.update_one(
+                    {'id': comment_id},
+                    {'$inc': {'likes': 1}}
+                )
+                self.users.update_one(
+                    {'oauthId': user_id},
+                    {'$addToSet': {'likedPosts': comment_id}}
+                )
 
     def remove_comment_like(self, comment_id: str, user_id: str):
         '''Remove a like from a comment'''
         with self.transaction_wrapper(self.mongo) as session:
-            # Decrement the like count for the comment
-            self.comments.update_one(
-                {'id': comment_id},
-                {'$inc': {'likes': -1}}
-            )
+            # Only remove like if user has already liked the comment
+            user = self.users.find_one({'oauthId': user_id, 'likedPosts': comment_id})
+            if user is not None:
+                # Remove the like from the comment and user
+                self.comments.update_one(
+                    {'id': comment_id},
+                    {'$inc': {'likes': -1}}
+                )
 
-            self.users.update_one(
-                {'oauthId': user_id},
-                {'$pull': {'likedPosts': comment_id}}
-            )
+                self.users.update_one(
+                    {'oauthId': user_id},
+                    {'$pull': {'likedPosts': comment_id}}
+                )
 
     def delete_comment_by_id(self, comment_id: str):
         '''
