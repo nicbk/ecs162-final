@@ -234,7 +234,7 @@ const Profile = () => {
             <div style={{marginBottom:4, display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
               <span><strong>{reply.creator_id}</strong> on {reply.date}</span>
               <span style={{marginLeft: 'auto', display: 'flex', alignItems: 'center'}}>
-                <span><button style={{marginRight:8, alignItems:'flex-end'}} onClick={() => fetch(`/api/v1/comment/${reply.id}/add_like`)}>♡</button></span>
+                
               </span>
             </div>
             <div style={{marginLeft:8}}>
@@ -247,16 +247,24 @@ const Profile = () => {
                 />
               ))}
             </div>
-            <div style={{marginLeft:8, paddingBottom:4, display: 'flex', flexDirection: 'column'}}>
+            <div style={{marginLeft:8, display: 'flex', flexDirection: 'column'}}>
               {reply.body}
               <strong>
                 <span className={styles.likeCount}>
-                  {reply.likes} likes 
-                  <a className={styles.replyLink} onClick={() => fetch(`/api/v1/comment/${reply.id}/??????`)}>Reply</a> {/* need endpoint for replying to a comment */}
+                  <button className={styles.likeButton} onClick={() => fetch(`/api/v1/comment/${reply.id}/add_like`)}>♡</button>
+                <span style={{marginLeft: 6, marginTop: 5}}>
+                    {reply.likes} likes 
+                    <a className={styles.replyLink} onClick={() => fetch(`/api/v1/comment/${reply.id}/??????`)}>Reply</a> {/* need endpoint for replying to a comment */}
+                  </span>
                 </span>
               </strong>
             </div>
-            {reply.replies.length > 0 && <button style={{marginBottom:10}} onClick={() => { fetch(`/api/v1/comment/${reply.id}/??????`) }}>See more replies ({reply.replies.length})</button>}
+            {reply.replies.length > 0 && (
+              <div className={styles.moreReplies} onClick={() => fetch(`/api/v1/comment/${reply.id}/??????`)}>
+                <span style={{marginTop:8, marginRight:15}} className={styles.line}></span>
+                <span>See more replies ({reply.replies.length})</span>
+              </div>
+            )}
             {/*eventually need endpoint for restaurant page that we will get redirected to + issue: we lose the comment we were tracking*/}
           </div>
         ))}
@@ -285,7 +293,7 @@ const Profile = () => {
         <img src={defaultAvatar} alt="Profile picture" width={100} height={100} style={{marginRight: 20}}/>
         <div style={{display: 'flex', flexDirection: 'column'}}>
           <div style={{display: 'flex', flexDirection: 'row', alignItems: 'flex-start', height: 'fit-content'}}>
-            <h2 style={{marginRight: 10, alignSelf: 'center', marginBottom: 0, marginTop: 0, height:'fit-content'}}>{username}</h2>
+            <strong><h2 style={{marginRight: 10, alignSelf: 'center', marginBottom: 0, marginTop: 0, height:'fit-content'}}>{username}</h2></strong>
             <button onClick={editProfile} style={{alignSelf: 'center', marginRight: 10}}>Edit Profile</button>
             <button style={{alignSelf: 'center'}} onClick={() => setFavoritesOpen(true)}>Favorites</button>
           </div>
@@ -365,7 +373,7 @@ const Profile = () => {
         {textPosts.length > 0 ? (
           textPosts.map(post => (
             <div key={post.id} className={styles.textPost}>
-              <p>{post.creator_id} on {post.date}</p>
+              <p>You commented on {post.date}:</p>
               <p>{post.body}</p>
               <div style={{paddingLeft: 8}}>
                 <ReplyList replies={post.replies}/>
@@ -396,3 +404,8 @@ const Profile = () => {
 
 export default Profile;
 
+//NEED:
+// - reply endpoint
+// - delete endpoint
+// - like endpoint
+// - list of liked comments (so we know whether the heart should be filled or not)

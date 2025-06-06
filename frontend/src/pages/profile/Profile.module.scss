@@ -25,17 +25,48 @@ section button:active {
 }
 
 .likeCount{
+  display: flex;
+  flex-direction: row;
   margin-right: 8px; 
   align-items:'flex-end';
   font-size: .8rem;
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
 }
 
+.likeButton{
+  display: flex;
+  background: none;      
+  font-size: 1.1rem;          
+  color: #363636;                     
+  border: none;          
+  border-radius: none;                
+  padding: 0px 0px ;                  
+  cursor: pointer;
+  transition: background 0.15s, border 0.15s;
+  outline: none;
+}
+
 .replyLink{
   margin-left: 6px;
     &:hover {
       cursor: pointer;
-      text-decoration: underline;;
+      text-decoration: underline;
+  }
+}
+
+.moreReplies{
+  display: flex;
+  font-size: .9rem;
+  padding-bottom: 12px;
+  &:hover {
+      cursor: pointer;
+      text-decoration: underline;
+  }
+  .line {
+    flex-grow: .08;
+    height: 1.5px;
+    background-color: #363636;
+    margin: 0 8px;
   }
 }
 
@@ -187,7 +218,7 @@ $themes: (
 
 @media (min-width: 724px) and (max-width: 1200px) {
   .galleryGrid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     max-width: 80vw;
   }
   .popupContent {

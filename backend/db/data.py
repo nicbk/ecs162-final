@@ -2,31 +2,35 @@
 #  in order to implement backend data structures for data access.
 from typing import NamedTuple
 
-# A resource is either an article or a comment.
-# In both cases, either resource contains a list of reply comments
-class Resource(NamedTuple):
-    resource_id: str
-    # Forward declaration of type hints https://stackoverflow.com/questions/55320236/does-python-evaluate-type-hinting-of-a-forward-reference
-    comments: list['Comment']
-
 class User(NamedTuple):
     username: str
     email: str
-    oauth_id: str
-    # wish_list: list[str] # List of image IDs, optional
+    oauthId: str
+    profileImage: str
+    bio: str
+    wishList: list[str]
 
 class Image(NamedTuple):
     id: str
     data: str
 
 class Comment(NamedTuple):
-    parent_id: str
+    parentId: str
     id: str
-    creator_id: str
-    images: list[str] # List of image IDs
+    creatorId: str
+    rating: float
+    images: list[str]
     body: str
-    likes: int
+    likes: set[str]
     deleted: bool
     date: str
     replies: list['Comment']  # List of reply comments
 
+# /api/v1/authed-user
+# If logged in:
+# {
+# username: string
+# bio: string
+# profileImage: base64 encoded data URL
+# comments: [list of comment IDs]
+# }

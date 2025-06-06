@@ -9,7 +9,8 @@ from bson import Binary, UuidRepresentation
 from uuid import uuid4
 from pymongo import MongoClient
 from contextlib import contextmanager
-from db.interface import DBInterface
+# db.data didnt work for me - Andrew
+# from db.data import Resource, Comment
 from db.data import Resource, Comment
 from datetime import datetime, timezone
 
@@ -44,15 +45,6 @@ class MongoDBInterface():
 
     ### Users Collection Methods ###
     ################################
-    def update_user_bio(self, user_id: str, bio: str):
-        '''Update the bio of a user'''
-        with self.transaction_wrapper(self.mongo) as session:
-            # Update the user's bio in the database
-            self.users.update_one(
-                {'id': user_id},
-                {'$set': {'bio': bio}}
-            )
-
     def add_new_user(self, username: str, email: str, oauth_id: str):
         '''
         Add a new user to the database.
@@ -68,15 +60,74 @@ class MongoDBInterface():
             self.users.insert_one({
                 'username': username,
                 'email': email,
-                'oauth_id': oauth_id,
+                'oauthId': oauth_id,
                 'bio': '',
-                'wish_list': []
+                'profileImage': None,
+                'wishList': [],
+                'likedPosts': [],
             })
+
+    def get_user_by_username(self, username: str):
+        ''' Get a user by their username.'''
+        with self.transaction_wrapper(self.mongo) as session:
+            # Find the user in the database
+            user = self.users.find_one({'username': username})
+            if user is None:
+                raise Exception('User not found')
+
+            oauthId = user.get('oauthId', None)
+
+            return {
+                "bio": user.get('bio', ''),
+                "profileImage": user.get('profileImage', None),
+                "comments": list(self.comments.find({'creatorId': oauthId})),
+                "wishList": user.get('wishList', []),
+                "likedPosts": user.get('likedPosts', []),
+            }
+
+    def update_user_bio(self, user_id: str, bio: str):
+        '''Update the bio of a user'''
+        with self.transaction_wrapper(self.mongo) as session:
+            # Update the user's bio in the database
+            self.users.update_one(
+                {'id': user_id},
+                {'$set': {'bio': bio}}
+            )
+
+    def update_user_profile_image(self, user_id: str, image_data: str):
+        '''
+        Update the profile image of a user.
+        '''
+
+        with self.transaction_wrapper(self.mongo) as session:
+            # Update the user's profile image in the database
+            self.users.update_one(
+                {'id': user_id},
+                {'$set': {'profileImage': image_data}}
+            )
+
+    def get_user_by_oauth_id(self, oauth_id: str):
+        '''Get a user by their OAuth ID.'''
+        with self.transaction_wrapper(self.mongo) as session:
+            # Find the user in the database
+            user = self.users.find_one({'oauthId': oauth_id})
+            if user is None:
+                raise Exception('User not found')
+            return {
+                "username": user.get('username', ''),
+                "email": user.get('email', ''),
+                "bio": user.get('bio', ''),
+                "profileImage": user.get('profileImage', None),
+                "comments": list(self.comments.find({'creatorId': oauth_id})),
+                "wishList": user.get('wishList', []),
+                "likedPosts": user.get('likedPosts', []),
+            }
+        
 
     ### Comments Collection Methods ###
     ###################################
 
-    def post_user_comment(self, parent_id: str, user_id: str, body: str, images: list[str]) -> str:
+    def post_user_comment(self, parent_id: str, user_id: str, body: str, rating: float, images: list[str]) -> str:
         '''
         Post a comment made by a user on a restaurant or another comment.
 
@@ -96,9 +147,10 @@ class MongoDBInterface():
 
             # Insert the comment into the database
             self.comments.insert_one({
-                'parent_id': parent_id,
+                'parentId': parent_id,
                 'id': comment_id,
-                'creator_id': user_id,
+                'creatorId': user_id,
+                'rating': rating,
                 'images': images,
                 'body': body,
                 'likes': 0,
@@ -107,7 +159,7 @@ class MongoDBInterface():
             })
             return comment_id
 
-    def add_comment_like(self, comment_id: str):
+    def add_comment_like(self, comment_id: str, user_id: str):
         '''Add a like to a comment'''
         with self.transaction_wrapper(self.mongo) as session:
             # Increment the like count for the comment
@@ -116,13 +168,23 @@ class MongoDBInterface():
                 {'$inc': {'likes': 1}}
             )
 
-    def remove_comment_like(self, comment_id: str):
+            self.users.update_one(
+                {'oauthId': user_id},
+                {'$addToSet': {'likedPosts': comment_id}}
+            )
+
+    def remove_comment_like(self, comment_id: str, user_id: str):
         '''Remove a like from a comment'''
         with self.transaction_wrapper(self.mongo) as session:
             # Decrement the like count for the comment
             self.comments.update_one(
                 {'id': comment_id},
                 {'$inc': {'likes': -1}}
+            )
+
+            self.users.update_one(
+                {'oauthId': user_id},
+                {'$pull': {'likedPosts': comment_id}}
             )
 
     def delete_comment_by_id(self, comment_id: str):
@@ -138,7 +200,7 @@ class MongoDBInterface():
 
             # Remove images associated with the comment
             for image_id in comment['images']:
-                self.images.delete_one({'image_id': image_id})
+                self.images.delete_one({'imageId': image_id})
 
             # Mark the comment as deleted
             self.comments.update_one(
@@ -149,9 +211,9 @@ class MongoDBInterface():
     def get_comments_on_parent(self, parent_id: str):
         '''Get all comments made on a restaurant or comment by all users'''
         with self.transaction_wrapper(self.mongo) as session:
-            comments = list(self.comments.find({'parent_id': parent_id}).sort('date', 1))
+            comments = list(self.comments.find({'parentId': parent_id}).sort('date', 1))
             return comments
-        
+
     def get_comment_by_id(self, comment_id: str) -> Comment:
         '''
         Get a comments and its replies by its ID.
@@ -160,9 +222,9 @@ class MongoDBInterface():
             comment = self.comments.find_one({'id': comment_id})
             if comment is None:
                 raise Exception('Comment not found')
-            
+
             comment['replies'] = self.get_all_comments_on_parent(comment_id)
-            
+
             return Comment(**comment)
         
     def get_all_comments_on_parent(self, parent_id: str, is_root_call = True) -> list[Comment]:
@@ -188,7 +250,7 @@ class MongoDBInterface():
 
             # Insert the image into the database
             self.images.insert_one({
-                'image_id': image_id,
+                'imageId': image_id,
                 'data': Binary(image.encode('utf-8'), UuidRepresentation.STANDARD)
             })
             return image_id
@@ -197,7 +259,7 @@ class MongoDBInterface():
         '''Get an image from the database by its ID'''
         with self.transaction_wrapper(self.mongo) as session:
             # Find the image in the database
-            image = self.images.find_one({'image_id': image_id})
+            image = self.images.find_one({'imageId': image_id})
             if image is None:
                 raise Exception('Image not found')
             return image['data'].decode('utf-8')
@@ -206,9 +268,9 @@ class MongoDBInterface():
         '''Delete an image from the database by its ID'''
         with self.transaction_wrapper(self.mongo) as session:
             # Check if the image exists
-            image = self.images.find_one({'image_id': image_id})
+            image = self.images.find_one({'imageId': image_id})
             if image is None:
                 raise Exception('Image not found')
 
             # Delete the image from the database
-            self.images.delete_one({'image_id': image_id})
+            self.images.delete_one({'imageId': image_id})
