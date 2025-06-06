@@ -14,7 +14,7 @@ export const mockResturantsData: Restaurant[] = [
         address: "234 Davis St",
         images: [bonappetit],
         googleMapsUrl: "google.com/maps/In-N-Out",
-       },
+    },
     {
         restaurantId: '2',
         restaurantTitle: "MAC Burger",
@@ -39,7 +39,7 @@ export const mockPublish: Comment [] = [
         id: '234',
         username: "ayub",
         body: "this is a comment",
-        images: ["data:image/jpeg;base64,sdifjaijew", "data:image/jpeg;base64,aifwjwjefijawef"],
+        images: ["https://www.foodiesfeed.com/wp-content/uploads/2023/06/burger-with-melted-cheese.jpg", "https://www.foodiesfeed.com/wp-content/uploads/2023/03/bacon-cheeseburger-close-up.jpg"],
         likes: 15,
         deleted: false,
         replies: [
@@ -52,13 +52,14 @@ export const mockPublish: Comment [] = [
                 deleted: false,
                 replies: []
             }
-        ]
+        ],
+        restaurantId: '1'
     },
         {
         id: '222222',
         username: "sam",
         body: "food was good",
-        images: ["data:image/jpeg;base64,jjfgtr", "data:image/jpeg;base64,hgffg"],
+        images: ["https://www.foodiesfeed.com/wp-content/uploads/2023/05/avocado-bacon-bagel.jpg", "https://media.istockphoto.com/id/1699248018/photo/bagel-toast-with-avocado-and-guacamole.jpg?s=2048x2048&w=is&k=20&c=1SGjXICCVT6nuvGnNRJsKClGqk04orK_mN7F58AaKyg="],
         likes: 1,
         deleted: false,
         replies: [
@@ -71,7 +72,87 @@ export const mockPublish: Comment [] = [
                 deleted: false,
                 replies: []
             }
-        ]
+        ],
+        restaurantId: '1',
     },
-
+        {
+        id: '546457',
+        username: "tim",
+        body: "this is a comment",
+        images: ["https://www.foodiesfeed.com/wp-content/uploads/2023/06/burger-with-melted-cheese.jpg", "https://www.foodiesfeed.com/wp-content/uploads/2023/03/bacon-cheeseburger-close-up.jpg"],
+        likes: 15,
+        deleted: false,
+        replies: [
+            {
+                id: '2234341',
+                username: "john",
+                body: "I am a reply",
+                images: ["data:image/jpeg;base64,sdifjaijew", "data:image/jpeg;base64,aifwjwjefijawef"],
+                likes: 2,
+                deleted: false,
+                replies: []
+            }
+        ],
+        restaurantId: '1'
+    },
+        {
+        id: '6454545454',
+        username: "matt",
+        body: "food was good",
+        images: [],
+        likes: 11,
+        deleted: false,
+        replies: [
+            {
+                id: '2234341',
+                username: "john",
+                body: "lies this is a lie, it was bad",
+                images: ["data:image/jpeg;base64,drtfdghfghd", "data:image/jpeg;base64,fghhgf"],
+                likes: 13,
+                deleted: false,
+                replies: []
+            }
+        ],
+        restaurantId: '1',
+    },
+        {
+        id: '23452',
+        username: "forest",
+        body: "food was good",
+        images: ["https://www.foodiesfeed.com/wp-content/uploads/2023/05/avocado-bacon-bagel.jpg", "https://media.istockphoto.com/id/1699248018/photo/bagel-toast-with-avocado-and-guacamole.jpg?s=2048x2048&w=is&k=20&c=1SGjXICCVT6nuvGnNRJsKClGqk04orK_mN7F58AaKyg="],
+        likes: 1,
+        deleted: false,
+        replies: [
+            {
+                id: '2234341',
+                username: "john",
+                body: "lies this is a lie, it was bad",
+                images: ["data:image/jpeg;base64,drtfdghfghd", "data:image/jpeg;base64,fghhgf"],
+                likes: 13,
+                deleted: false,
+                replies: []
+            }
+        ],
+        restaurantId: '1',
+    },
+            {
+        id: '65476',
+        username: "louis",
+        body: "food was good",
+        images: ["https://www.foodiesfeed.com/wp-content/uploads/2023/05/avocado-bacon-bagel.jpg", "https://media.istockphoto.com/id/1699248018/photo/bagel-toast-with-avocado-and-guacamole.jpg?s=2048x2048&w=is&k=20&c=1SGjXICCVT6nuvGnNRJsKClGqk04orK_mN7F58AaKyg="],
+        likes: 1,
+        deleted: false,
+        replies: [
+            {
+                id: '2234341',
+                username: "john",
+                body: "lies this is a lie, it was bad",
+                images: ["data:image/jpeg;base64,drtfdghfghd", "data:image/jpeg;base64,fghhgf"],
+                likes: 13,
+                deleted: false,
+                replies: []
+            }
+        ],
+        restaurantId: '1',
+    },
 ];
