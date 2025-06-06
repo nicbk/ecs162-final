@@ -8,11 +8,13 @@ import {FaHeart, FaRegComment, FaShareSquare} from "react-icons/fa";
 import { useState, useEffect, useContext } from 'react';
 import { getRestaurantsMock, getCommentsMock } from '../../api_data/client.ts';
 import { GlobalStateContext } from '../../global_state/global_state.ts';
-import { getGpsCoords } from './helpers.ts';
+import { getGpsCoords, useGpsSetter } from './helpers.ts';
 
 export default function Home() {
+  useGpsSetter();
+
   const globalState = useContext(GlobalStateContext);
-  const [userLocation, setUserLocation] = globalState!.userLocationState;
+  const userLocation = globalState!.userLocationState[0];
 
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [comments, setComments] = useState<Comment[]>([])
@@ -22,29 +24,7 @@ export default function Home() {
   const [text, setText] = useState('')
   const [likedCom, setlikedCom] = useState<Record<string, boolean>>({})
 
-  // Set the user GPS coordinates in global state using browser
-  if (!userLocation) {
-    // I learn how to get GPS coordinates from browser from MDN docs: https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API/Using_the_Geolocation_API
-
-    (async () => {
-      try {
-        if ('geolocation' in navigator) {
-          const gpsCoords = await getGpsCoords();
-
-          setUserLocation(gpsCoords);
-        } else {
-          throw new Error('Geolocation not available');
-        }
-      } catch {
-        // Set location to sane default if GPS not available or user denies request.
-        setUserLocation({
-          // Intersection of F and 3rd street in Davis according to Google Maps: https://www.google.com/maps/place/Davis,+CA/@38.5446714,-121.7407222,101m/data=!3m1!1e3!4m6!3m5!1s0x808529999495543f:0xc3013f1b6ee28fff!8m2!3d38.5449065!4d-121.7405167!16zL20vMDJoeXQ!5m1!1e2?entry=ttu&g_ep=EgoyMDI1MDYwMy4wIKXMDSoASAFQAw%3D%3D
-          latitude: 38.544725,
-          longitude: -121.740363
-        });
-      }
-    })();
-  } else {
+  if (userLocation) {
     console.log(userLocation);
   }
 
@@ -62,7 +42,7 @@ export default function Home() {
       }
     }
     loadTheData()}, []
-  )
+  );
 
   const toggleLike = (id: string) =>
     setLiked((prev) => ({ ...prev, [id]: !prev[id] }))
