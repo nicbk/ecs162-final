@@ -23,6 +23,14 @@ async function postAPI<T>(paths: string, body: any = null): Promise<T> {
   return response.json() as T;
 }
 
+async function deleteAPI<T>(paths: string): Promise<T> {
+  const response = await fetch(`${BASE}${paths}`, {
+    method: 'DELETE'
+  });
+
+  return response.json() as T;
+}
+
 ///////////////////////
 // CREATE OPERATIONS //
 ///////////////////////
@@ -67,7 +75,7 @@ export const getRestaurants = async (latitude: number, longitude: number, limit:
  * @returns promise for when data is retrieved from backend
  */
 export const getResourceComments = async (resourceId: string) => {
-  const urlParams = new URLSearchParams({ resourceId });
+  const urlParams = new URLSearchParams({ parent_id: resourceId });
   
   return await fetchAPI<Comment[]>(`comments${urlParams}`);
 }
@@ -134,4 +142,20 @@ export const addLike = async (commentId: string) => {
  */
 export const removeLike = async (commentId: string) => {
   return await postAPI<any>(`comment/${commentId}/remove-like`);
+};
+
+///////////////////////
+// DELETE OPERATIONS //
+///////////////////////
+
+/*
+ * Deletes a comment
+ * NOTE: the comment is not strictly deleted. Instead, a flag in the
+ * backend marks the comment as having been deleted.
+ * But, the comment content is still stored in the backend.
+ * @param commentId ID of comment to delete
+ * @returns does not return anything on success. On error, exception is thrown
+ */
+export const deleteComment = async (commentId: string) => {
+  return await deleteAPI<any>(`comment/${commentId}`);
 };

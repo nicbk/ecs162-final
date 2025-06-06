@@ -6,10 +6,10 @@ from flask_cors import CORS
 import werkzeug
 import requests
 from werkzeug.exceptions import BadRequest
+from google_maps import get_nearby_restaurants
 import json
 from db.mongodb import MongoDBInterface
 import base64
-
 
 static_path = os.getenv('STATIC_PATH','static')
 template_path = os.getenv('TEMPLATE_PATH','templates')
@@ -47,7 +47,6 @@ oauth.register(
 def bad_request_handler(err):
     return str(err), 400
 
-
 # Path to serve frontend resources
 @app.route('/')
 @app.route('/<path:path>')
@@ -56,10 +55,19 @@ def serve_frontend(path=''):
         return send_from_directory(static_path, path)
     return send_from_directory(template_path, 'index.html')
 
-
+##########################
+##########################
 ##########################
 ## API v1 for user info ##
 ##########################
+##########################
+##########################
+
+###############################
+###############################
+## Dex authentication routes ##
+###############################
+###############################
 
 # Path for authentication login redirect
 @app.route('/login')
@@ -97,13 +105,15 @@ def logout():
         return redirect(originUrl)
     return redirect('/')
 
-##########################
+############################
+############################
 ## Restaurant/Comment API ##
-##########################
+############################
+############################
 
-GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
-GOOGLE_PLACES_ENDPOINT = 'https://places.googleapis.com/v1'
-GOOGLE_PLACE_IMAGES_LIMIT = 1
+#####################
+## READ OPERATIONS ##
+#####################
 
 # Get information on restaurants nearby to the requesting user.
 @app.route('/api/v1/restaurants', methods=['GET'])
@@ -134,63 +144,7 @@ def getRestaurantInformation():
     if radius > 50000:
         raise BadRequest('radius must be less than 500000 meters')
 
-    # https://developers.google.com/maps/documentation/places/web-service/nearby-search?apix_params=%7B%22fields%22%3A%22*%22%2C%22resource%22%3A%7B%22includedTypes%22%3A%5B%22restaurant%22%5D%2C%22maxResultCount%22%3A10%2C%22locationRestriction%22%3A%7B%22circle%22%3A%7B%22center%22%3A%7B%22latitude%22%3A37.7937%2C%22longitude%22%3A-122.3965%7D%2C%22radius%22%3A500%7D%7D%7D%7D
-    payload = {
-        'includedTypes': [ 'restaurant' ],
-        'maxResultCount': limit,
-        'locationRestriction': {
-            'circle': {
-                'center': {
-                    'latitude': latitude,
-                    'longitude': longitude
-                },
-                'radius': radius
-            }
-        }
-    }
-
-    # https://stackoverflow.com/questions/8685790/adding-headers-to-requests-module
-    headers = {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': GOOGLE_API_KEY,
-        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.rating,places.googleMapsUri,places.photos'
-    }
-
-    # Retrieve image URI for each image ID in restaurant
-    def get_image(imageId: str):
-        image_req_headers = {
-            'X-Goog-Api-Key': GOOGLE_API_KEY
-        }
-
-        # https://developers.google.com/maps/documentation/places/web-service/reference/rest/v1/places.photos/getMedia
-        url =f'{GOOGLE_PLACES_ENDPOINT}/{imageId}/media'
-        params = [
-            ('max_width_px', '512')
-        ]
-
-        # https://stackoverflow.com/questions/3715493/encoding-an-image-file-with-base64
-        # https://github.com/sendpulse/sendpulse-rest-api-python/issues/7
-        image_response_raw = requests.get(url, params, headers=image_req_headers)
-        encodedImage = base64.b64encode(image_response_raw.text.encode('utf-8')).decode('utf-8')
-        return encodedImage
-
-    google_response = requests.post(f'{GOOGLE_PLACES_ENDPOINT}/places:searchNearby', data=json.dumps(payload), headers=headers)
-    app.logger.warning(google_response.json())
-    # Return empty list if no restaurants found
-    if 'places' not in google_response.json():
-        return jsonify([]), 200
-
-    restaurants_raw = google_response.json()['places']
-    restaurants = list(map(lambda restaurant: {
-        'restaurantId': restaurant['id'],
-        'restaurantTitle': restaurant['displayName']['text'],
-        'rating': restaurant['rating'],
-        'address': restaurant['formattedAddress'],
-        'googleMapsUrl': restaurant['googleMapsUri'],
-        'images': list(map(lambda image_obj: get_image(image_obj['name']), restaurant['photos'][:GOOGLE_PLACE_IMAGES_LIMIT]))
-    }, restaurants_raw))
-
-    return jsonify(restaurants), 200
+    return get_nearby_restaurants(app, latitude, longitude, limit, radius)
 
 #Gets a comment, as well as all nested replies for that comment.
 @app.route('/api/v1/comment/<string:comment_id>', methods=['GET'])
@@ -201,8 +155,7 @@ def getCommentById(comment_id):
 # Gets the tree of comments (comments and replies) for either a restaurant or parent comment
 @app.route('/api/v1/comments', methods=['GET'])
 def getListofComments():
-    data = request.get_json()
-    parent_id = data.get('parent_id', None)
+    parent_id = request.args.get('parent_id')
     if parent_id is None:
         return jsonify({'error': 'parent_id is required'}), 400
 
@@ -215,13 +168,19 @@ def postComment(restaurant_id_or_comment_id):
     data = request.get_json()
     # Parse out the pieces of the json
     comment = data['body']
+    rating = None
+    try:
+        rating = int(data['rating'])
+    except:
+        return jsonify({ 'error': 'Request must have a \'rating\' number field'}), 400
+
     user_jwt = session.get('user')
     if not user_jwt:
         return jsonify({'error': 'User not authenticated'}), 401
     user_id = user_jwt['sub']
     images = data['images']
 
-    mongo_instance.post_user_comment(restaurant_id_or_comment_id, user_id, comment, images)
+    mongo_instance.post_user_comment(restaurant_id_or_comment_id, user_id, comment, rating, images)
 
     return jsonify({'status': 'comment posted'})
 
@@ -297,7 +256,7 @@ def updateUserProfileImage(username):
 def getUserInformation():
     user_jwt = session.get('user')
     if not user_jwt:
-        return jsonify({'error': 'User not logged in'}), 401
+        return jsonify(False), 200
     user_id = user_jwt['sub']
 
     user_data = mongo_instance.get_user_by_oauth_id(user_id)

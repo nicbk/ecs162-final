@@ -127,7 +127,7 @@ class MongoDBInterface():
     ### Comments Collection Methods ###
     ###################################
 
-    def post_user_comment(self, parent_id: str, user_id: str, body: str, images: list[str]) -> str:
+    def post_user_comment(self, parent_id: str, user_id: str, body: str, rating: float, images: list[str]) -> str:
         '''
         Post a comment made by a user on a restaurant or another comment.
 
@@ -150,6 +150,7 @@ class MongoDBInterface():
                 'parentId': parent_id,
                 'id': comment_id,
                 'creatorId': user_id,
+                'rating': rating,
                 'images': images,
                 'body': body,
                 'likes': 0,
