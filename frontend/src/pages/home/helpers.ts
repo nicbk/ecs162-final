@@ -15,7 +15,11 @@ export const getGpsCoords = (): Promise<GPSCoordinates> => {
       reject('Unable to get GPS coordinates');
     }
 
-    navigator.geolocation.getCurrentPosition(onSuccess, onError);
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(onSuccess, onError);
+    } else {
+      reject('GPS coordinates are unavailable');
+    }
   });
 };
 
@@ -29,13 +33,8 @@ export const useGpsSetter = () => {
 
       (async () => {
         try {
-          if ('geolocation' in navigator) {
-            const gpsCoords = await getGpsCoords();
-
-            setUserLocation(gpsCoords);
-          } else {
-            throw new Error('Geolocation not available');
-          }
+          const gpsCoords = await getGpsCoords();
+          setUserLocation(gpsCoords);
         } catch {
           // Set location to sane default if GPS not available or user denies request.
           setUserLocation({
@@ -45,8 +44,6 @@ export const useGpsSetter = () => {
           });
         }
       })();
-    } else {
-      console.log(userLocation);
     }
   }, []);
 }
