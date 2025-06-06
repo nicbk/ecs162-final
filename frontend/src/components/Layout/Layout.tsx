@@ -2,6 +2,7 @@
 import { useNavigate, Outlet, useLocation } from 'react-router-dom'
 import styles from './Layout.module.scss'
 import { useState, useEffect } from 'react';
+import { GlobalStateContext } from '../../global_state/global_state';
 
 export default function Layout() {
   const navigate = useNavigate()
