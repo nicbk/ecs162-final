@@ -21,21 +21,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/v1/auth/user', { credentials: 'include' })
-      .then(res => res.json())
-      .then(userData => setUser(userData))
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
+    // Check if user is already authenticated using your existing endpoint
+    fetch('/api/v1/authed-user', { credentials: 'include' })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(userData => {
+        console.log('Auth response:', userData); // DEBUG LOG
+        // Handle both your existing response format and false/null responses
+        if (userData && userData !== false && userData !== null) {
+          setUser({
+            email: userData.email || '',
+            username: userData.username || userData.preferred_username || 'User',
+            oauth_id: userData.oauthId || userData.sub || 'unknown'
+          });
+        } else {
+          setUser(null);
+        }
+      })
+      .catch((error) => {
+        console.log('Auth check failed:', error);
+        setUser(null);
+      })
+      .finally(() => {
+        console.log('Auth loading finished'); // DEBUG LOG
+        setLoading(false);
+      });
   }, []);
   
   const login = () => {
     const currentUrl = window.location.pathname + window.location.search;
-    window.location.href = `http://localhost:8000/login?originUrl=${encodeURIComponent(currentUrl)}`;
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+    window.location.href = `${backendUrl}/login?originUrl=${encodeURIComponent(currentUrl)}`;
   };
 
-  const logout = async () => {
-    await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'include' });
+  const logout = () => {
+    // Immediately clear local state and redirect - don't wait for backend
     setUser(null);
+    
+    // Fire and forget - try to clear backend session but don't wait
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+    fetch(`${backendUrl}/logout`, { 
+      method: 'GET', 
+      credentials: 'include',
+      mode: 'cors'
+    }).catch(() => {
+      // Ignore any errors - we already logged out locally
+    });
+    
+    // Immediate redirect
     window.location.href = '/';
   };
 
