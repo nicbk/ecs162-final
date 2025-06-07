@@ -259,17 +259,20 @@ def updateUserProfileImage(username):
 
 # Gets Current Logged In User Information
 @app.route('/api/v1/authed-user', methods=['GET'])
+@app.route('/api/v1/authed-user', methods=['GET'])
 def getUserInformation():
     user_jwt = session.get('user')
     if not user_jwt:
         return jsonify(False), 200
     
-    # Fast fallback - return session data immediately
+    #changed 'name' to 'preffered_username' eventually
     user_data = {
-        'username': user_jwt.get('preferred_username', 'User'),
+        'username': user_jwt.get('name', 'User'),
         'email': user_jwt.get('email', ''),
-        'oauthId': user_jwt['sub']
+        'oauthId': user_jwt['sub'],
     }
+    
+    return jsonify(user_data), 200
     
     # TODO: Uncomment when MongoDB is properly configured
     # try:
