@@ -2,11 +2,13 @@
 import { useNavigate, Outlet, useLocation } from 'react-router-dom'
 import styles from './Layout.module.scss'
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import { GlobalStateContext } from '../../global_state/global_state';
 
 export default function Layout() {
   const navigate = useNavigate()
   const location = useLocation();
+  const { user, loading, login, logout } = useAuth(); // ADD THIS LINE
 
   // added theme toggle functionality but we will make it more optimized later for this is good enough 
   const [theme, setTheme] = useState<'light'|'dark'>(() => (localStorage.getItem('theme') as 'light'|'dark') || 'light');
@@ -32,6 +34,17 @@ export default function Layout() {
             <button className={styles.Home} onClick={() => navigate('/Home')}>Home</button>
           ) : (
             <button className={styles.profile} onClick={() => navigate('/Profile')}>Profile</button>
+          )}
+          
+          {loading ? (
+            <span>Loading...</span>
+          ) : user ? (
+            <div className={styles.authSection}>
+              <span>Hi, {user.username}!</span>
+              <button className={styles.logout} onClick={logout}>Logout</button>
+            </div>
+          ) : (
+            <button className={styles.login} onClick={login}>Login</button>
           )}
         </div>
       </header>
