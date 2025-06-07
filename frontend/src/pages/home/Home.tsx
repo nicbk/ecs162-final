@@ -1,12 +1,11 @@
 import styles from './Home.module.scss';
-import { mockResturantsData } from '../../api_data/mock_data';
 import { type Restaurant } from '../../interface_data/index.ts';
-import { mockPublish } from '../../api_data/mock_data';
 import { type Comment } from '../../interface_data/index.ts';
 import mapIcon from '../../assets/map-icon.svg';
 import {FaHeart, FaRegComment, FaShareSquare} from "react-icons/fa";
 import { useState, useEffect } from 'react';
 import { getRestaurants, getComments } from '../../api_data/client.ts';
+import { useNavigate } from 'react-router-dom';
 
 export default function Home() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
@@ -70,7 +69,7 @@ export default function Home() {
   }
 
   const firstLayerForActive = activeRest
-    ? comments.filter((comm) => comm.restaurantId === activeRest.restaurantId)
+    ? comments.filter((comm) => comm.parent_id === activeRest.restaurantId)
     : [];
 
   const handlePostComment = () => {
@@ -84,7 +83,7 @@ export default function Home() {
       likes: 3,
       deleted: false,
       replies: [],
-      restaurantId: activeRest.restaurantId,
+      parent_id: activeRest.restaurantId,
     }
     setComments((prev) => [newComment, ...prev]);
     setText('');
@@ -206,6 +205,7 @@ function CommentingPost({
   setText: (s: string) => void;
   handlePostComment: () => void;
 }) {
+  const navigate = useNavigate();
   return (
     <div>
       <div className={styles.popupModelBody}>
@@ -246,7 +246,7 @@ function CommentingPost({
 
                   <span
                     className={styles.commentIcon}
-                    onClick={() => {/* not yet started on it*/}}
+                    onClick={() => {navigate(`/Threads/${comm.id}`)}}
                     role="button"
                     aria-label="will be threads"
                   >
