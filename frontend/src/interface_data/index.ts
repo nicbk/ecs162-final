@@ -20,7 +20,7 @@ export interface Comment {
     likes: number;
     deleted: boolean;
     replies: Comment[];
-    restaurantId?: string;
+    parent_id?: string;
 }
 
 export interface InputComment {
