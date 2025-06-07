@@ -3,11 +3,18 @@ import { type Restaurant } from '../../interface_data/index.ts';
 import { type Comment } from '../../interface_data/index.ts';
 import mapIcon from '../../assets/map-icon.svg';
 import {FaHeart, FaRegComment, FaShareSquare} from "react-icons/fa";
-import { useState, useEffect } from 'react';
 import { getRestaurants, getComments } from '../../api_data/client.ts';
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useContext } from 'react';
+import { GlobalStateContext } from '../../global_state/global_state.ts';
+import { getGpsCoords, useGpsSetter } from './helpers.ts';
 
 export default function Home() {
+  useGpsSetter();
+
+  const globalState = useContext(GlobalStateContext);
+  const userLocation = globalState!.userLocationState[0];
+
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [comments, setComments] = useState<Comment[]>([])
   const [liked, setLiked] = useState<Record<string, boolean>>({})
@@ -16,10 +23,14 @@ export default function Home() {
   const [text, setText] = useState('')
   const [likedCom, setlikedCom] = useState<Record<string, boolean>>({})
 
+  if (userLocation) {
+    console.log(userLocation);
+  }
+
   useEffect(() => {
     const loadTheData = async () => {
       try {
-        const [restaurantsData, commentsData] = await Promise.all([getRestaurants(), getComments()])
+        const [restaurantsData, commentsData] = await Promise.all([getRestaurantsMock(), getCommentsMock()])
         setRestaurants(restaurantsData)
         console.log('got restaurants:', restaurantsData)
         setComments(commentsData)
@@ -30,7 +41,7 @@ export default function Home() {
       }
     }
     loadTheData()}, []
-  )
+  );
 
   const toggleLike = (id: string) =>
     setLiked((prev) => ({ ...prev, [id]: !prev[id] }))

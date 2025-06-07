@@ -5,3 +5,5 @@ backend/node_modules
 __pycache__/*
 **/__pycache__/*
 backend/__pycache__
+*__pycache__*
+backend/__pycache__

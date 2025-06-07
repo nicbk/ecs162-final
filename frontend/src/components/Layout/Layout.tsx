@@ -4,11 +4,15 @@ import styles from './Layout.module.scss'
 import { useState, useEffect } from 'react';
 import { getComments } from '../../api_data/client.ts'
 import { FaBars, FaTimes } from 'react-icons/fa'
+import { useAuth } from '../../contexts/AuthContext';
+import { GlobalStateContext } from '../../global_state/global_state';
 
 export default function Layout() {
   const navigate = useNavigate()
   const location = useLocation();
   const { commentId } = useParams<{ commentId: string }>()
+  const { user, loading, login, logout } = useAuth(); // ADD THIS LINE
+
   // added theme toggle functionality but we will make it more optimized later for this is good enough 
   const [theme, setTheme] = useState<'light'|'dark'>(() => (localStorage.getItem('theme') as 'light'|'dark') || 'light');
   useEffect(() => {
@@ -82,8 +86,19 @@ export default function Layout() {
             onClick={() => navigate('/Home')}>Home</button>
           <button className={`${styles.profile} ${location.pathname === '/Profile' ? styles.active : ''}`}
             onClick={() => navigate('/Profile')}>Profile</button>
+          {loading ? (
+            <span>Loading...</span>
+          ) : user ? (
+            <div className={styles.authSection}>
+              <span>Hi, {user.username}!</span>
+              <button className={styles.logout} onClick={logout}>Logout</button>
+            </div>
+          ) : (
+            <button className={styles.login} onClick={login}>Login</button>
+          )}
         </nav>
       </aside>
+      
       <main className={styles.main}>
         <Outlet />
       </main>
