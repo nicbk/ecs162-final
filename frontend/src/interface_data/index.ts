@@ -20,6 +20,13 @@ export interface Comment {
     likes: number;
     deleted: boolean;
     replies: Comment[];
+    parent_id?: string;
+}
+
+export interface InputComment {
+    body: string;
+    rating: number;
+    images: Base64Data[];
 }
 
 export interface User {
