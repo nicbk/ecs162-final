@@ -41,6 +41,7 @@ export const mockPublish: Comment [] = [
         body: "this is a comment",
         images: ["https://www.foodiesfeed.com/wp-content/uploads/2023/06/burger-with-melted-cheese.jpg", "https://www.foodiesfeed.com/wp-content/uploads/2023/03/bacon-cheeseburger-close-up.jpg"],
         likes: 15,
+        rating: 7.0,
         deleted: false,
         replies: [
             {
@@ -86,12 +87,13 @@ export const mockPublish: Comment [] = [
         ],
         parent_id: '1'
     },
-        {
+    {
         id: '222222',
         username: "sam",
         body: "food was good",
         images: ["https://www.foodiesfeed.com/wp-content/uploads/2023/05/avocado-bacon-bagel.jpg", "https://media.istockphoto.com/id/1699248018/photo/bagel-toast-with-avocado-and-guacamole.jpg?s=2048x2048&w=is&k=20&c=1SGjXICCVT6nuvGnNRJsKClGqk04orK_mN7F58AaKyg="],
         likes: 1,
+        rating: 9.0,
         deleted: false,
         replies: [
             {
@@ -106,12 +108,13 @@ export const mockPublish: Comment [] = [
         ],
         parent_id: '1',
     },
-        {
+    {
         id: '546457',
         username: "tim",
         body: "this is a comment",
         images: ["https://www.foodiesfeed.com/wp-content/uploads/2023/06/burger-with-melted-cheese.jpg", "https://www.foodiesfeed.com/wp-content/uploads/2023/03/bacon-cheeseburger-close-up.jpg"],
         likes: 15,
+        rating: 10.0,
         deleted: false,
         replies: [
             {
@@ -136,12 +139,13 @@ export const mockPublish: Comment [] = [
         ],
         parent_id: '1'
     },
-        {
+    {
         id: '6454545454',
         username: "matt",
         body: "food was good",
         images: [],
         likes: 11,
+        rating: 2.0,
         deleted: false,
         replies: [
             {
@@ -156,7 +160,7 @@ export const mockPublish: Comment [] = [
         ],
         parent_id: '1',
     },
-        {
+    {
         id: '23452',
         username: "forest",
         body: "food was good",
@@ -176,12 +180,13 @@ export const mockPublish: Comment [] = [
         ],
         parent_id: '1',
     },
-            {
+    {
         id: '65476',
         username: "louis",
         body: "food was good",
         images: ["https://www.foodiesfeed.com/wp-content/uploads/2023/05/avocado-bacon-bagel.jpg", "https://media.istockphoto.com/id/1699248018/photo/bagel-toast-with-avocado-and-guacamole.jpg?s=2048x2048&w=is&k=20&c=1SGjXICCVT6nuvGnNRJsKClGqk04orK_mN7F58AaKyg="],
         likes: 1,
+        rating: 4.4,
         deleted: false,
         replies: [
             {
@@ -202,6 +207,7 @@ export const mockPublish: Comment [] = [
         body: "Boring food",
         images: ["https://www.foodiesfeed.com/wp-content/uploads/2023/05/avocado-bacon-bagel.jpg", "https://media.istockphoto.com/id/1699248018/photo/bagel-toast-with-avocado-and-guacamole.jpg?s=2048x2048&w=is&k=20&c=1SGjXICCVT6nuvGnNRJsKClGqk04orK_mN7F58AaKyg="],
         likes: 1,
+        rating: 9.1,
         deleted: false,
         replies: [],
         parent_id: '1',
