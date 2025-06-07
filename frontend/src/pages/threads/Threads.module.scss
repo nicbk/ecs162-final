@@ -1,0 +1,202 @@
+.threads {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-content: center;
+  flex-wrap: wrap;
+  background-color: var(--background);
+  margin: auto;
+}
+.threadHeader {
+  display: flex;
+  font-size: 1.5rem;
+  margin: auto;
+}
+.commCard {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  align-items: center;
+  color: var(--text);
+  border-color: var(--inverse-background);
+  padding: 5px 10px 50px 10px;
+  border-radius: 10px;
+  margin: 5px 5px 0px 5px;
+  width: 80%;
+  background-color: var(--background);
+  overflow: auto;
+}
+.threadCon {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-evenly;
+  width: 95%;
+  padding: 10px;
+  margin: 20px;
+  border-top: dashed 2px var(--inverse-background);
+}
+.descripModel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0.5rem;
+  margin: auto;
+  width: 100%;
+  font-size: 1.25rem;
+}
+.commimgs {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  overflow: auto;
+  img{
+    max-width: 100%;
+    max-height: 400px;
+    margin: 5px;
+    border-radius: 10px;
+  }
+  max-width: 1000px
+}
+.usernameLink {
+  color: blue;
+  cursor: pointer;
+}
+.commFoot {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px;
+  margin: auto;
+  width: 80%;
+  .likeIcon {
+    color: var(--inverse-background);
+    padding: 0 5px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    &:hover {
+      color: var(--accent);
+      transform: scale(1.1);
+    }
+    &.liked {
+      transform: scale(1.2);
+      transition: all 0.2s ease-in-out;
+      color: red;
+    }
+  }
+  .shareIcon {
+    color: var(--inverse-background);
+    padding: 0 5px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    &:hover {
+      color: var(--accent);
+      transform: scale(1.1);
+    }
+  }
+}
+.showMore {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin-top: 10px;
+  width: 100%;
+  button {
+    background: none;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+    font-size: 0.95rem;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.pComm {
+  margin-top: 40px;
+  width: 95%;
+  border: 3px solid var(--accent);
+  box-shadow: inset 0 0 10px var(--inverse-background);
+}
+.chComm {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin: 10px;
+  flex-wrap: wrap;
+  border: dotted 2px var(--inverse-background);
+  width: 45%;
+}
+.nestedComment {
+  margin-left: 2rem;
+  border-left: 2px double var(--inverse-background);
+  padding-left: 1rem;
+  img{
+    max-width: 100px;
+    max-height: 100px;
+    margin-left: 5px;
+    transition: transform 0.3s ease-in-out;
+  }
+}
+.commBody{
+  font-size: 1.11rem
+}
+//still needs work but this is how it will look after adding more responsive styles
+@media screen and (max-width: 1025px) and (min-width: 500px) {
+  
+  .commCard {
+    padding: 10px;
+    width: 90%;
+    img {
+      max-width: 100%;
+      max-height: 350px;
+    }
+  }
+  .chComm {
+    padding: 10px;
+    width: 40%;
+    img {
+      max-width: 100%;
+      max-height: 300px;
+    }
+  }
+  .threadCon {
+    flex-direction: row;
+    align-items: flex-start;
+    width: 100%;
+  }
+
+}
+//same as our hw of ny times
+@media screen and (max-width: 500px) {
+  
+  .commCard {
+    padding: 10px;
+    width: 90%;
+    img {
+      max-width: 100%;
+      max-height: 250px;
+    }
+  }
+  .chComm {
+    padding: 10px;
+    width: 80%;
+    img {
+      max-width: 100%;
+      max-height: 150px;
+    }
+  }
+  .threadCon {
+    flex-direction: row;
+    align-items: flex-start;
+    width: 100%;
+  }
+
+}
