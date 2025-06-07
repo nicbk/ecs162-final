@@ -3,7 +3,7 @@ import { type Restaurant } from '../../interface_data/index.ts';
 import { type Comment } from '../../interface_data/index.ts';
 import mapIcon from '../../assets/map-icon.svg';
 import {FaHeart, FaRegComment, FaShareSquare} from "react-icons/fa";
-import { getRestaurants, getComments } from '../../api_data/client.ts';
+import { getRestaurantsMock, getCommentsMock  } from '../../api_data/client.ts';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useContext } from 'react';
 import { GlobalStateContext } from '../../global_state/global_state.ts';

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { type Comment } from '../../interface_data/index.ts';
-import { getComments } from '../../api_data/client.ts';
+import { getCommentsMock } from '../../api_data/client.ts';
 import { FaHeart, FaShareSquare } from 'react-icons/fa';
 import styles from './Threads.module.scss';
 
@@ -15,7 +15,7 @@ export default function Threads() {
   useEffect(() => {
     async function load() {
       try {
-        const commData = await getComments();
+        const commData = await getCommentsMock();
         setComm(commData);
       } catch (error) {
         console.error('Failed to load comments', error);

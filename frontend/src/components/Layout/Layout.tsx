@@ -2,7 +2,7 @@
 import { useNavigate, Outlet, useLocation, useParams } from 'react-router-dom'
 import styles from './Layout.module.scss'
 import { useState, useEffect } from 'react';
-import { getComments } from '../../api_data/client.ts'
+import { getCommentsMock  } from '../../api_data/client.ts'
 import { FaBars, FaTimes } from 'react-icons/fa'
 import { useAuth } from '../../contexts/AuthContext';
 import { GlobalStateContext } from '../../global_state/global_state';
@@ -33,7 +33,7 @@ export default function Layout() {
     // I am loading the parent username using the commentId which is for now mock
     async function loadPUserName() {
       try {
-        const comments = await getComments()
+        const comments = await getCommentsMock();
         const found = comments.find(comm => comm.id === commentId)
         setParentUserN(found ? found.username : null)
       } catch (error) {
