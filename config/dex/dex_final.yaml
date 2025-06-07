@@ -8,11 +8,11 @@ web:
   http: 0.0.0.0:5556
 
 staticClients:
-  - id: foodie-app
+  - id: flask-app
     redirectURIs:
       - http://localhost:8000/authorize
-    name: Foodie App
-    secret: foodie-secret
+    name: Flask App
+    secret: flask-secret
 
 enablePasswordDB: true
 

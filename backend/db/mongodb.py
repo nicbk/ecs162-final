@@ -11,7 +11,7 @@ from pymongo import MongoClient
 from contextlib import contextmanager
 # db.data didnt work for me - Andrew
 # from db.data import Resource, Comment
-from db.data import Resource, Comment
+from db.data import Comment
 from datetime import datetime, timezone
 
 COMMENT_REMOVED_STR = 'Comment was removed by moderator'
