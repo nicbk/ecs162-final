@@ -1,18 +1,24 @@
 //this is where the layout will be and including the header and any nvaigation bars please keep it simple and clean
 import { useNavigate, Outlet, useLocation, useParams } from 'react-router-dom'
 import styles from './Layout.module.scss'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { getCommentsMock  } from '../../api_data/client.ts'
 import { FaBars, FaTimes } from 'react-icons/fa'
-import { useAuth } from '../../contexts/AuthContext';
-import { GlobalStateContext } from '../../global_state/global_state';
+import { GlobalStateContext, type UserAuthenticationState } from '../../global_state/global_state';
+import type { User } from '../../interface_data/index.ts';
+import { initFirebaseHandler, onLoginButtonPress, onLogoutButtonPress } from './helpers.ts';
 
 export default function Layout() {
   const navigate = useNavigate()
   const location = useLocation();
   const { commentId } = useParams<{ commentId: string }>()
-  const { user, loading, login, logout } = useAuth(); // ADD THIS LINE
-  console.log('Layout: loading=', loading, 'user=', user); // ADD THIS LINE
+  const globalState = useContext(GlobalStateContext);
+  const [userAuthenticationState, setUserAuthenticationState] = globalState!.userAuthenticationState;
+
+  // Init the firebase auth event handler
+  useEffect(() => {
+    initFirebaseHandler(setUserAuthenticationState);
+  }, []);
 
   // added theme toggle functionality but we will make it more optimized later for this is good enough 
   const [theme, setTheme] = useState<'light'|'dark'>(() => (localStorage.getItem('theme') as 'light'|'dark') || 'light');
@@ -95,18 +101,36 @@ export default function Layout() {
           <nav className={styles.pageNav}>
             <button className={`${styles.Home} ${location.pathname === '/Home' ? styles.active : ''}`}
               onClick={() => navigate('/Home')}>Home</button>
-            <button className={`${styles.profile} ${location.pathname === '/Profile' ? styles.active : ''}`}
-              onClick={() => navigate('/Profile')}>Profile</button>
 
-            {loading ? (
-              <span className={styles.loading}>Loading...</span>
-            ) : user ? (
-              <div className={styles.authSection}>
-                <span>Hi, {user.username}!</span>
-                <button className={styles.logout} onClick={logout}>Logout</button>
-              </div>
+            {userAuthenticationState === 'not-logged-in' ? (
+              <button
+                className={styles.login}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onLoginButtonPress(setUserAuthenticationState);
+                }}
+              >
+                Login
+              </button>
+            ) : userAuthenticationState === 'loading' ? (
+              <span>Logging in...</span>
             ) : (
-              <button className={styles.login} onClick={login}>Login</button>
+              <>
+                <button className={`${styles.profile} ${location.pathname === '/Profile' ? styles.active : ''}`}
+                  onClick={() => navigate('/Profile')}>Profile</button>
+                <div className={styles.authSection}>
+                  <span>Hi, {(userAuthenticationState as User).username}!</span>
+                  <button
+                    className={styles.logout}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onLogoutButtonPress(setUserAuthenticationState);
+                    }}
+                  >
+                    Logout
+                  </button>
+                </div>
+              </>
             )}
           </nav>
         </aside>
