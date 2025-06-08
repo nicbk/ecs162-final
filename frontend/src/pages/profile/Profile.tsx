@@ -3,108 +3,120 @@ import styles from './Profile.module.scss';
 import React, { useEffect, useState } from "react";
 import defaultAvatar from '../../assets/default-avatar.png';
 import food from '../../assets/food.jpg';
+import placeholder from '../../assets/image2vector.svg';
+import { mockResturantsData } from '../../api_data/mock_data';
+import { mockPublish } from '../../api_data/mock_data';
+import { type Restaurant } from '../../interface_data/index.ts';
+import { type Comment } from '../../interface_data/index.ts';
+import { type User } from '../../interface_data/index.ts';
+import { getRestaurantsMock, getCommentsMock  } from '../../api_data/client.ts';
+import { useNavigate } from 'react-router-dom';
+import { getLoggedInUser } from '../../api_data/client.ts';
+import { FaTh, FaHeart, FaRegComment, FaShareSquare, FaComment} from "react-icons/fa";
 
-interface authedUser {
-  username: string;
-  bio?: string;
-  profileImage?: string;
-  comments?: string[];
+interface Post extends Comment{
+  totalReplies?: number;
 }
+// export interface Comment { 
+//     id: string;
+//     username: string;
+//     body: string;
+//     images: Base64Data[];
+//     likes: number;
+//     deleted: boolean;
+//     replies: Comment[];
+//     restaurantId?: string;
+// }
 
-interface Post {
-  parent_id: string;
-  id: string;
-  creator_id: string;
-  images: string[];
-  body: string; 
-  deleted: boolean;
-  date: string; 
-  likes: number;
-  // rating: number; // rating out of 10?
-  replies: Post[];
-}
-{/* later we will make get request on pageload*/}
-// const testPosts: Post[] = [ 
-//   {parent_id: "1", id: "1", creator_id: "user1", images: [food], body: "This is a comment", likes: 10, deleted: false, date: "2023-10-01", replies: []},
-//   {parent_id: "1", id: "2", creator_id: "user2", images: [], body: "comment without an image", likes: 5, deleted: false, date: "2023-10-02", replies: []},
-//   {parent_id: "1", id: "3", creator_id: "user3", images: [food], body: "comment with an image", likes: 2, deleted: false, date: "2023-10-03", replies: []},
-// ];
+// export interface User {
+//     username: string;
+//     profileImage: Base64Data;
+//     bio: string;
+//     comments: CommentId[];
+// }
+
 
 const mockPosts: Post[] = [
   {
-    parent_id: "0",
     id: "1",
-    creator_id: "user_001",
+    username: "user_001",
     images: [food],
     body: "top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)",
     deleted: false,
-    date: "2025-05-29T12:30:00Z",
+    rating: 9,
     likes: 0,
     replies: [
       {
-        parent_id: "1",
         id: "2",
-        creator_id: "user_002",
+        username: "user_002",
         images: [food],
         body: "top level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with replies",
         deleted: false,
-        date: "2025-05-29",
         likes: 5,
         replies: [
           {
-            parent_id: "2",
             id: "3",
-            creator_id: "user_003",
+            username: "user_003",
             images: [],
             body: "unshown reply",
             deleted: false,
-            date: "2025-05-29",
             likes: 0,
             replies: []
           }
         ]
       },
       {
-        parent_id: "1",
         id: "4",
-        creator_id: "user_004",
+        username: "user_004",
         images: [],
         body: "top level reply 2 no replies",
         deleted: false,
-        date: "2025-05-29",
         likes: 30,
         replies: []
       }
     ]
   },
+  {id: "19",
+    username: "user_001",
+    images: [food],
+    body: "top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)",
+    deleted: false,
+    rating: 9,
+    likes: 0,
+    replies: []
+    },
+    {id: "20",
+    username: "user_001",
+    images: [food],
+    body: "top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)",
+    deleted: false,
+    rating: 9,
+    likes: 0,
+    replies: []
+    },
   {
-    parent_id: "0",
     id: "5",
-    creator_id: "user_005",
-    images: [],
+    username: "user_005",
+    images: [placeholder],
     body: "other top level comment text only",
     deleted: false,
-    date: "2025-05-29",
+    rating: 1,
     likes: 80,
     replies: [
       {
-        parent_id: "5",
         id: "6",
-        creator_id: "user_006",
+        username: "user_006",
         images: [],
         body: "top level reply 1 with replies",
         deleted: false,
-        date: "2025-05-29",
         likes: 25,
         replies: [
           {
-            parent_id: "6",
             id: "7",
-            creator_id: "user_007",
+            username: "user_007",
             images: [],
             body: "dont show",
             deleted: false,
-            date: "2025-05-29",
             likes: 15,
             replies: []
           }
@@ -115,19 +127,10 @@ const mockPosts: Post[] = [
 ];
 
 
-//     parent_id: str
-//     id: str
-//     creator_id: str
-//     images: list[str] # List of image IDs
-//     body: str
-//     likes: int
-//     deleted: bool
-//     date: str
-//     replies: list['Comment']
-
 const Profile = () => {
-  const [posts, setImagePosts] = useState<Post[]>(mockPosts.filter(post => post.images.length > 0));
-  const [textPosts, setTextPosts] = useState<Post[]>(mockPosts.filter(post => post.images.length === 0));
+  console.log('Component rendering');
+  const [posts, setImagePosts] = useState<Post[]>(mockPosts);
+  // const [textPosts, setTextPosts] = useState<Post[]>(mockPosts.filter(post => post.images.length === 0));
   const [username, setUsername] = useState("tempuser");
   const [bio, setBio] = useState("testbio");
   const [isEditing, setIsEditing] = useState(false);
@@ -136,8 +139,11 @@ const Profile = () => {
   const [favoritesOpen, setFavoritesOpen] = useState(false);
   const [favorites, setFavorites] = useState<string[]>(["in n out", "mcdonalds"]);
   const [profileImage, setProfileImage] = useState();
+  const [hoveredPostId, setHoveredPostId] = useState<string | null>(null);
   const [followers] = useState(2);
   const [following] = useState(1);
+
+  const navigate = useNavigate();
 
   function editProfile() {
     setIsEditing(true);
@@ -156,26 +162,38 @@ const Profile = () => {
   }
 
   useEffect(() => {
-    fetch('/api/v1/authed-user') // api endpoint but not complete yet?
+    console.log('fetching user data');
+    fetch('/api/v1/authed-user')
     .then(response => response.json())
     .then(async (user) => {
       setUsername(user.username);
+      console.log('name changed to', user.username);
       setBio(user.bio || "");
-      setProfileImage(user.profileImage || defaultAvatar); // maybe refactor this later but right now probably works
+      console.log('bio changed to', user.bio);
+      setProfileImage(user.profileImage || defaultAvatar); 
       if (user.comments && user.comments.length > 0){
-        const commentList = user.comments.map((id : string) => {
-          fetch(`/api/v1/comment/${id}`)
-          .then(response => response.json())
+        const topLevelComments = user.comments.filter((comment: Post) => comment.rating !== undefined);
+        const commentList = topLevelComments.map(async (comment: Post) => {
+          const response = await fetch(`/api/v1/comment/${comment.id}`);
+          return await response.json();
         });
         let comments = await Promise.all(commentList);
-        comments = comments.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        const imagePosts = comments.filter(post => post.images.length > 0 && !post.deleted);
-        const textPosts = comments.filter(post => post.images.length === 0 && !post.deleted);
+        
+        const imagePosts = comments.filter(post => !post.deleted).map(post => ({
+        ...post, 
+        images: post.images?.length > 0 ? post.images : [placeholder]
+        }));
+        // const textPosts = comments.filter(post => post.images.length === 0 && !post.deleted);
         setImagePosts(imagePosts);
-        setTextPosts(textPosts);
+        // setTextPosts(textPosts);
       }
     })
-  });
+    .catch(error => console.error('Fetch error:', error));
+  }, []);
+
+  for (const post of posts) {
+  post.totalReplies = countReplies(post);
+  } 
 
   function countReplies(comment: Post){
     let count = 0;
@@ -196,7 +214,7 @@ const Profile = () => {
   //       <div>[Deleted comment]</div>
   //     ) : (
   //       <div>
-  //       <strong>{comment.creator_id}:</strong>
+  //       <strong>{comment.username}:</strong>
   //       <p>{comment.body}</p>
   //       {comment.images?.length > 0 && (
   //         <div>
@@ -225,14 +243,14 @@ const Profile = () => {
   /* function that, given an array of Post objects (replies to a comment), will render the top level ones */
   function ReplyList({ replies }: { replies: Post[] }) {
     if (!replies || replies.length === 0) {
-      return <div>No comments yet, be the first to comment!</div>;
+      return <div>No replies yet!</div>;
     }
     return (
       <div>
         {replies.map(reply => (
           <div key={reply.id} className={styles.reply}>
             <div style={{marginBottom:4, display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
-              <span><strong>{reply.creator_id}</strong> on {reply.date}</span>
+              <span><strong>{reply.username}</strong></span>
               <span style={{marginLeft: 'auto', display: 'flex', alignItems: 'center'}}>
                 
               </span>
@@ -251,16 +269,16 @@ const Profile = () => {
               {reply.body}
               <strong>
                 <span className={styles.likeCount}>
-                  <button className={styles.likeButton} onClick={() => fetch(`/api/v1/comment/${reply.id}/add_like`)}>♡</button>
+                  <button className={styles.likeButton} onClick={() => fetch(`/api/v1/comment/${reply.id}/add_like`)}><FaHeart size=".9rem"/></button>
                 <span style={{marginLeft: 6, marginTop: 5}}>
                     {reply.likes} likes 
-                    <a className={styles.replyLink} onClick={() => fetch(`/api/v1/comment/${reply.id}/??????`)}>Reply</a> {/* need endpoint for replying to a comment */}
+                    <a className={styles.replyLink} onClick={() => navigate(`Threads/${reply.id}`)}>Reply</a> {/* redirect to threads */}
                   </span>
                 </span>
               </strong>
             </div>
             {reply.replies.length > 0 && (
-              <div className={styles.moreReplies} onClick={() => fetch(`/api/v1/comment/${reply.id}/??????`)}>
+              <div className={styles.moreReplies} onClick={() => navigate(`Threads/${reply.id}`)}>
                 <span style={{marginTop:8, marginRight:15}} className={styles.line}></span>
                 <span>See more replies ({reply.replies.length})</span>
               </div>
@@ -286,30 +304,30 @@ const Profile = () => {
   const tablet = width < 1200 && width >= 768;
   const mobile = width < 768;
   return (
-    <div>
+    <div className={styles.profile}>
     {/* user info */}
     <section style={{textAlign: 'center',}}>
-      <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center'}}>
-        <img src={defaultAvatar} alt="Profile picture" width={100} height={100} style={{marginRight: 20}}/>
+      <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', marginTop: 30}}>
+        <img src={defaultAvatar} alt="Profile picture" width={150} height={150} style={{marginRight: 20}}/>
         <div style={{display: 'flex', flexDirection: 'column'}}>
           <div style={{display: 'flex', flexDirection: 'row', alignItems: 'flex-start', height: 'fit-content'}}>
-            <strong><h2 style={{marginRight: 10, alignSelf: 'center', marginBottom: 0, marginTop: 0, height:'fit-content'}}>{username}</h2></strong>
-            <button onClick={editProfile} style={{alignSelf: 'center', marginRight: 10}}>Edit Profile</button>
-            <button style={{alignSelf: 'center'}} onClick={() => setFavoritesOpen(true)}>Favorites</button>
+            <p className={styles.username}>{username}</p>
+            {/* <button onClick={editProfile} style={{alignSelf: 'center', marginRight: 10}}>Edit Profile</button>
+            <button style={{alignSelf: 'center'}} onClick={() => setFavoritesOpen(true)}>Favorites</button> */}
           </div>
           <div style={{textAlign: 'left'}}>
             <p>
-              <span style={{marginRight: 15}}><strong>{posts.length + textPosts.length}</strong> Posts</span> 
-              <span style={{marginRight: 15}}><strong>{followers}</strong> Followers</span> 
-              <span style={{marginRight: 15}}><strong>{following}</strong> Following</span> 
+              <span className={styles.postsCount}><strong>{posts.length}</strong> Posts</span> 
+              {/* <span style={{marginRight: 15}}><strong>{followers}</strong> Followers</span> 
+              <span style={{marginRight: 15}}><strong>{following}</strong> Following</span>  */}
             </p>
-            <p>{bio}</p>
+            {/* <p className={styles.bio}>{bio}</p> */}
           </div>
         </div>
       </div>
       {isEditing && (
         <div>
-          <textarea value={tempBio} onChange={e => setTempBio(e.target.value)} rows={3} style={{width: "100%", marginBottom: "8px"}}/>
+          <textarea value={tempBio} onChange={e => setTempBio(e.target.value)} rows={3} style={{width: "50%", marginBottom: "8px"}}/>
           <br/>
           <div style={{display: 'flex', flexDirection: 'row'}}>          
             <button onClick={saveProfile}>Save</button>
@@ -321,18 +339,32 @@ const Profile = () => {
 
     {/* comments and posts collection */}
       <section>
-        <h3 style={{textAlign: 'center'}}>Your Comments</h3>
+        <div className={styles.separator}></div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+          <h3 className={styles.posts}>Posts</h3>
+        </div>
         {posts.length === 0 ? (<p>No posts yet.</p>) : 
         (
         <div className={styles.galleryGrid}> 
           {posts.map((post) => ( 
-            <div className={styles.galleryImageWrapper} key={post.id}>
+            <div className={styles.galleryImageWrapper} 
+            key={post.id}
+            onMouseEnter={() => setHoveredPostId(post.id)}
+            onMouseLeave={() => setHoveredPostId(null)}>
               <img 
                 src={post.images[0]}
                 alt={post.body}
                 className={styles.galleryImage}
                 onClick={() => setSelectedPost(post)}
               />
+              {hoveredPostId === post.id && (
+              <div className={styles.hoverOverlay}>
+                <div style={{display: 'flex', gap:32, alignItems: 'center'}}>
+                  <span className={styles.likesHover}><FaHeart size="1.3rem"/> {post.likes}</span>
+                  <span className={styles.likesHover}><FaComment size="1.3rem"/> {post.totalReplies}</span>
+                </div>
+              </div>
+              )}
             </div>
           ))}
         </div>
@@ -358,7 +390,7 @@ const Profile = () => {
                 <ReplyList replies={selectedPost.replies}/>
               </div>
               <div className={styles.commentInfo}>
-                <p>Likes: {selectedPost.likes} | Comments: {countReplies(selectedPost)} {/* should be total tree size */}</p>
+                {/* <p>Likes: {selectedPost.likes} | Comments: {selectedPost.totalReplies} </p> */}
                 <div style={{display: 'flex', flexDirection: 'row'}}> 
                   <button onClick={() => { deletePost(selectedPost.id); setSelectedPost(null); }}>Delete Post</button>
                   <button onClick={() => setSelectedPost(null)} style={{marginLeft: "8px"}}>Close</button>
@@ -368,7 +400,7 @@ const Profile = () => {
           </div>
         </div>
       )}
-      <div className={styles.textPostsSection}>
+      {/* <div className={styles.textPostsSection}>
         <h3>Text Posts</h3>
         {textPosts.length > 0 ? (
           textPosts.map(post => (
@@ -383,7 +415,7 @@ const Profile = () => {
         ) : (
           <p>No text-only posts yet.</p>
         )}
-      </div>
+      </div> */}
       </section>
       {favoritesOpen && (
         <div className={styles.popupOverlay} onClick={() => setFavoritesOpen(false)}>
@@ -404,8 +436,50 @@ const Profile = () => {
 
 export default Profile;
 
+// interface Post extends Comment{
+//   rating: number;
+// }
+
+// interface User {
+//   username: string;
+//   bio?: string;
+//   profileImage?: string;
+//   comments?: string[];
+// }
+
+// interface Post {
+//   `````````````````parent_id`````````````````: string;
+//   id: string;
+//   username: string;
+//   images: string[];
+//   body: string; 
+//   deleted: boolean;
+//   date: string; 
+//   likes: number;
+//   // rating: number; // rating out of 10?
+//   replies: Post[];
+// }
+{/* later we will make get request on pageload*/}
+// const testPosts: Post[] = [ 
+//   {parent_id: "1", id: "1", username: "user1", images: [food], body: "This is a comment", likes: 10, deleted: false, date: "2023-10-01", replies: []},
+//   {parent_id: "1", id: "2", username: "user2", images: [], body: "comment without an image", likes: 5, deleted: false, date: "2023-10-02", replies: []},
+//   {parent_id: "1", id: "3", username: "user3", images: [food], body: "comment with an image", likes: 2, deleted: false, date: "2023-10-03", replies: []},
+// ];
+
+
+
+
+//     parent_id: str
+//     id: str
+//     username: str
+//     images: list[str] # List of image IDs
+//     body: str
+//     likes: int
+//     deleted: bool
+//     date: str
+//     replies: list['Comment']
+
 //NEED:
-// - reply endpoint
 // - delete endpoint
 // - like endpoint
 // - list of liked comments (so we know whether the heart should be filled or not)

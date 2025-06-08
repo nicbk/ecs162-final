@@ -2,6 +2,37 @@
 .profile {
   background-color: var(--background);
   color: var(--text);
+  font-family: Helvetica, sans-serif;
+  * {
+    font-family: inherit;
+  }
+}
+
+.username{
+  margin-right: 10px;
+  align-self: center;
+  margin-bottom: 0;
+  margin-top: 16px;
+  height: fit-content;
+  font-size: 1.6rem;
+}
+
+.postsCount{
+  margin-right: 15px;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.bio{
+  margin: 0;
+  padding: 0;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.posts{
+  font-size: 1.5rem;
 }
 
 section button{
@@ -35,14 +66,14 @@ section button:active {
 
 .likeButton{
   display: flex;
-  background: none;      
-  font-size: 1.1rem;          
+  background: none;              
   color: #363636;                     
   border: none;          
   border-radius: none;                
   padding: 0px 0px ;                  
   cursor: pointer;
   transition: background 0.15s, border 0.15s;
+  margin-top: 4px;
   outline: none;
 }
 
@@ -52,6 +83,16 @@ section button:active {
       cursor: pointer;
       text-decoration: underline;
   }
+}
+
+.separator{
+  width: 80vw;
+  height: 1px;
+  background-color: #999999;
+  align-self: center;
+  justify-self: center;
+  margin: 0 auto;
+  margin-top: 30px;
 }
 
 .moreReplies{
@@ -73,7 +114,7 @@ section button:active {
 .galleryGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr); 
-  gap: 1px;
+  gap: 2px;
   width: 80vw;
   max-width: 60vw; 
   margin: 0 auto; 
@@ -86,21 +127,23 @@ section button:active {
   display: flex;
   align-items: center;
   justify-content: center; 
+  position: relative;
 }
 
 .galleryImageWrapper img {
   width: 100%;
   height: 100%;
   border-radius: 10px;
-  object-fit: contain;
+  object-fit: cover;
   display: block;
 }
 
 .galleryImage {
   transition: transform 0.2s;
   &:hover {
-    transform: scale(1.03);
-    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    // transform: scale(1.03);
+    // opacity:0.4;
+    // box-shadow: 0 2px 12px rgba(0,0,0,0.2);
   }
 }
 
@@ -112,6 +155,26 @@ section button:active {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+}
+
+.hoverOverlay {
+  border-radius: 10px;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  color: white;
+  background: rgba(0, 0, 0, 0.4);
+  text-align: center;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.likesHover{
+  font-size: 1.4rem;
 }
 
 $themes: (
@@ -159,6 +222,9 @@ $themes: (
   justify-content: center;
   position: relative;
   outline: 1px dashed green;
+  max-width: 600px;    /* Restrict max width */
+  max-height: 600px;
+  object-fit: cover;
 }
 
 .popupContent img {
@@ -218,7 +284,7 @@ $themes: (
 
 @media (min-width: 724px) and (max-width: 1200px) {
   .galleryGrid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     max-width: 80vw;
   }
   .popupContent {
@@ -255,7 +321,7 @@ $themes: (
 
 @media(max-width: 723px) {
   .galleryGrid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(1, 1fr);
     max-width: 80vw;
   }
   .popupContent {
