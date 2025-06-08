@@ -2,6 +2,8 @@ import type { Dispatch, SetStateAction } from "react";
 import type { UserAuthenticationState } from "../../global_state/global_state";
 import { firebaseAuth } from "../../global_state/firebase";
 import { getRedirectResult, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, type User as FirebaseUser } from "firebase/auth";
+import { FirebaseJWT, getLoggedInUser } from "../../api_data/client";
+import type { User } from "../../interface_data";
 
 // Our app supports google login only (every uc davis student has a google account)
 const GoogleProvider = new GoogleAuthProvider();
@@ -34,20 +36,28 @@ export const initFirebaseHandler = (
 ) => {
   const statusHandler = (user: FirebaseUser | null) => {
     if (user) {
-      // NOTE: Here we need to also make the call to the Flask backend to get the rest of the user info from MongoDB
-      // In this if statement clause we know that we have signed into Firebase.
-      setUserAuthenticationState({
-        // EXAMPLE DATA instead of mongodb data, but the rest of the user info is the same.
-        // Given only the Google login method, we assume either display name or email is available for username.
-        // In the backend, we should use the Firebase ID to identify users.
-        //    So, replace the Dex OAuth ID field with Firebase ID instead.
-        username: user.displayName || user.email!,
-        profileImage: user.photoURL!,
-        bio: 'Test Bio',
-        comments: []
-      });
+      (async () => {
+        // NOTE: Here we need to also make the call to the Flask backend to get the rest of the user info from MongoDB
+        // In this if statement clause we know that we have signed into Firebase.
+        FirebaseJWT.jwt = (await user.getIdTokenResult()).token
+        const backendUserRaw = await getLoggedInUser();
+        if (!backendUserRaw) {
+          signOut(firebaseAuth);
+          return;
+        }
+
+        const backendUser = backendUserRaw as User;
+
+        setUserAuthenticationState({
+          username: user.displayName || user.email!,
+          profileImage: user.photoURL!,
+          bio: backendUser.bio,
+          comments: backendUser.comments
+        });
+      })();
     } else {
       setUserAuthenticationState('not-logged-in');
+      FirebaseJWT.jwt = null;
     }
   };
 

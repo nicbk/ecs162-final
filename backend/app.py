@@ -10,6 +10,7 @@ from google_maps import get_nearby_restaurants
 import json
 from db.mongodb import MongoDBInterface
 import base64
+import jwt
 
 static_path = os.getenv('STATIC_PATH','static')
 template_path = os.getenv('TEMPLATE_PATH','templates')
@@ -22,13 +23,14 @@ CORS(app)
 # NOTE: OAuth setup is copied from the updated starter code
 # 'secret_key' field on flask app is needed for cryptographically signing cookies https://flask.palletsprojects.com/en/stable/quickstart/#sessions
 # This allows the Dex OIDC session information to be set in a cryptographically tamper-proof cookie on the client's browser.
-app.secret_key = os.urandom(24)
+#app.secret_key = os.urandom(24)
 
-oauth = OAuth(app)
+#oauth = OAuth(app)
 # Dex uses a nonce to prevent replay attacks https://dexidp.io/docs/guides/using-dex/
-nonce = generate_token()
+#nonce = generate_token()
 
 # This code block for setting up the flask OIDC interface to Dex is also copied from starter code
+'''
 oauth.register(
     name='dex_client',
     client_id=os.getenv('OIDC_CLIENT_ID'),
@@ -40,6 +42,7 @@ oauth.register(
     device_authorization_endpoint="http://dex:5556/device/code",
     client_kwargs={'scope': 'openid email profile'}
 )
+'''
 
 # I learn about how to handle errors with the following documentation
 # https://flask.palletsprojects.com/en/stable/errorhandling/
@@ -70,6 +73,7 @@ def serve_frontend(path=''):
 ###############################
 
 # Path for authentication login redirect
+'''
 @app.route('/login')
 def login():
     if request.args.get('originUrl') is not None:
@@ -110,6 +114,45 @@ def logout():
     if originUrl is not None:
         return redirect(originUrl)
     return redirect('/')
+'''
+
+# Verify Firebase JWT and retrieve the token data 
+# @param header: value of the Authorization header
+# @returns False if the header is None or invalid, otherwise the contents of the JWT
+def get_authorization(header):
+    if header is None:
+        return False
+
+    # https://auth0.com/blog/how-to-handle-jwt-in-python/
+    # https://pyjwt.readthedocs.io/en/stable/
+    # The expected auth header format is 'Bearer <jwt_string>', so we must get the second item
+    jwt_string = header.split()[1]
+
+    # https://pyjwt.readthedocs.io/en/stable/usage.html#oidc-login-flow
+    # I follow the above guide to set up the Google JWT verification logic
+    # NOTE: Some lines are copied, but that is because this is configuration code.
+    oidc_config = requests.get('https://accounts.google.com/.well-known/openid-configuration').json()
+    
+    jwtsign_client = jwt.PyJWKClient('https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com')
+    # https://www.googlecloudcommunity.com/gc/Apigee/validate-firebase-ID-token-through-the-use-of-jwt-verify/m-p/624340
+    jwt_signing_key = jwtsign_client.get_signing_key_from_jwt(jwt_string)
+
+    # https://pyjwt.readthedocs.io/en/latest/usage.html
+    # Decode JWT at first without verifying signature to extract audience that can be passed into the signature verification
+    payload_before = jwt.decode(jwt_string, options={ 'verify_signature': False })
+
+    try:
+        token_data = jwt.decode(
+            jwt_string,
+            key=jwt_signing_key,
+            audience=payload_before['aud'],
+            algorithms=oidc_config['id_token_signing_alg_values_supported'],
+        )
+
+        return token_data
+    except:
+        return False
+
 
 ############################
 ############################
@@ -182,10 +225,12 @@ def postComment(restaurant_id_or_comment_id):
     comment = data['body']
     rating = data.get('rating', float("NaN"))
 
-    user_jwt = session.get('user')
-    if not user_jwt:
+    # Getting request headers:
+    # https://stackoverflow.com/questions/29386995/how-to-get-http-headers-in-flask
+    token = get_authorization(request.headers.get('Authorization'))
+    if not token:
         return jsonify({'error': 'User not authenticated'}), 401
-    user_id = user_jwt['sub']
+    user_id = token['sub']
     images = data['images']
 
     mongo_instance.post_user_comment(restaurant_id_or_comment_id, user_id, comment, rating, images)
@@ -202,10 +247,12 @@ def deleteComment(comment_id):
 # Add a like to a specified comment
 @app.route('/api/v1/comment/<string:comment_id>/add_like', methods=['POST'])
 def addLikeToComment(comment_id):
-    user_jwt = session.get('user')
-    if not user_jwt:
-        return jsonify({'error': 'User must be authenticated to add likes'}), 401
-    user_id = user_jwt['sub']
+    # Getting request headers:
+    # https://stackoverflow.com/questions/29386995/how-to-get-http-headers-in-flask
+    token = get_authorization(request.headers.get('Authorization'))
+    if not token:
+        return jsonify({'error': 'User not authenticated'}), 401
+    user_id = token['sub']
 
     mongo_instance.add_comment_like(comment_id, user_id)
     return jsonify({'status': 'added like to comment'})
@@ -214,10 +261,12 @@ def addLikeToComment(comment_id):
 # Remove a like from a specified comment
 @app.route('/api/v1/comment/<string:comment_id>/remove_like', methods=['POST'])
 def removeLikeFromComment(comment_id):
-    user_jwt = session.get('user')
-    if not user_jwt:
-        return jsonify({'error': 'User must be authenticated to remove likes'}), 401
-    user_id = user_jwt['sub']
+    # Getting request headers:
+    # https://stackoverflow.com/questions/29386995/how-to-get-http-headers-in-flask
+    token = get_authorization(request.headers.get('Authorization'))
+    if not token:
+        return jsonify({'error': 'User not authenticated'}), 401
+    user_id = token['sub']
 
     mongo_instance.remove_comment_like(comment_id, user_id)
     return jsonify({'status': 'removed like from comment'})
@@ -228,13 +277,15 @@ def removeLikeFromComment(comment_id):
 # After creating a new user in dex, we need to create a user in our MongoDB
 @app.route('/api/v1/user/create', methods=['POST'])
 def createUser():
-    user_jwt = session.get('user')
-    if not user_jwt:
+    # Getting request headers:
+    # https://stackoverflow.com/questions/29386995/how-to-get-http-headers-in-flask
+    token = get_authorization(request.headers.get('Authorization'))
+    if not token:
         return jsonify({'error': 'User not authenticated'}), 401
-    
-    user_id = user_jwt['sub']
-    user_email = user_jwt.get('email', '')
-    username = user_jwt.get('username', 'User')
+
+    user_id = token['sub']
+    user_email = token.get('email', '')
+    username = token.get('username', 'User')
 
     try:
         mongo_instance.add_new_user(username, user_email, user_id)
@@ -261,10 +312,15 @@ def getUserBioByUsername(username):
 @app.route('/api/v1/user/<string:username>/bio', methods=['POST'])
 def updateUserBio(username):
     bio = request.get_json['bio']
-    user_jwt = session.get('user')
-    if not user_jwt:
-        return jsonify({'error': 'User not found'}), 404
-    user_id = user_jwt['sub']
+
+    # Getting request headers:
+    # https://stackoverflow.com/questions/29386995/how-to-get-http-headers-in-flask
+    token = get_authorization(request.headers.get('Authorization'))
+    if not token:
+        return jsonify({'error': 'User not authenticated'}), 401
+
+    user_id = token['sub']
+
     mongo_instance.update_user_bio(user_id, bio)
     return jsonify({'status': 'Bio updated successfully'}), 200
 
@@ -281,17 +337,21 @@ def updateUserProfileImage(username):
 # Gets Current Logged In User Information
 @app.route('/api/v1/authed-user', methods=['GET'])
 def getUserInformation():
-    user_jwt = session.get('user')
-    if not user_jwt:
-        return jsonify(False), 200
+    # Getting request headers:
+    # https://stackoverflow.com/questions/29386995/how-to-get-http-headers-in-flask
+    token = get_authorization(request.headers.get('Authorization'))
+    if not token:
+        return jsonify({'error': 'User not authenticated'}), 401
+
+    user_id = token['sub']
     
     # Fast fallback - return session data immediately
     user_data = {
-        'username': user_jwt.get('preferred_username', 'User'),
-        'email': user_jwt.get('email', ''),
-        'oauthId': user_jwt['sub']
+        'username': token['name'],
+        'email': token['email'],
+        'oauthId': token['sub']
     }
-    user_id = user_jwt['sub']
+    user_id = token['sub']
     
     try :
         mongo_user_data = mongo_instance.get_user_by_oauth_id(user_id)
