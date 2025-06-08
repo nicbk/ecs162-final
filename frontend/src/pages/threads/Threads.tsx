@@ -165,7 +165,7 @@ export default function Threads() {
           <span
             className={styles.shareIcon}
             onClick={() => {
-              navigator.clipboard.writeText( `${window.location.origin}/threads/${ParentComm.id}`);
+              navigator.clipboard.writeText( `${window.location.origin}/Threads/${ParentComm.id}`);
               alert('Post URL copied!');
             }}
           >

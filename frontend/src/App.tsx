@@ -23,6 +23,7 @@ export default function App() {
           <Route path="/Profile"       element={<Profile />} />
           <Route path="/SocialMedia" element={<SocialMedia/>} />
           <Route path="/threads/:commentId" element={<Threads />} />
+          <Route path="/Home/:restaurantId?" element={<Home />} />
           <Route path="404" element={<div><strong>COMING SOON!!! FOR NOW WORKING ON HOMEPAGE</strong></div>} />
         </Route>
       </Routes>
