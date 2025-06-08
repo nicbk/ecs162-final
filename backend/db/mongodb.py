@@ -257,7 +257,7 @@ class MongoDBInterface():
         Returns a list of Comment objects with replies included.
         '''
         with self.transaction_wrapper(self.mongo, recursive_use_transaction=is_root_call) as session:
-            comments = self.comments.find({'parent_id': parent_id}).sort('date', 1)
+            comments = self.comments.find({'parentId': parent_id}).sort('date', 1)
             for comment in comments:
                 comment['replies'] = self.get_all_comments_on_parent(comment['id'], is_root_call = False)
 
