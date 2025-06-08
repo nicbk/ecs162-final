@@ -178,7 +178,6 @@ img{
   background: var(--background);
   border-radius: 20px 100px 20px 100px;
   padding: 15px;
-  width: 100%;
 }
 .popupBoxBody {
   display: flex;
@@ -278,7 +277,6 @@ img{
 .commentHeader {
   display: flex;
   margin: 0.5rem;
-  padding: 0.5rem;
   font-size: 1.5rem;
   margin: auto;
   width: 100%;
@@ -288,7 +286,6 @@ img{
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  padding: 0.5rem;
   margin: auto;
   width: 100%;
   font-size: 1.25rem;
