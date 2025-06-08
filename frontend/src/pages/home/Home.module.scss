@@ -327,6 +327,10 @@ img{
   margin: auto;
   width: 80%;
   .likeIcon{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
     color: var(--inverse-background);
     padding: 0 5px;
     font-size: 1.5rem;
@@ -339,6 +343,11 @@ img{
       transform: scale(1.2);
       transition: all 0.2s ease-in-out;
       color: red;
+    }
+    .likeCount{
+      padding: 5px;
+      margin: 1px;
+      font-size: 1.25rem;
     }
   }
   .commentIcon{

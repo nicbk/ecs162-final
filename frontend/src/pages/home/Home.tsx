@@ -79,9 +79,7 @@ export default function Home() {
     closeModal()
   }
 
-  const firstLayerForActive = activeRest
-    ? comments.filter((comm) => comm.parent_id === activeRest.restaurantId)
-    : [];
+  const firstLayerForActive = comments.filter((comm) => comm.parent_id != null);
 
   const handlePostComment = () => {
     if (!activeRest || !text.trim()) return;
@@ -253,6 +251,9 @@ function CommentingPost({
                     aria-label="Like Comment"
                   >
                     <FaHeart />
+                    <p className={styles.likeCount}>
+                      {likedCom[comm.id] ? comm.likes + 1 : comm.likes}
+                    </p>
                   </span>
 
                   <span

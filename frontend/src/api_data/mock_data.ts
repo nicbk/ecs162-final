@@ -85,7 +85,7 @@ export const mockPublish: Comment [] = [
                 replies: []
             }
         ],
-        parent_id: '1'
+        parent_id: '2'
     },
     {
         id: '222222',
@@ -137,7 +137,7 @@ export const mockPublish: Comment [] = [
                 ]
             }
         ],
-        parent_id: '1'
+        parent_id: '3'
     },
     {
         id: '6454545454',
@@ -158,7 +158,7 @@ export const mockPublish: Comment [] = [
                 replies: []
             }
         ],
-        parent_id: '1',
+        parent_id: '3',
     },
     {
         id: '23452',
@@ -210,6 +210,6 @@ export const mockPublish: Comment [] = [
         rating: 9.1,
         deleted: false,
         replies: [],
-        parent_id: '1',
+        parent_id: '2',
     }
 ];

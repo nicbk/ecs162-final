@@ -88,8 +88,13 @@ export default function Threads() {
               liked[comment.id] ? styles.liked : ''
             }`}
             onClick={() => togLike(comment.id)}
+            role="button"
+            aria-label="Like Comment"
           >
             <FaHeart />
+            <p className={styles.likeCount}>
+              {liked[comment.id] ? comment.likes + 1 : comment.likes}
+            </p>
           </span>
           <span
             className={styles.shareIcon}
@@ -149,8 +154,13 @@ export default function Threads() {
         <div className={styles.commFoot}>
           <span className={ `${styles.likeIcon} ${ liked[ParentComm.id] ? styles.liked : ''}`}
             onClick={() => togLike(ParentComm.id)}
+            role="button"
+            aria-label="Like Comment"
           >
             <FaHeart />
+            <p className={styles.likeCount}>
+              {liked[ParentComm.id] ? ParentComm.likes + 1 : ParentComm.likes}
+            </p>
           </span>
           <span
             className={styles.shareIcon}

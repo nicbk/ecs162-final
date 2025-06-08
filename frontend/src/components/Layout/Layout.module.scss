@@ -6,14 +6,12 @@
   flex-wrap: wrap;
   align-content: flex-start;
   background-color: var(--background);
-  height: 100vh;
   width: 100%;
-  position: relative;
 }
 
 .navigToggle {
   position: fixed;
-  top: 10px;
+  top: 38px;
   left: 10px;
   background: none;
   border: none;
@@ -35,7 +33,7 @@
 }
 .sidebar {
   position: fixed;
-  top: 0;
+  top: 20px;
   left: 0;
   display: flex;
   flex-direction: column;
@@ -43,10 +41,10 @@
   justify-content: space-evenly;
   background-color: var(--background);
   box-shadow: -2px 0 50px var(--inverse-background);
-  border-radius: 10px;
+  border-radius: 10px 1000px 500px 5px;
   padding: 0px 5px 10px 5px;
   margin: 10px 5px 10px 5px;
-  height: 95%;
+  height: 90%;
   width: 221px;
   z-index: 1000;
   visibility: hidden;
@@ -132,7 +130,7 @@
   justify-content: center;
   align-items: center;
   background-color: var(--inverse-background);
-  color: var(--text);
+  color: var(--background);
   padding: 10px 14px;
   border-radius: 1000px;
   margin: 20px;
@@ -168,4 +166,31 @@
     scale: 1.08;
   }
   transition: background-color 0.5s ease;
+}
+.header{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 15px;
+  background: var(--background);
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+.contentToggle{
+  position: fixed;
+  top: 23px;
+  right: 10px;
+  background-color: var(--accent);
+  color: var(--text);
+  border: none;
+  padding: 10px 15px;
+  margin: 10px;
+  border-radius: 1000px;
+  font-size: 1rem;
+  cursor: pointer;
+  z-index: 1001;
+  &:hover {
+    opacity: 0.8;
+  }
 }
