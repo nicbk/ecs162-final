@@ -135,61 +135,6 @@ img{
   max-width: 500px;
   max-height: 500px;
 }
-.popupBody {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  background: var(--background);
-  border-radius: 20px 100px 20px 100px;
-  padding: 15px;
-  margin: 10px;
-  max-width: 80%;
-  width: 100%;
-  min-width: 700px;
-}
-.popupOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.459);
-  backdrop-filter: blur(15px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-.popupModelHeader{
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  background: var(--background);
-  border-radius: 20px 100px 20px 100px;
-  padding: 15px;
-  width: 100%;
-}
-.popupModelBody{
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  background: var(--background);
-  border-radius: 20px 100px 20px 100px;
-  padding: 15px;
-  width: 100%;
-}
-.popupBoxBody {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: var(--background);
-  border-radius: 12px;
-  padding: 5px;
-  width: 80%;
-}
 .textarea{
   width: 100%;
   padding: 15px;
@@ -217,30 +162,6 @@ img{
   }
   &::placeholder {
     opacity: 0.5;
-  }
-}
-.popupBoxFooter{
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  margin-top: 20px;
-
-  button {
-    padding: 5px 10px;
-    border-radius: 200px 100px 200px 1000px;
-    border: none;
-    background-color: var(--accent);
-    color: var(--inverse-background);
-    font-size: 1rem;
-    cursor: pointer;
-    &:hover {
-      background-color: var(--inverse-background);
-      color: var(--background);
-      transform: scale(1.1);
-      transition: all 0.3s ease-in-out;
-    }
   }
 }
 .commentListCon {
@@ -278,7 +199,6 @@ img{
 .commentHeader {
   display: flex;
   margin: 0.5rem;
-  padding: 0.5rem;
   font-size: 1.5rem;
   margin: auto;
   width: 100%;
@@ -288,7 +208,6 @@ img{
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  padding: 0.5rem;
   margin: auto;
   width: 100%;
   font-size: 1.25rem;
@@ -327,6 +246,10 @@ img{
   margin: auto;
   width: 80%;
   .likeIcon{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
     color: var(--inverse-background);
     padding: 0 5px;
     font-size: 1.5rem;
@@ -339,6 +262,11 @@ img{
       transform: scale(1.2);
       transition: all 0.2s ease-in-out;
       color: red;
+    }
+    .likeCount{
+      padding: 5px;
+      margin: 1px;
+      font-size: 1.25rem;
     }
   }
   .commentIcon{

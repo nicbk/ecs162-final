@@ -1,17 +1,24 @@
 //this is where the layout will be and including the header and any nvaigation bars please keep it simple and clean
 import { useNavigate, Outlet, useLocation, useParams } from 'react-router-dom'
 import styles from './Layout.module.scss'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { getCommentsMock  } from '../../api_data/client.ts'
 import { FaBars, FaTimes } from 'react-icons/fa'
-import { useAuth } from '../../contexts/AuthContext';
-import { GlobalStateContext } from '../../global_state/global_state';
+import { GlobalStateContext, type UserAuthenticationState } from '../../global_state/global_state';
+import type { User } from '../../interface_data/index.ts';
+import { initFirebaseHandler, onLoginButtonPress, onLogoutButtonPress } from './helpers.ts';
 
 export default function Layout() {
   const navigate = useNavigate()
   const location = useLocation();
   const { commentId } = useParams<{ commentId: string }>()
-  const { user, loading, login, logout } = useAuth(); // ADD THIS LINE
+  const globalState = useContext(GlobalStateContext);
+  const [userAuthenticationState, setUserAuthenticationState] = globalState!.userAuthenticationState;
+
+  // Init the firebase auth event handler
+  useEffect(() => {
+    initFirebaseHandler(setUserAuthenticationState);
+  }, []);
 
   // added theme toggle functionality but we will make it more optimized later for this is good enough 
   const [theme, setTheme] = useState<'light'|'dark'>(() => (localStorage.getItem('theme') as 'light'|'dark') || 'light');
@@ -48,60 +55,90 @@ export default function Layout() {
   const toggleNav = () => setNavOpen(open => !open)
 
   return (
-    <div className={styles.container}>
-      {!navigOpen && (<button className={styles.navigToggle}
-          onClick={toggleNav}
-          aria-label="Open menu"
-        >
-          <FaBars />
+    <div>
+      <div className={styles.header}>
+        <button className={styles.contentToggle}
+          onClick={() =>navigate(location.pathname === '/SocialMedia' ? '/Home' : '/SocialMedia')}>
+          {location.pathname === '/SocialMedia' ? 'Home' : 'Social'}
         </button>
-      )}
-      {/* for now this is gonna be just toggle menu but later maybe we can also do hover on side? */}
-      <aside className={`${styles.sidebar} ${navigOpen ? styles.open : ''}`}>
-        {navigOpen && (
-          <button className={styles.navigClose}
+        <h1 className={styles.title}>
+          {location.pathname === '/Home' ? 'Restaurants' : location.pathname === '/SocialMedia' ? 'Social page' : 'Foodie'}
+        </h1>
+        {!navigOpen && (<button className={styles.navigToggle}
             onClick={toggleNav}
-            aria-label="Close menu"
+            aria-label="Open menu"
           >
-            <FaTimes />
+            <FaBars />
           </button>
         )}
-        <div className={styles.logo}>
-          <h2>Foodie</h2>
-          <button className={styles.theme} onClick={toggleTheme}>
-            {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-          </button>
-        </div>
-        {/* talked with the team but still thinking about it maybe or maybe not leave this part. */}
-        {PUserName && (
-          <div className={styles.threadnavigation}>
-            <h4 className={styles.threadTitle}>
-              thread of {PUserName}
-            </h4>
-          </div>
-        )}
-        {/* we as a team decided maybe the side bar will look better then the top so I change it to see how it looks like */}
-        <nav className={styles.pageNav}>
-          <button className={`${styles.Home} ${location.pathname === '/Home' ? styles.active : ''}`}
-            onClick={() => navigate('/Home')}>Home</button>
-          <button className={`${styles.profile} ${location.pathname === '/Profile' ? styles.active : ''}`}
-            onClick={() => navigate('/Profile')}>Profile</button>
-          {loading ? (
-            <span>Loading...</span>
-          ) : user ? (
-            <div className={styles.authSection}>
-              <span>Hi, {user.username}!</span>
-              <button className={styles.logout} onClick={logout}>Logout</button>
-            </div>
-          ) : (
-            <button className={styles.login} onClick={login}>Login</button>
+      </div>
+      <div className={styles.container}>
+        {/* for now this is gonna be just toggle menu but later maybe we can also do hover on side? */}
+        <aside className={`${styles.sidebar} ${navigOpen ? styles.open : ''}`}>
+          {navigOpen && (
+            <button className={styles.navigClose}
+              onClick={toggleNav}
+              aria-label="Close menu"
+            >
+              <FaTimes />
+            </button>
           )}
-        </nav>
-      </aside>
-      
-      <main className={styles.main}>
-        <Outlet />
-      </main>
+          <div className={styles.logo}>
+            <h2>Foodie</h2>
+            <button className={styles.theme} onClick={toggleTheme}>
+              {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+            </button>
+          </div>
+          {/* talked with the team but still thinking about it maybe or maybe not leave this part. */}
+          {PUserName && (
+            <div className={styles.threadnavigation}>
+              <h4 className={styles.threadTitle}>
+                thread of {PUserName}
+              </h4>
+            </div>
+          )}
+          {/* we as a team decided maybe the side bar will look better then the top so I change it to see how it looks like */}
+          <nav className={styles.pageNav}>
+            <button className={`${styles.Home} ${location.pathname === '/Home' ? styles.active : ''}`}
+              onClick={() => navigate('/Home')}>Home</button>
+
+            {userAuthenticationState === 'not-logged-in' ? (
+              <button
+                className={styles.login}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onLoginButtonPress(setUserAuthenticationState);
+                }}
+              >
+                Login
+              </button>
+            ) : userAuthenticationState === 'loading' ? (
+              <span>Logging in...</span>
+            ) : (
+              <>
+                <button className={`${styles.profile} ${location.pathname === '/Profile' ? styles.active : ''}`}
+                  onClick={() => navigate('/Profile')}>Profile</button>
+                <div className={styles.authSection}>
+                  <span>Hi, {(userAuthenticationState as User).username}!</span>
+                  <button
+                    className={styles.logout}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onLogoutButtonPress(setUserAuthenticationState);
+                    }}
+                  >
+                    Logout
+                  </button>
+                </div>
+              </>
+            )}
+          </nav>
+        </aside>
+        
+        <main className={styles.main}>
+          <Outlet />
+        </main>
+      </div>
     </div>
   )
 }

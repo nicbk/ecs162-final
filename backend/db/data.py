@@ -26,11 +26,11 @@ class Comment(NamedTuple):
     date: str
     replies: list['Comment']  # List of reply comments
 
-# /api/v1/authed-user
-# If logged in:
-# {
-# username: string
-# bio: string
-# profileImage: base64 encoded data URL
-# comments: [list of comment IDs]
-# }
+class Restaurant(NamedTuple):
+    restaurantId: str
+    restaurantTitle: str
+    rating: float
+    address: str
+    images: list[str]
+    googleMapsUrl: str
+

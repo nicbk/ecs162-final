@@ -36,6 +36,13 @@ async function deleteAPI<T>(paths: string): Promise<T> {
 ///////////////////////
 
 /*
+ * Create a new user in the backend
+ */
+export const createUser = async () => {
+  return await postAPI<any>(`user/create`, {});
+};
+
+/*
  * Posts comment to a given resource
  * @param newComment content of the new comment to post
  * @param parentResourceId ID of the parent resource to post comment to
@@ -159,3 +166,14 @@ export const removeLike = async (commentId: string) => {
 export const deleteComment = async (commentId: string) => {
   return await deleteAPI<any>(`comment/${commentId}`);
 };
+
+////////////////////////////////
+// MOCK DATA SETUP OPERATIONS //
+///////////////////////////////
+export const setUpMongoDBMock = async (clearFlag: boolean = true) => {
+  await postAPI<any>('mock/setup', {
+    restaurants: mockResturantsData,
+    comments: mockPublish,
+    clear: clearFlag
+  });
+}

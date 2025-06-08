@@ -150,6 +150,12 @@ def getRestaurantInformation():
     if radius > 50000:
         raise BadRequest('radius must be less than 500000 meters')
 
+    nearbyRestaurants = get_nearby_restaurants(app, latitude, longitude, limit, radius)
+
+    if mongo_instance.isMock:
+        mock_restaurants = mongo_instance.get_mock_restaurants()
+        return jsonify(nearbyRestaurants + mock_restaurants)
+    
     return get_nearby_restaurants(app, latitude, longitude, limit, radius)
 
 #Gets a comment, as well as all nested replies for that comment.
@@ -174,11 +180,7 @@ def postComment(restaurant_id_or_comment_id):
     data = request.get_json()
     # Parse out the pieces of the json
     comment = data['body']
-    rating = None
-    try:
-        rating = int(data['rating'])
-    except:
-        return jsonify({ 'error': 'Request must have a \'rating\' number field'}), 400
+    rating = data.get('rating', float("NaN"))
 
     user_jwt = session.get('user')
     if not user_jwt:
@@ -223,6 +225,25 @@ def removeLikeFromComment(comment_id):
 ################# user routes #################
 ###############################################
 
+# After creating a new user in dex, we need to create a user in our MongoDB
+@app.route('/api/v1/user/create', methods=['POST'])
+def createUser():
+    user_jwt = session.get('user')
+    if not user_jwt:
+        return jsonify({'error': 'User not authenticated'}), 401
+    
+    user_id = user_jwt['sub']
+    user_email = user_jwt.get('email', '')
+    username = user_jwt.get('username', 'User')
+
+    try:
+        mongo_instance.add_new_user(username, user_email, user_id)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+    return jsonify({'status': 'User created successfully'}), 200
+
+
 @app.route('/api/v1/user/<string:username>', methods=['GET'])
 def getUserByUsername(username):
     user = mongo_instance.get_user_by_username(username)
@@ -263,12 +284,43 @@ def getUserInformation():
     user_jwt = session.get('user')
     if not user_jwt:
         return jsonify(False), 200
+    
+    # Fast fallback - return session data immediately
+    user_data = {
+        'username': user_jwt.get('preferred_username', 'User'),
+        'email': user_jwt.get('email', ''),
+        'oauthId': user_jwt['sub']
+    }
     user_id = user_jwt['sub']
+    
+    try :
+        mongo_user_data = mongo_instance.get_user_by_oauth_id(user_id)
+        return jsonify(mongo_user_data), 200
+    except Exception as e:
+        return jsonify(user_data), 202
 
-    user_data = mongo_instance.get_user_by_oauth_id(user_id)
 
-    return jsonify(user_data), 200
+################# mock routes #################
+###############################################
+@app.route('/api/v1/mock/setup', methods=['POST'])
+def setupMockData():
+    # This is a mock route to set up initial data in the database
+    mongo_instance.isMock = True
 
+    comments =  request.get_json['comments']
+    restaurants = request.get_json['restaurants']
+    clear_flag = request.get_json.get('clear', True)
+
+    try:
+        if clear_flag:
+            mongo_instance.clear_database()
+        else:
+            print("Skipping clearing mock data")
+
+        mongo_instance.setup_mock_data(comments, restaurants)
+        return jsonify({'status': 'Mock data setup successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # To run app
 if __name__ == '__main__':
