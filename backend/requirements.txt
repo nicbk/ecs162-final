@@ -9,3 +9,5 @@ requests
 pytest
 mongomock
 datetime
+bcrypt
+PyYAML

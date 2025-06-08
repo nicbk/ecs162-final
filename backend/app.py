@@ -10,11 +10,13 @@ from google_maps import get_nearby_restaurants
 import json
 from db.mongodb import MongoDBInterface
 import base64
+from db.sqlite_db import SQLiteUserDB
 
 static_path = os.getenv('STATIC_PATH','static')
 template_path = os.getenv('TEMPLATE_PATH','templates')
 
 mongo_instance = MongoDBInterface()
+user_db = SQLiteUserDB()
 
 app = Flask(__name__, static_folder=static_path, template_folder=template_path)
 CORS(app)
@@ -56,6 +58,100 @@ def serve_frontend(path=''):
     return send_from_directory(template_path, 'index.html')
 
 ##########################
+## User Registration API ##
+##########################
+
+@app.route('/api/v1/auth/register', methods=['POST'])
+def register_user():
+    """Register a new user and sync to Dex"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        # Validate required fields
+        required_fields = ['username', 'email', 'password']
+        missing_fields = [field for field in required_fields if not data.get(field)]
+        
+        if missing_fields:
+            return jsonify({'error': f'Missing required fields: {", ".join(missing_fields)}'}), 400
+        
+        # Basic validation
+        username = data['username'].strip()
+        email = data['email'].strip()
+        password = data['password']
+        
+        if len(username) < 3:
+            return jsonify({'error': 'Username must be at least 3 characters long'}), 400
+            
+        if len(password) < 6:
+            return jsonify({'error': 'Password must be at least 6 characters long'}), 400
+            
+        if '@' not in email or '.' not in email:
+            return jsonify({'error': 'Please provide a valid email address'}), 400
+        
+        # Create user and sync to Dex automatically
+        user_uuid = user_db.create_user_with_dex_sync(username, email, password)
+        
+        # Log success for debugging
+        print(f"Successfully created user {username} with UUID {user_uuid}")
+        
+        return jsonify({
+            'message': 'User registered successfully! You can now login through Dex.',
+            'user_id': user_uuid,
+            'username': username,
+            'email': email
+        }), 201
+        
+    except Exception as e:
+        error_message = str(e)
+        print(f"Registration error: {error_message}")
+        
+        # Handle specific error types
+        if 'Username already exists' in error_message:
+            return jsonify({'error': 'This username is already taken. Please choose a different one.'}), 409
+        elif 'Email already exists' in error_message:
+            return jsonify({'error': 'An account with this email already exists.'}), 409
+        elif 'Dex sync failed' in error_message:
+            return jsonify({
+                'error': 'User created but Dex sync failed. Please try logging in, or contact support.',
+                'user_id': 'created_but_sync_failed'
+            }), 207  # 207 = Multi-Status (partial success)
+        else:
+            return jsonify({'error': f'Registration failed: {error_message}'}), 500
+
+@app.route('/api/v1/auth/login', methods=['POST'])
+def login_user():
+    """Login user with username/password (fallback for when Dex is not available)"""
+    data = request.get_json()
+    
+    if not data or not all(k in data for k in ['username', 'password']):
+        return jsonify({'error': 'Username and password are required'}), 400
+    
+    try:
+        user = user_db.authenticate_user(data['username'], data['password'])
+        if user:
+            # Create session similar to OAuth flow
+            session['user'] = {
+                'sub': user['uuid'],
+                'email': user['email'],
+                'name': user['username']
+            }
+            return jsonify({
+                'message': 'Login successful',
+                'user': {
+                    'username': user['username'],
+                    'email': user['email']
+                }
+            }), 200
+        else:
+            return jsonify({'error': 'Invalid username or password'}), 401
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+##########################
 ##########################
 ##########################
 ## API v1 for user info ##
@@ -87,10 +183,18 @@ def authorize():
     token = oauth.dex_client.authorize_access_token()
     nonce = session.get('nonce')
 
-    user_info = oauth.dex_client.parse_id_token(token, nonce=nonce)  # or use .get('userinfo').json()
+    user_info = oauth.dex_client.parse_id_token(token, nonce=nonce)
     session['user'] = user_info
 
-    # Original URL was 8000 which was flask port
+    # Try to link OAuth user to local user if exists
+    username = user_info.get('name')  # Use 'name' instead of 'preferred_username'
+    if username:
+        try:
+            user_db.link_oauth_to_user(username, user_info['sub'])
+            print(f"Linked OAuth user {username} to local database")
+        except Exception as e:
+            print(f"OAuth linking failed: {e}")
+
     frontend_url = os.getenv('FRONTEND_URL', f"http://localhost:{os.getenv('FRONTEND_PORT', '5173')}")
     
     if 'originUrl' in session:
@@ -98,6 +202,7 @@ def authorize():
         return redirect(redirect_url)
 
     return redirect('/')
+
 
 # Path for logging out
 @app.route('/logout')
@@ -257,8 +362,50 @@ def updateUserProfileImage(username):
     mongo_instance.update_user_profile_image(username, profileImage)
     return jsonify({'status': 'Profile image updated successfully'}), 200
 
+# Add this to replace your existing debug endpoint in app.py
+
+@app.route('/api/v1/debug/sync-test', methods=['GET'])
+def debug_sync():
+    """Enhanced debug endpoint to check user sync status"""
+    try:
+        debug_info = user_db.get_debug_info()
+        return jsonify(debug_info)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/v1/debug/force-sync', methods=['POST'])
+def force_sync():
+    """Force a sync of users to Dex configuration"""
+    try:
+        user_db.sync_to_dex()
+        return jsonify({"message": "Sync completed successfully"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/v1/debug/create-test-user', methods=['POST'])
+def create_test_user():
+    """Create a test user for debugging"""
+    import random
+    try:
+        # Generate a unique test user
+        test_num = random.randint(1000, 9999)
+        username = f"testuser{test_num}"
+        email = f"test{test_num}@example.com"
+        password = "testpassword123"
+        
+        user_uuid = user_db.create_user_with_dex_sync(username, email, password)
+        
+        return jsonify({
+            "message": "Test user created successfully",
+            "username": username,
+            "email": email,
+            "password": password,
+            "uuid": user_uuid
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 # Gets Current Logged In User Information
-@app.route('/api/v1/authed-user', methods=['GET'])
 @app.route('/api/v1/authed-user', methods=['GET'])
 def getUserInformation():
     user_jwt = session.get('user')

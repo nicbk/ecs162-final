@@ -4,6 +4,7 @@ services:
     working_dir: /frontend
     volumes:
       - ./frontend:/frontend
+      - ./config/dex:/app/dex-config 
     ports:
       - "5173:5173"  # Vite (SvelteKit) dev server default port
     depends_on:
@@ -17,6 +18,7 @@ services:
     working_dir: /app
     volumes:
       - ./backend:/app
+      - ./config/dex:/app/dex-config 
     env_file:
       - .env
       - .env.dev
@@ -46,13 +48,22 @@ services:
     container_name: dex
     volumes:
       - ./config/dex:/etc/dex
+      - ./config/dex:/dex/config
     ports:
       - "5556:5556"
     env_file:
       - .env
       - .env.dev
     entrypoint: ["/bin/sh", "-c"]
-    command: ["envsubst < /etc/dex/dex.yaml > /etc/dex/dex_final.yaml && dex serve /etc/dex/dex_final.yaml"]
-
+    # Updated command to use dex_final.yaml if it exists, otherwise create it from template
+    command: |
+      "if [ -f /etc/dex/dex_final.yaml ]; then 
+         echo 'Using existing dex_final.yaml'; 
+         dex serve /etc/dex/dex_final.yaml; 
+       else 
+         echo 'Creating dex_final.yaml from template'; 
+         envsubst < /etc/dex/dex.yaml > /etc/dex/dex_final.yaml && dex serve /etc/dex/dex_final.yaml; 
+       fi"
+    restart: unless-stopped
 volumes:
   mongo_data:
