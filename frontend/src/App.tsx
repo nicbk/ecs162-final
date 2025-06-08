@@ -6,6 +6,7 @@ import './global_styles/_global.scss';
 import Threads from './pages/threads/Threads';
 import { GlobalStateContext, type GPSCoordinatesNullable } from './global_state/global_state';
 import { useState } from 'react';
+import SocialMedia from './pages/social_media/SocialMedia';
 export default function App() {
   const userLocationState = useState<GPSCoordinatesNullable>(null);
 
@@ -20,7 +21,9 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/Home"           element={<Home />} />
           <Route path="/Profile"       element={<Profile />} />
+          <Route path="/SocialMedia" element={<SocialMedia/>} />
           <Route path="/threads/:commentId" element={<Threads />} />
+          <Route path="/Home/:restaurantId?" element={<Home />} />
           <Route path="404" element={<div><strong>COMING SOON!!! FOR NOW WORKING ON HOMEPAGE</strong></div>} />
         </Route>
       </Routes>

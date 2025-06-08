@@ -49,61 +49,72 @@ export default function Layout() {
   const toggleNav = () => setNavOpen(open => !open)
 
   return (
-    <div className={styles.container}>
-      {!navigOpen && (<button className={styles.navigToggle}
-          onClick={toggleNav}
-          aria-label="Open menu"
-        >
-          <FaBars />
+    <div>
+      <div className={styles.header}>
+        <button className={styles.contentToggle}
+          onClick={() =>navigate(location.pathname === '/SocialMedia' ? '/Home' : '/SocialMedia')}>
+          {location.pathname === '/SocialMedia' ? 'Home' : 'Social'}
         </button>
-      )}
-      {/* for now this is gonna be just toggle menu but later maybe we can also do hover on side? */}
-      <aside className={`${styles.sidebar} ${navigOpen ? styles.open : ''}`}>
-        {navigOpen && (
-          <button className={styles.navigClose}
+        <h1 className={styles.title}>
+          {location.pathname === '/Home' ? 'Restaurants' : location.pathname === '/SocialMedia' ? 'Social page' : 'Foodie'}
+        </h1>
+        {!navigOpen && (<button className={styles.navigToggle}
             onClick={toggleNav}
-            aria-label="Close menu"
+            aria-label="Open menu"
           >
-            <FaTimes />
+            <FaBars />
           </button>
         )}
-        <div className={styles.logo}>
-          <h2>Foodie</h2>
-          <button className={styles.theme} onClick={toggleTheme}>
-            {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-          </button>
-        </div>
-        {/* talked with the team but still thinking about it maybe or maybe not leave this part. */}
-        {PUserName && (
-          <div className={styles.threadnavigation}>
-            <h4 className={styles.threadTitle}>
-              thread of {PUserName}
-            </h4>
-          </div>
-        )}
-        {/* we as a team decided maybe the side bar will look better then the top so I change it to see how it looks like */}
-        <nav className={styles.pageNav}>
-          <button className={`${styles.Home} ${location.pathname === '/Home' ? styles.active : ''}`}
-            onClick={() => navigate('/Home')}>Home</button>
-          <button className={`${styles.profile} ${location.pathname === '/Profile' ? styles.active : ''}`}
-            onClick={() => navigate('/Profile')}>Profile</button>
-          
-          {loading ? (
-            <span className={styles.loading}>Loading...</span>
-          ) : user ? (
-            <div className={styles.authSection}>
-              <span>Hi, {user.username}!</span>
-              <button className={styles.logout} onClick={logout}>Logout</button>
-            </div>
-          ) : (
-            <button className={styles.login} onClick={login}>Login</button>
+      </div>
+      <div className={styles.container}>
+        {/* for now this is gonna be just toggle menu but later maybe we can also do hover on side? */}
+        <aside className={`${styles.sidebar} ${navigOpen ? styles.open : ''}`}>
+          {navigOpen && (
+            <button className={styles.navigClose}
+              onClick={toggleNav}
+              aria-label="Close menu"
+            >
+              <FaTimes />
+            </button>
           )}
-        </nav>
-      </aside>
-      
-      <main className={styles.main}>
-        <Outlet />
-      </main>
+          <div className={styles.logo}>
+            <h2>Foodie</h2>
+            <button className={styles.theme} onClick={toggleTheme}>
+              {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+            </button>
+          </div>
+          {/* talked with the team but still thinking about it maybe or maybe not leave this part. */}
+          {PUserName && (
+            <div className={styles.threadnavigation}>
+              <h4 className={styles.threadTitle}>
+                thread of {PUserName}
+              </h4>
+            </div>
+          )}
+          {/* we as a team decided maybe the side bar will look better then the top so I change it to see how it looks like */}
+          <nav className={styles.pageNav}>
+            <button className={`${styles.Home} ${location.pathname === '/Home' ? styles.active : ''}`}
+              onClick={() => navigate('/Home')}>Home</button>
+            <button className={`${styles.profile} ${location.pathname === '/Profile' ? styles.active : ''}`}
+              onClick={() => navigate('/Profile')}>Profile</button>
+
+            {loading ? (
+              <span className={styles.loading}>Loading...</span>
+            ) : user ? (
+              <div className={styles.authSection}>
+                <span>Hi, {user.username}!</span>
+                <button className={styles.logout} onClick={logout}>Logout</button>
+              </div>
+            ) : (
+              <button className={styles.login} onClick={login}>Login</button>
+            )}
+          </nav>
+        </aside>
+        
+        <main className={styles.main}>
+          <Outlet />
+        </main>
+      </div>
     </div>
   )
 }

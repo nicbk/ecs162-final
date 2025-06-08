@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useContext } from 'react';
 import { GlobalStateContext } from '../../global_state/global_state.ts';
 import { getGpsCoords, useGpsSetter } from './helpers.ts';
+import { useParams } from 'react-router-dom'
 
 export default function Home() {
   useGpsSetter();
@@ -22,6 +23,7 @@ export default function Home() {
   const [popupType, setpopupType] = useState<'comment' | 'share' | null>(null)
   const [text, setText] = useState('')
   const [likedCom, setlikedCom] = useState<Record<string, boolean>>({})
+  const { restaurantId: copyId } = useParams<{ restaurantId?: string }>();
 
   if (userLocation) {
     console.log(userLocation);
@@ -42,6 +44,14 @@ export default function Home() {
     }
     loadTheData()}, []
   );
+  useEffect(() => {
+    if (!copyId) return;
+      const start_element = document.getElementById(copyId);
+      if (start_element) {
+        start_element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    return;
+  }, [copyId, restaurants]);
 
   const toggleLike = (id: string) =>
     setLiked((prev) => ({ ...prev, [id]: !prev[id] }))
@@ -70,18 +80,14 @@ export default function Home() {
       restaurantId: activeRest?.restaurantId,
     })
     if (!activeRest) return;
-    //If there is a better way I will change it for now lets keep it simple.
-    const shareUrl = `${window.location.origin}/Home`;
-    console.log('POST /api/v1/haven"t yet decided', {
-      restaurantId: activeRest.restaurantId,
-      url: shareUrl,
-    })
+    //I think this is the best way now unless there is a better way?
+    alert('Comment URL copied!');
+    const shareUrl = `${window.location.origin}/Home/${activeRest.restaurantId}`;
+    navigator.clipboard.writeText(shareUrl);
     closeModal()
   }
 
-  const firstLayerForActive = activeRest
-    ? comments.filter((comm) => comm.parent_id === activeRest.restaurantId)
-    : [];
+  const firstLayerForActive = comments.filter((comm) => comm.parent_id != null);
 
   const handlePostComment = () => {
     if (!activeRest || !text.trim()) return;
@@ -103,7 +109,7 @@ export default function Home() {
   return (
     <div className={styles.home}>
       {restaurants.map((rest: Restaurant) => (
-        <div className={styles.card} key={rest.restaurantId}>
+        <div id={rest.restaurantId} className={styles.card} key={rest.restaurantId}>
           <div className={styles.post}>
             <div className={styles.cardHeader}>
               <h2>{rest.restaurantTitle}</h2>
@@ -167,14 +173,13 @@ export default function Home() {
                 Share {activeRest.restaurantTitle}
                 </h3>
                 <div className={styles.popupBoxBody}>
-                  <p>place holder but maybe we can put:</p>
+                  <p>Either copy and paste this to a new link or click the copy button to copy it to your clipboard:</p>
                   <input
                     readOnly
-                    value={`${window.location.origin}/Home`}
+                    value={`${window.location.origin}/Home/${activeRest.restaurantId}`}
                     onFocus={(event) => event.target.select()}
                   />
                   <div className={styles.popupBoxFooter}>
-                    {/* I will add something to copy later, for now it is jhust here for placeholde */}
                     <button onClick={giveShare}>Copy!</button>
                     <button onClick={closeModal}>Cancel</button>
                   </div>
@@ -253,6 +258,9 @@ function CommentingPost({
                     aria-label="Like Comment"
                   >
                     <FaHeart />
+                    <p className={styles.likeCount}>
+                      {likedCom[comm.id] ? comm.likes + 1 : comm.likes}
+                    </p>
                   </span>
 
                   <span
@@ -267,9 +275,9 @@ function CommentingPost({
                   <span
                     className={styles.shareIcon}
                     onClick={() => {
-                      const Url = `${window.location.origin}/some kind of connection with threads/${comm.id}`;
+                      const Url = `${window.location.origin}/threads/${comm.id}`;
                       navigator.clipboard.writeText(Url);
-                      alert('copied!');
+                      alert('Comment URL copied!');
                     }}
                     role="button"
                     aria-label="Share Comment"
