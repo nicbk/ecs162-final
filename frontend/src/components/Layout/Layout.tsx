@@ -12,6 +12,7 @@ export default function Layout() {
   const location = useLocation();
   const { commentId } = useParams<{ commentId: string }>()
   const { user, loading, login, logout } = useAuth(); // ADD THIS LINE
+  console.log('Layout: loading=', loading, 'user=', user); // ADD THIS LINE
 
   // added theme toggle functionality but we will make it more optimized later for this is good enough 
   const [theme, setTheme] = useState<'light'|'dark'>(() => (localStorage.getItem('theme') as 'light'|'dark') || 'light');
@@ -86,8 +87,9 @@ export default function Layout() {
             onClick={() => navigate('/Home')}>Home</button>
           <button className={`${styles.profile} ${location.pathname === '/Profile' ? styles.active : ''}`}
             onClick={() => navigate('/Profile')}>Profile</button>
+          
           {loading ? (
-            <span>Loading...</span>
+            <span className={styles.loading}>Loading...</span>
           ) : user ? (
             <div className={styles.authSection}>
               <span>Hi, {user.username}!</span>

@@ -269,10 +269,32 @@ def getUserInformation():
     user_jwt = session.get('user')
     if not user_jwt:
         return jsonify(False), 200
-    user_id = user_jwt['sub']
-
-    user_data = mongo_instance.get_user_by_oauth_id(user_id)
-
+    
+    # Fast fallback - return session data immediately
+    user_data = {
+        'username': user_jwt.get('preferred_username', 'User'),
+        'email': user_jwt.get('email', ''),
+        'oauthId': user_jwt['sub']
+    }
+    
+    # TODO: Uncomment when MongoDB is properly configured
+    # try:
+    #     user_id = user_jwt['sub']
+    #     mongo_user_data = mongo_instance.get_user_by_oauth_id(user_id)
+    #     if mongo_user_data:
+    #         # Merge MongoDB data with session data
+    #         user_data.update({
+    #             'username': mongo_user_data.get('username', user_data['username']),
+    #             'bio': mongo_user_data.get('bio', ''),
+    #             'profileImage': mongo_user_data.get('profileImage', None),
+    #             'comments': mongo_user_data.get('comments', []),
+    #             'wishList': mongo_user_data.get('wishList', []),
+    #             'likedPosts': mongo_user_data.get('likedPosts', [])
+    #         })
+    # except Exception as e:
+    #     print(f"MongoDB user lookup failed: {e}")
+    #     # Continue with session data fallback
+    
     return jsonify(user_data), 200
 
 ################# mock routes #################

@@ -18,6 +18,7 @@ export interface Comment {
     body: string;
     images: Base64Data[];
     likes: number;
+    rating?: number;
     deleted: boolean;
     replies: Comment[];
     parent_id?: string;
