@@ -26,3 +26,11 @@ class Comment(NamedTuple):
     date: str
     replies: list['Comment']  # List of reply comments
 
+class Restaurant(NamedTuple):
+    restaurantId: str
+    restaurantTitle: str
+    rating: float
+    address: str
+    images: list[str]
+    googleMapsUrl: str
+
