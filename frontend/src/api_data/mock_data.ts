@@ -1,9 +1,4 @@
-//expecting the api to look like this with data given from the backend
-
 import { type Restaurant, type Comment } from "../interface_data/index.ts";
-import mock_food_mac from "../assets/MAC_Burger_mock_pic.jpg";
-import in_and_out from "../assets/inandout.jpg";
-import bonappetit from "../assets/bonappetit.png";
 
 fetch('/api/v1/restaurant')
 export const mockResturantsData: Restaurant[] = [
@@ -12,7 +7,7 @@ export const mockResturantsData: Restaurant[] = [
         restaurantTitle: "In-N-Out Burger",
         rating: 7.0,
         address: "234 Davis St",
-        images: [bonappetit],
+        images: ["https://www.in-n-out.com/ResourcePackages/INNOUT/content/images/menu/cheeseburger-meal.png?package=INNOUT&v=2023"],
         googleMapsUrl: "google.com/maps/In-N-Out",
     },
     {
@@ -20,7 +15,7 @@ export const mockResturantsData: Restaurant[] = [
         restaurantTitle: "MAC Burger",
         rating: 3.0,
         address: "543 Davis St",
-        images: [mock_food_mac, "https://cdn.sanity.io/images/czqk28jt/prod_bk_us/5307fcecf8985c350677b2721122facddbf949c8-2000x1000.png?w=650&q=75&fit=max&auto=format"],
+        images: ["https://s7d1.scene7.com/is/image/mcdonalds/1PUB_bestburger_trendingnow:1-column-desktop?resmode=sharp2", "https://cdn.sanity.io/images/czqk28jt/prod_bk_us/5307fcecf8985c350677b2721122facddbf949c8-2000x1000.png?w=650&q=75&fit=max&auto=format"],
         googleMapsUrl: "google.com/maps/MAC",
     },
     {
@@ -28,7 +23,7 @@ export const mockResturantsData: Restaurant[] = [
         restaurantTitle: "Taco Bell",
         rating: 10.0,
         address: "4444 Davis St",
-        images: [in_and_out],
+        images: ["https://www.tacobell.com/images/22813_cheesy_gordita_crunch_750x340.jpg"],
         googleMapsUrl: "google.com/maps/Taco",
     },
 
@@ -85,7 +80,7 @@ export const mockPublish: Comment [] = [
                 replies: []
             }
         ],
-        parent_id: '1'
+        parent_id: '2'
     },
     {
         id: '222222',
@@ -137,7 +132,7 @@ export const mockPublish: Comment [] = [
                 ]
             }
         ],
-        parent_id: '1'
+        parent_id: '3'
     },
     {
         id: '6454545454',
@@ -158,7 +153,7 @@ export const mockPublish: Comment [] = [
                 replies: []
             }
         ],
-        parent_id: '1',
+        parent_id: '3',
     },
     {
         id: '23452',
@@ -210,6 +205,6 @@ export const mockPublish: Comment [] = [
         rating: 9.1,
         deleted: false,
         replies: [],
-        parent_id: '1',
+        parent_id: '2',
     }
 ];
