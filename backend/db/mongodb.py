@@ -11,22 +11,30 @@ from pymongo import MongoClient
 from contextlib import contextmanager
 # db.data didnt work for me - Andrew
 # from db.data import Resource, Comment
-from db.data import Comment
+from db.data import Comment, Restaurant
 from datetime import datetime, timezone
 
 COMMENT_REMOVED_STR = 'Comment was removed by moderator'
 
 class MongoDBInterface():
-    def __init__(self):
+    def __init__(self, isMock: bool = False):
         mongo_uri = os.getenv("MONGO_URI")
+        self.isMock = isMock
         # Becomes the mock client during testing
         # PyMongo documentation followed for tutorial on how to use the library https://pymongo.readthedocs.io/en/stable/tutorial.html
         self.mongo = MongoClient(mongo_uri)
         self.db = self.mongo["foodie_database"]
+
+        # Initialize collections
+        self.__initialize_collections()
+
+    def __initialize_collections(self):
+        '''Private method to initialize collections in the database.'''
         self.users = self.db['users']
         self.comments = self.db['comments']
         self.images = self.db['images']
-
+        self.restaurants = self.db['restaurants']
+        
     # NOTE: The following function is taken from the following GitHub link
     # https://github.com/mongomock/mongomock/issues/569
     #
@@ -42,6 +50,18 @@ class MongoDBInterface():
                 yield mongo
         else:
             yield mongo
+
+    def clear_database(self):
+        '''Clear the database by dropping all collections.'''
+        with self.transaction_wrapper(self.mongo) as session:
+            # Drop all collections in the database
+            self.db.drop_collection('users')
+            self.db.drop_collection('comments')
+            self.db.drop_collection('images')
+            self.db.drop_collection('restaurants')
+
+            # Recreate the collections
+            self.__initialize_collections()
 
     ### Users Collection Methods ###
     ################################
@@ -162,30 +182,34 @@ class MongoDBInterface():
     def add_comment_like(self, comment_id: str, user_id: str):
         '''Add a like to a comment'''
         with self.transaction_wrapper(self.mongo) as session:
-            # Increment the like count for the comment
-            self.comments.update_one(
-                {'id': comment_id},
-                {'$inc': {'likes': 1}}
-            )
-
-            self.users.update_one(
-                {'oauthId': user_id},
-                {'$addToSet': {'likedPosts': comment_id}}
-            )
+            # Only add like if user hasn't already liked the comment
+            user = self.users.find_one({'oauthId': user_id, 'likedPosts': comment_id})
+            if user is None:
+                self.comments.update_one(
+                    {'id': comment_id},
+                    {'$inc': {'likes': 1}}
+                )
+                self.users.update_one(
+                    {'oauthId': user_id},
+                    {'$addToSet': {'likedPosts': comment_id}}
+                )
 
     def remove_comment_like(self, comment_id: str, user_id: str):
         '''Remove a like from a comment'''
         with self.transaction_wrapper(self.mongo) as session:
-            # Decrement the like count for the comment
-            self.comments.update_one(
-                {'id': comment_id},
-                {'$inc': {'likes': -1}}
-            )
+            # Only remove like if user has already liked the comment
+            user = self.users.find_one({'oauthId': user_id, 'likedPosts': comment_id})
+            if user is not None:
+                # Remove the like from the comment and user
+                self.comments.update_one(
+                    {'id': comment_id},
+                    {'$inc': {'likes': -1}}
+                )
 
-            self.users.update_one(
-                {'oauthId': user_id},
-                {'$pull': {'likedPosts': comment_id}}
-            )
+                self.users.update_one(
+                    {'oauthId': user_id},
+                    {'$pull': {'likedPosts': comment_id}}
+                )
 
     def delete_comment_by_id(self, comment_id: str):
         '''
@@ -274,3 +298,46 @@ class MongoDBInterface():
 
             # Delete the image from the database
             self.images.delete_one({'imageId': image_id})
+
+    ### MOCK SETUP METHODS #########
+    ################################
+    def setup_mock_data(self, comments: list[Comment], restaurants: list[Restaurant]):
+        '''Mock setup for populating the database with inital data.'''
+        def dfsCommentInsert(comment: Comment):
+            # Generate a new UUIDv4 ID for the comment
+            comment_data = {
+                'parentId': comment.parentId,
+                'id': comment.id,
+                'creatorId': comment.creatorId,
+                'rating': comment.rating,
+                'images': comment.images,
+                'body': comment.body,
+                'likes': comment.likes,
+                'deleted': comment.deleted,
+                'date': datetime.now(timezone.utc),
+            }
+            self.comments.insert_one(comment_data)
+            for reply in comment.replies:
+                dfsCommentInsert(reply)
+
+        for comment in comments:
+            dfsCommentInsert(comment)
+
+        for restaurant in restaurants:
+            restaurant_data = {
+                'restaurantId': restaurant.restaurantId,
+                'restaurantTitle': restaurant.restaurantTitle,
+                'rating': restaurant.rating,
+                'address': restaurant.address,
+                'images': restaurant.images,
+                'googleMapsUrl': restaurant.googleMapsUrl,
+            }
+            self.restaurants.insert_one(restaurant_data)
+
+    def get_mock_restaurants(self) -> list[Restaurant]:
+        '''Get all mock restaurants from the database.'''
+        with self.transaction_wrapper(self.mongo) as session:
+            restaurants = list(self.restaurants.find())
+            return [Restaurant(**restaurant) for restaurant in restaurants]
+        
+        

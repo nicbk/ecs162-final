@@ -159,3 +159,14 @@ export const removeLike = async (commentId: string) => {
 export const deleteComment = async (commentId: string) => {
   return await deleteAPI<any>(`comment/${commentId}`);
 };
+
+////////////////////////////////
+// MOCK DATA SETUP OPERATIONS //
+///////////////////////////////
+export const setUpMongoDBMock = async (clearFlag: boolean = true) => {
+  await postAPI<any>('mock/setup', {
+    restaurants: mockResturantsData,
+    comments: mockPublish,
+    clear: clearFlag
+  });
+}

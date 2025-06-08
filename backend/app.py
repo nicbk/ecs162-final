@@ -255,6 +255,12 @@ def getRestaurantInformation():
     if radius > 50000:
         raise BadRequest('radius must be less than 500000 meters')
 
+    nearbyRestaurants = get_nearby_restaurants(app, latitude, longitude, limit, radius)
+
+    if mongo_instance.isMock:
+        mock_restaurants = mongo_instance.get_mock_restaurants()
+        return jsonify(nearbyRestaurants + mock_restaurants)
+    
     return get_nearby_restaurants(app, latitude, longitude, limit, radius)
 
 #Gets a comment, as well as all nested replies for that comment.
@@ -441,6 +447,27 @@ def getUserInformation():
     
     return jsonify(user_data), 200
 
+################# mock routes #################
+###############################################
+@app.route('/api/v1/mock/setup', methods=['POST'])
+def setupMockData():
+    # This is a mock route to set up initial data in the database
+    mongo_instance.isMock = True
+
+    comments =  request.get_json['comments']
+    restaurants = request.get_json['restaurants']
+    clear_flag = request.get_json.get('clear', True)
+
+    try:
+        if clear_flag:
+            mongo_instance.clear_database()
+        else:
+            print("Skipping clearing mock data")
+
+        mongo_instance.setup_mock_data(comments, restaurants)
+        return jsonify({'status': 'Mock data setup successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # To run app
 if __name__ == '__main__':

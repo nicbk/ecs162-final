@@ -9,7 +9,7 @@ GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 GOOGLE_PLACES_ENDPOINT = 'https://places.googleapis.com/v1'
 GOOGLE_PLACE_IMAGES_LIMIT = 1
 
-def get_nearby_restaurants(app: Any, latitude: float, longitude: float, limit: int, radius: int):
+def get_nearby_restaurants(app: Any, latitude: float, longitude: float, limit: int, radius: int) -> Any:
   # https://developers.google.com/maps/documentation/places/web-service/nearby-search?apix_params=%7B%22fields%22%3A%22*%22%2C%22resource%22%3A%7B%22includedTypes%22%3A%5B%22restaurant%22%5D%2C%22maxResultCount%22%3A10%2C%22locationRestriction%22%3A%7B%22circle%22%3A%7B%22center%22%3A%7B%22latitude%22%3A37.7937%2C%22longitude%22%3A-122.3965%7D%2C%22radius%22%3A500%7D%7D%7D%7D
   payload = {
       'includedTypes': [ 'restaurant' ],
