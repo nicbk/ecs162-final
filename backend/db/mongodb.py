@@ -55,7 +55,6 @@ class MongoDBInterface():
         '''Clear the database by dropping all collections.'''
         with self.transaction_wrapper(self.mongo) as session:
             # Drop all collections in the database
-            self.db.drop_collection('users')
             self.db.drop_collection('comments')
             self.db.drop_collection('images')
             self.db.drop_collection('restaurants')
@@ -77,6 +76,14 @@ class MongoDBInterface():
 
         with self.transaction_wrapper(self.mongo) as session:
             # Insert the new user into the database
+            existing_user = self.users.find_one({'oauthId': oauth_id})
+            if existing_user is not None:
+                raise Exception('User already exists with this OAuth ID')
+
+            existing_username = self.users.find_one({'username': username})
+            if existing_username is not None:
+                raise Exception('Username already exists')
+            
             self.users.insert_one({
                 'username': username,
                 'email': email,

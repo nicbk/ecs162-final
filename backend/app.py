@@ -180,11 +180,7 @@ def postComment(restaurant_id_or_comment_id):
     data = request.get_json()
     # Parse out the pieces of the json
     comment = data['body']
-    rating = None
-    try:
-        rating = int(data['rating'])
-    except:
-        return jsonify({ 'error': 'Request must have a \'rating\' number field'}), 400
+    rating = data.get('rating', float("NaN"))
 
     user_jwt = session.get('user')
     if not user_jwt:
@@ -228,6 +224,25 @@ def removeLikeFromComment(comment_id):
 
 ################# user routes #################
 ###############################################
+
+# After creating a new user in dex, we need to create a user in our MongoDB
+@app.route('/api/v1/user/create', methods=['POST'])
+def createUser():
+    user_jwt = session.get('user')
+    if not user_jwt:
+        return jsonify({'error': 'User not authenticated'}), 401
+    
+    user_id = user_jwt['sub']
+    user_email = user_jwt.get('email', '')
+    username = user_jwt.get('username', 'User')
+
+    try:
+        mongo_instance.add_new_user(username, user_email, user_id)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+    return jsonify({'status': 'User created successfully'}), 200
+
 
 @app.route('/api/v1/user/<string:username>', methods=['GET'])
 def getUserByUsername(username):
@@ -276,26 +291,14 @@ def getUserInformation():
         'email': user_jwt.get('email', ''),
         'oauthId': user_jwt['sub']
     }
+    user_id = user_jwt['sub']
     
-    # TODO: Uncomment when MongoDB is properly configured
-    # try:
-    #     user_id = user_jwt['sub']
-    #     mongo_user_data = mongo_instance.get_user_by_oauth_id(user_id)
-    #     if mongo_user_data:
-    #         # Merge MongoDB data with session data
-    #         user_data.update({
-    #             'username': mongo_user_data.get('username', user_data['username']),
-    #             'bio': mongo_user_data.get('bio', ''),
-    #             'profileImage': mongo_user_data.get('profileImage', None),
-    #             'comments': mongo_user_data.get('comments', []),
-    #             'wishList': mongo_user_data.get('wishList', []),
-    #             'likedPosts': mongo_user_data.get('likedPosts', [])
-    #         })
-    # except Exception as e:
-    #     print(f"MongoDB user lookup failed: {e}")
-    #     # Continue with session data fallback
-    
-    return jsonify(user_data), 200
+    try :
+        mongo_user_data = mongo_instance.get_user_by_oauth_id(user_id)
+        return jsonify(mongo_user_data), 200
+    except Exception as e:
+        return jsonify(user_data), 202
+
 
 ################# mock routes #################
 ###############################################

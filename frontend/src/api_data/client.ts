@@ -36,6 +36,13 @@ async function deleteAPI<T>(paths: string): Promise<T> {
 ///////////////////////
 
 /*
+ * Create a new user in the backend
+ */
+export const createUser = async () => {
+  return await postAPI<any>(`user/create`, {});
+};
+
+/*
  * Posts comment to a given resource
  * @param newComment content of the new comment to post
  * @param parentResourceId ID of the parent resource to post comment to
