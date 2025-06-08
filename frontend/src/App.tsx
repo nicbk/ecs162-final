@@ -4,14 +4,17 @@ import { Routes, Route } from 'react-router-dom'
 import Profile from './pages/profile/Profile';
 import './global_styles/_global.scss';
 import Threads from './pages/threads/Threads';
-import { GlobalStateContext, type GPSCoordinatesNullable } from './global_state/global_state';
+import { GlobalStateContext, type GPSCoordinatesNullable, type UserAuthState } from './global_state/global_state';
 import { useState } from 'react';
+import type { User } from './interface_data';
 export default function App() {
   const userLocationState = useState<GPSCoordinatesNullable>(null);
+  const userAuthState = useState<UserAuthState>(false);
 
   return (
     <GlobalStateContext value={{
-      userLocationState
+      userLocationState,
+      userAuthState
     }}>
       <Routes>
         {/* for now temp we will have the login stuff here but we need to remove it after it is done */}

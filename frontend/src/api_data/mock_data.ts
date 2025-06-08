@@ -5,7 +5,7 @@ import mock_food_mac from "../assets/MAC_Burger_mock_pic.jpg";
 import in_and_out from "../assets/inandout.jpg";
 import bonappetit from "../assets/bonappetit.png";
 
-fetch('/api/v1/restaurant')
+//fetch('/api/v1/restaurant')
 export const mockResturantsData: Restaurant[] = [
     {
         restaurantId: '1',
@@ -33,7 +33,7 @@ export const mockResturantsData: Restaurant[] = [
     },
 
 ];
-fetch('/api/v1/Comment')
+//fetch('/api/v1/Comment')
 export const mockPublish: Comment [] = [
     {
         id: '234',
@@ -60,7 +60,8 @@ export const mockPublish: Comment [] = [
                          "https://static.vecteezy.com/system/resources/thumbnails/037/236/579/small/ai-generated-beautuful-fast-food-background-with-copy-space-free-photo.jpg"],
                     likes: 0,
                     deleted: false,
-                    replies: []
+                    replies: [],
+                    parentId: '2234341'
                     },
                     { 
                     id: '23',
@@ -70,9 +71,11 @@ export const mockPublish: Comment [] = [
                          "https://media.istockphoto.com/id/1457433817/photo/group-of-healthy-food-for-flexitarian-diet.jpg?s=612x612&w=0&k=20&c=v48RE0ZNWpMZOlSp13KdF1yFDmidorO2pZTu2Idmd3M="],
                     likes: 10,
                     deleted: false,
-                    replies: []
+                    replies: [],
+                    parentId: '2234341'
                     }
-                ]
+                ],
+                parentId: '234'
             },
             {
                 id: '1111321',
@@ -81,12 +84,13 @@ export const mockPublish: Comment [] = [
                 images: ["data:image/jpeg;base64,sdsddssd", "data:image/jpeg;base64,sdfgggggggg"],
                 likes: 2,
                 deleted: false,
-                replies: []
+                replies: [],
+                parentId: '234'
             }
         ],
-        parent_id: '1'
+        parentId: '1'
     },
-        {
+    {
         id: '222222',
         username: "sam",
         body: "food was good",
@@ -101,12 +105,13 @@ export const mockPublish: Comment [] = [
                 images: ["data:image/jpeg;base64,drtfdghfghd", "data:image/jpeg;base64,fghhgf"],
                 likes: 13,
                 deleted: false,
-                replies: []
+                replies: [],
+                parentId: '222222'
             }
         ],
-        parent_id: '1',
+        parentId: '1',
     },
-        {
+    {
         id: '546457',
         username: "tim",
         body: "this is a comment",
@@ -129,12 +134,14 @@ export const mockPublish: Comment [] = [
                         images: ["data:image/jpeg;base64,ffffffff", "data:image/jpeg;base64,ffffffff"],
                         likes: 2,
                         deleted: false,
-                        replies: []
+                        replies: [],
+                        parentId: '2234341'
                     }
-                ]
+                ],
+                parentId: '546457'
             }
         ],
-        parent_id: '1'
+        parentId: '2'
     },
         {
         id: '6454545454',
@@ -151,10 +158,11 @@ export const mockPublish: Comment [] = [
                 images: ["data:image/jpeg;base64,drtfdghfghd", "data:image/jpeg;base64,fghhgf"],
                 likes: 13,
                 deleted: false,
-                replies: []
+                replies: [],
+                parentId: '6454545454'
             }
         ],
-        parent_id: '1',
+        parentId: '3',
     },
         {
         id: '23452',
@@ -171,12 +179,13 @@ export const mockPublish: Comment [] = [
                 images: ["data:image/jpeg;base64,drtfdghfghd", "data:image/jpeg;base64,fghhgf"],
                 likes: 13,
                 deleted: false,
-                replies: []
+                replies: [],
+                parentId: '23452'
             }
         ],
-        parent_id: '1',
+        parentId: '1'
     },
-            {
+    {
         id: '65476',
         username: "louis",
         body: "food was good",
@@ -191,10 +200,11 @@ export const mockPublish: Comment [] = [
                 images: ["data:image/jpeg;base64,drtfdghfghd", "data:image/jpeg;base64,fghhgf"],
                 likes: 13,
                 deleted: false,
-                replies: []
+                replies: [],
+                parentId: '65476'
             }
         ],
-        parent_id: '1',
+        parentId: '2'
     },
     {
         id: '11111111',
@@ -204,6 +214,6 @@ export const mockPublish: Comment [] = [
         likes: 1,
         deleted: false,
         replies: [],
-        parent_id: '1',
+        parentId: '3',
     }
 ];

@@ -20,7 +20,7 @@ export interface Comment {
     likes: number;
     deleted: boolean;
     replies: Comment[];
-    parent_id?: string;
+    parentId: string;
 }
 
 export interface InputComment {
@@ -34,4 +34,15 @@ export interface User {
     profileImage: Base64Data;
     bio: string;
     comments: CommentId[];
+    likedResources: Set<string>;
 }
+
+// I learn how to implement an interface type-checker from this response:
+// https://stackoverflow.com/questions/14425568/interface-type-check-with-typescript
+export const isUser = (obj: any): obj is User => {
+    if (typeof obj === 'object' && 'username' in obj) {
+        return true;
+    } else {
+        return false;
+    }
+};

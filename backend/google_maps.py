@@ -46,9 +46,14 @@ def get_nearby_restaurants(app: Any, latitude: float, longitude: float, limit: i
 
       # https://stackoverflow.com/questions/3715493/encoding-an-image-file-with-base64
       # https://github.com/sendpulse/sendpulse-rest-api-python/issues/7
-      image_response_raw = requests.get(url, params, headers=image_req_headers)
-      encodedImage = base64.b64encode(image_response_raw.text.encode('utf-8')).decode('utf-8')
-      return encodedImage
+      # https://developers.google.com/maps/documentation/places/web-service/reference/rest/v1/places.photos/getMedia
+      # When retrieving the restaurant image we get an automatic redirect request to the actual image URL.
+      # So, this should be intercepted.
+      image_response_raw = requests.get(url, params, headers=image_req_headers, allow_redirects=False)
+      # https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Location
+      # We want to intercept a 3xx response which specifies that the image is located at another URL
+      if image_response_raw.status_code // 100 == 3:
+        return image_response_raw.headers.get('Location')
 
   google_response = requests.post(f'{GOOGLE_PLACES_ENDPOINT}/places:searchNearby', data=json.dumps(payload), headers=headers)
   app.logger.warning(google_response.json())
@@ -60,7 +65,7 @@ def get_nearby_restaurants(app: Any, latitude: float, longitude: float, limit: i
   restaurants = list(map(lambda restaurant: {
       'restaurantId': restaurant['id'],
       'restaurantTitle': restaurant['displayName']['text'],
-      'rating': restaurant['rating'],
+      'rating': restaurant['rating'] * 2,
       'address': restaurant['formattedAddress'],
       'googleMapsUrl': restaurant['googleMapsUri'],
       'images': list(map(lambda image_obj: get_image(image_obj['name']), restaurant['photos'][:GOOGLE_PLACE_IMAGES_LIMIT]))

@@ -65,7 +65,7 @@ export const getRestaurants = async (latitude: number, longitude: number, limit:
     radius: radius.toString()
   });
 
-  return await fetchAPI<Restaurant[]>(`restaurants${urlParams}`);
+  return await fetchAPI<Restaurant[]>(`restaurants?${urlParams}`);
 };
 
 /*
@@ -77,7 +77,7 @@ export const getRestaurants = async (latitude: number, longitude: number, limit:
 export const getResourceComments = async (resourceId: string) => {
   const urlParams = new URLSearchParams({ parent_id: resourceId });
   
-  return await fetchAPI<Comment[]>(`comments${urlParams}`);
+  return await fetchAPI<Comment[]>(`comments?${urlParams}`);
 }
 
 /*
@@ -89,7 +89,7 @@ export const getResourceComments = async (resourceId: string) => {
 export const getCommentTree = async (commentId: string) => {
   const urlParams = new URLSearchParams({ commentId });
   
-  return await fetchAPI<Comment[]>(`comments${urlParams}`);
+  return await fetchAPI<Comment[]>(`comments?${urlParams}`);
 }
 
 /*
@@ -127,21 +127,21 @@ export const updateProfileImage = async (username: string, profileImage: string)
 };
 
 /*
- * Adds a like to a comment
- * @param commentId ID of the comment to add a like to
+ * Adds a like to a resource
+ * @param resourceId ID of the resource to add a like to
  * @returns does not return anything on success. On error, exception is thrown
  */
-export const addLike = async (commentId: string) => {
-  return await postAPI<any>(`comment/${commentId}/add-like`);
+export const addLike = async (resourceId: string) => {
+  return await postAPI<any>(`resource/${resourceId}/add-like`);
 };
 
 /*
- * Remove a like from a comment
- * @param commentId ID of the comment to remove a like from
+ * Remove a like from a resource
+ * @param resourceId ID of the resource to remove a like from
  * @returns does not return anything on success. On error, exception is thrown
  */
-export const removeLike = async (commentId: string) => {
-  return await postAPI<any>(`comment/${commentId}/remove-like`);
+export const removeLike = async (resourceId: string) => {
+  return await postAPI<any>(`resource/${resourceId}/remove-like`);
 };
 
 ///////////////////////
