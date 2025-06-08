@@ -1,5 +1,4 @@
 import styles from './Home.module.scss';
-import modalStyles from '../../global_styles/modal.module.scss';
 import { type Restaurant } from '../../interface_data/index.ts';
 import { type Comment } from '../../interface_data/index.ts';
 import mapIcon from '../../assets/map-icon.svg';
@@ -163,9 +162,9 @@ export default function Home() {
       ))}
 
       {activeRest && popupType && (
-        <div className={modalStyles.popupOverlay} onClick={closeModal}>
+        <div className={styles.popupOverlay} onClick={closeModal}>
           <div
-            className={modalStyles.popupBody}
+            className={styles.popupBody}
             onClick={(event) => event.stopPropagation()}
           >
             {popupType === 'share' && (
@@ -173,14 +172,14 @@ export default function Home() {
                 <h3>
                 Share {activeRest.restaurantTitle}
                 </h3>
-                <div className={modalStyles.popupBoxBody}>
+                <div className={styles.popupBoxBody}>
                   <p>Either copy and paste this to a new link or click the copy button to copy it to your clipboard:</p>
                   <input
                     readOnly
                     value={`${window.location.origin}/Home/${activeRest.restaurantId}`}
                     onFocus={(event) => event.target.select()}
                   />
-                  <div className={modalStyles.popupBoxFooter}>
+                  <div className={styles.popupBoxFooter}>
                     <button onClick={giveShare}>Copy!</button>
                     <button onClick={closeModal}>Cancel</button>
                   </div>
@@ -225,8 +224,8 @@ function CommentingPost({
   const navigate = useNavigate();
   return (
     <div>
-      <div className={modalStyles.popupModelBody}>
-        <div className={modalStyles.commentListCon}>
+      <div className={styles.popupModelBody}>
+        <div className={styles.commentListCon}>
           {comments.length === 0 ? (
             <p className={styles.solo}>No comments yet.</p>
           ) : (
@@ -291,7 +290,7 @@ function CommentingPost({
           )}
         </div>
 
-        <div className={modalStyles.popupBoxBody}>
+        <div className={styles.popupBoxBody}>
           <h3>Comments for {activeRest.restaurantTitle}</h3>
           <textarea
             className={styles.textarea}
@@ -299,7 +298,7 @@ function CommentingPost({
             value={text}
             onChange={(event) => setText(event.target.value)}
           />
-          <div className={modalStyles.popupBoxFooter}>
+          <div className={styles.popupBoxFooter}>
             <button
               onClick={handlePostComment}
               disabled={!text}
