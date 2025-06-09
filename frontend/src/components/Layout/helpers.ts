@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import type { UserAuthenticationState } from "../../global_state/global_state";
+import type { UserAuthState } from "../../global_state/global_state";
 import { firebaseAuth } from "../../global_state/firebase";
 import { getRedirectResult, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, type User as FirebaseUser } from "firebase/auth";
 import { FirebaseJWT, getLoggedInUser } from "../../api_data/client";
@@ -16,7 +16,7 @@ GoogleProvider.addScope('https://www.googleapis.com/auth/userinfo.profile');
 GoogleProvider.addScope('openid');
 
 export const onLoginButtonPress = (
-  setUserAuthenticationState: Dispatch<SetStateAction<UserAuthenticationState>>
+  setUserAuthenticationState: Dispatch<SetStateAction<UserAuthState>>
 ) => {
   // We don't call await; instead we set loading state and then the firebase event handler will set the final state
   signInWithPopup(firebaseAuth, GoogleProvider);
@@ -24,7 +24,7 @@ export const onLoginButtonPress = (
 }
 
 export const onLogoutButtonPress = (
-  setUserAuthenticationState: Dispatch<SetStateAction<UserAuthenticationState>>
+  setUserAuthenticationState: Dispatch<SetStateAction<UserAuthState>>
 ) => {
   // We don't call await; instead we set loading state and then the firebase event handler will set the final state
   signOut(firebaseAuth);
@@ -32,7 +32,7 @@ export const onLogoutButtonPress = (
 }
 
 export const initFirebaseHandler = (
-  setUserAuthenticationState: Dispatch<SetStateAction<UserAuthenticationState>>
+  setUserAuthenticationState: Dispatch<SetStateAction<UserAuthState>>
 ) => {
   const statusHandler = (user: FirebaseUser | null) => {
     if (user) {
@@ -52,7 +52,9 @@ export const initFirebaseHandler = (
           username: user.displayName || user.email!,
           profileImage: user.photoURL!,
           bio: backendUser.bio,
-          comments: backendUser.comments
+          comments: backendUser.comments,
+          // TODO: implement function to get liked comments
+          likedComments: new Set()
         });
       })();
     } else {

@@ -1,63 +1,95 @@
 import styles from './Home.module.scss';
-import { type Restaurant } from '../../interface_data/index.ts';
+import { isUser, type InputComment, type Restaurant, type User } from '../../interface_data/index.ts';
 import { type Comment } from '../../interface_data/index.ts';
 import mapIcon from '../../assets/map-icon.svg';
 import {FaHeart, FaRegComment, FaShareSquare} from "react-icons/fa";
-import { getRestaurantsMock, getCommentsMock  } from '../../api_data/client.ts';
+import { getRestaurantsMock, getCommentsMock, getResourceComments, postComment, getRestaurants, removeLike, addLike  } from '../../api_data/client.ts';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useContext } from 'react';
 import { GlobalStateContext } from '../../global_state/global_state.ts';
 import { getGpsCoords, useGpsSetter } from './helpers.ts';
 import { useParams } from 'react-router-dom'
+import { ThrottledImage } from '../../components/ThrottledImage/ThrottledImage.tsx';
+import { LoadingSpinner } from '../../components/LoadingSpinner/LoadingSpinner.tsx';
+
+const DEFAULT_NUM_RESTAURANTS = 6;
 
 export default function Home() {
   useGpsSetter();
 
   const globalState = useContext(GlobalStateContext);
   const userLocation = globalState!.userLocationState[0];
+  const userAuthState = globalState!.userAuthState[0];
 
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
-  const [comments, setComments] = useState<Comment[]>([])
-  const [liked, setLiked] = useState<Record<string, boolean>>({})
+  const [commentMap, setCommentMap] = useState<Record<string, Comment[]>>({})
   const [activeRest, setActiveRest] = useState<Restaurant | null>(null)
   const [popupType, setpopupType] = useState<'comment' | 'share' | null>(null)
   const [text, setText] = useState('')
-  const [likedCom, setlikedCom] = useState<Record<string, boolean>>({})
   const { restaurantId: copyId } = useParams<{ restaurantId?: string }>();
 
-  if (userLocation) {
-    console.log(userLocation);
+  const comments = Object.values(commentMap).flat();
+
+  const refetchCommentThread = async (restaurantId: string) => {
+    const comments = await getResourceComments(restaurantId);
+    setCommentMap({
+      ...commentMap,
+      restaurantId: comments
+    });
+  };
+
+  const toggleLike = async (restaurantId: string, commentId: string) => {
+    if (!isUser(userAuthState)) {
+      return;
+    }
+
+    if ((userAuthState as User).likedComments.has(commentId)) {
+      await removeLike(commentId);
+    } else {
+      await addLike(commentId);
+    }
+
+    await refetchCommentThread(restaurantId);
   }
 
-  useEffect(() => {
-    const loadTheData = async () => {
-      try {
-        const [restaurantsData, commentsData] = await Promise.all([getRestaurantsMock(), getCommentsMock()])
-        setRestaurants(restaurantsData)
-        console.log('got restaurants:', restaurantsData)
-        setComments(commentsData)
-        console.log('got comments:', commentsData)
-
-      } catch (error) {
-        console.error('Failed to load data', error)
-      }
+  const didUserLikeComment = (commentId: string) => {
+    if (!isUser(userAuthState)) {
+      return false;
     }
-    loadTheData()}, []
-  );
-  useEffect(() => {
-    if (!copyId) return;
-      const start_element = document.getElementById(copyId);
-      if (start_element) {
-        start_element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    return;
-  }, [copyId, restaurants]);
 
-  const toggleLike = (id: string) =>
-    setLiked((prev) => ({ ...prev, [id]: !prev[id] }))
+    return ((userAuthState as User).likedComments.has(commentId));
+  };
 
-  const toggleLikeCom = (id: string) => {
-    setlikedCom((prev) => ({ ...prev, [id]: !prev[id] }));
+  // We need to come up with a way of sharing the restaurant.
+  const giveShare = () => {
+    console.log('POST /api/v1/haven"t yet decided', {
+      restaurantId: activeRest?.restaurantId,
+    })
+    if (!activeRest) return;
+    //I think this is the best way now unless there is a better way?
+    alert('Comment URL copied!');
+    const shareUrl = `${window.location.origin}/Home/${activeRest.restaurantId}`;
+    navigator.clipboard.writeText(shareUrl);
+    closeModal()
+  };
+
+  const firstLayerForActive = activeRest
+    ? comments.filter((comm: Comment) => comm.parentId === activeRest.restaurantId)
+    : [];
+
+  const handlePostComment = (restaurantId: string, parentId: string) => {
+    if (!activeRest || !text.trim()) return;
+
+    const newComment: InputComment = {
+      body: text.trim(),
+      rating: 5,
+      images: [],
+    };
+
+    postComment(newComment, parentId)
+      .then(() => refetchCommentThread(restaurantId));
+
+    setText('');
   }
 
   const openModal = (rest: Restaurant) => {
@@ -74,40 +106,42 @@ export default function Home() {
     setpopupType(null)
   }
 
-  // We need to come up with a way of sharing the restaurant.
-  const giveShare = () => {
-    console.log('POST /api/v1/haven"t yet decided', {
-      restaurantId: activeRest?.restaurantId,
-    })
-    if (!activeRest) return;
-    //I think this is the best way now unless there is a better way?
-    alert('Comment URL copied!');
-    const shareUrl = `${window.location.origin}/Home/${activeRest.restaurantId}`;
-    navigator.clipboard.writeText(shareUrl);
-    closeModal()
-  }
+  useEffect(() => {
+    const loadTheData = async () => {
+      if (!userLocation || !userLocation.latitude || !userLocation.longitude) {
+        return;
+      }
 
-  const firstLayerForActive = comments.filter((comm) => comm.parent_id != null);
+      try {
+        const restaurantsData = await getRestaurants(userLocation?.latitude!, userLocation?.longitude!, DEFAULT_NUM_RESTAURANTS);
+        const commentsList = await Promise.all(restaurantsData.map(restaurant => getResourceComments(restaurant.restaurantId)));
 
-  const handlePostComment = () => {
-    if (!activeRest || !text.trim()) return;
+        const zippedList = restaurantsData.map((restaurant, i) => [restaurant.restaurantId, commentsList[i]] as [string, Comment[]]);
+        const commentMap: Record<string, Comment[]> = {};
+        for (const pair of zippedList) {
+          commentMap[pair[0]] = pair[1];
+        }
 
-    const newComment: Comment = {
-      id: crypto.randomUUID(),
-      username: 'me ayub for now',
-      body: text.trim(),
-      images: [],
-      likes: 3,
-      deleted: false,
-      replies: [],
-      parent_id: activeRest.restaurantId,
+        setRestaurants(restaurantsData)
+        setCommentMap(commentMap);
+      } catch (error) {
+        console.error('Failed to load data', error)
+      }
     }
-    setComments((prev) => [newComment, ...prev]);
-    setText('');
-  }
+    loadTheData()
+  }, [userLocation]);
 
-  return (
-    <div className={styles.home}>
+  useEffect(() => {
+    if (!copyId) return;
+      const start_element = document.getElementById(copyId);
+      if (start_element) {
+        start_element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    return;
+  }, [copyId, restaurants]);
+
+  const mainRestaurants = (
+    <>
       {restaurants.map((rest: Restaurant) => (
         <div id={rest.restaurantId} className={styles.card} key={rest.restaurantId}>
           <div className={styles.post}>
@@ -126,15 +160,17 @@ export default function Home() {
               <p>{rest.rating.toPrecision(2)}</p>
             </div>
             <div className={styles.cardImage}>
-              <img src={rest.images[0]}
-               alt="Card Image" />
+              <ThrottledImage
+                src={rest.images[0]}
+                alt="Card Image"
+              />
             </div>
             <div className={styles.cardFooter}>
                 <span
-                className={`${styles.likeIcon} ${liked[rest.restaurantId] ? styles.liked : ''}`}
-                onClick={() => toggleLike(rest.restaurantId)}
-                role="button"
-                aria-label="Like"
+                  className={`${styles.likeIcon} ${didUserLikeComment(rest.restaurantId) ? styles.liked : ''}`}
+                  onClick={() => toggleLike(rest.restaurantId, rest.restaurantId)}
+                  role="button"
+                  aria-label="Like"
                 >
                 <FaHeart />
                 </span>
@@ -193,33 +229,42 @@ export default function Home() {
                 onCancel={closeModal}
                 activeRest={activeRest}
                 comments={firstLayerForActive}
-                likedCom={likedCom}
-                toggleLikeCom={toggleLikeCom}
+                toggleLike={toggleLike}
                 text={text}
                 setText={setText}
+                didUserLikeComment={didUserLikeComment}
                 handlePostComment={handlePostComment}
               />
             )}
           </div>
         </div>
       )}
-    </div>
-  )
+    </>
+  );
+
+  return (
+    restaurants.length > 0 &&
+      <div className={styles.home}>
+        {mainRestaurants}
+      </div>
+    ||
+      <LoadingSpinner />
+  );
 }
 
 function CommentingPost({
   // onSubmit,
-  onCancel, activeRest, comments, likedCom, toggleLikeCom, text, setText, handlePostComment,
+  onCancel, activeRest, comments, toggleLike, text, setText, didUserLikeComment, handlePostComment,
 }: {
   // onSubmit: (text: string) => void,
   onCancel: () => void
   activeRest: Restaurant;
   comments: Comment[];
-  likedCom: Record<string, boolean>;
-  toggleLikeCom: (id: string) => void;
+  toggleLike: (restaurantId: string, commentId: string) => void;
   text: string;
   setText: (s: string) => void;
-  handlePostComment: () => void;
+  didUserLikeComment: (commentId: string) => boolean;
+  handlePostComment: (restaurantId: string, parentId: string) => void;
 }) {
   const navigate = useNavigate();
   return (
@@ -251,15 +296,15 @@ function CommentingPost({
                 <div className={styles.commentFoot}>
                   <span
                     className={`${styles.likeIcon} ${
-                      likedCom[comm.id] ? styles.liked : ''
+                      didUserLikeComment(comm.id) ? styles.liked : ''
                     }`}
-                    onClick={() => toggleLikeCom(comm.id)}
+                    onClick={() => toggleLike(activeRest.restaurantId, comm.id)}
                     role="button"
                     aria-label="Like Comment"
                   >
                     <FaHeart />
                     <p className={styles.likeCount}>
-                      {likedCom[comm.id] ? comm.likes + 1 : comm.likes}
+                      {didUserLikeComment(comm.id) ? comm.likes + 1 : comm.likes}
                     </p>
                   </span>
 
@@ -300,7 +345,7 @@ function CommentingPost({
           />
           <div className={styles.popupBoxFooter}>
             <button
-              onClick={handlePostComment}
+              onClick={() => handlePostComment(activeRest.restaurantId, activeRest.restaurantId)}
               disabled={!text}
             >
               Post!
