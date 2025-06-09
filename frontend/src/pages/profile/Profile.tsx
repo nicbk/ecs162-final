@@ -1,18 +1,18 @@
 
 import styles from './Profile.module.scss';
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import defaultAvatar from '../../assets/default-avatar.png';
 import food from '../../assets/food.jpg';
-// import placeholder from '../../assets/image2vector.svg';
+import placeholder from '../../assets/image2vector.svg';
 import { mockResturantsData } from '../../api_data/mock_data';
 import { mockPublish } from '../../api_data/mock_data';
-import { type Restaurant } from '../../interface_data/index.ts';
+import { type CommentId, type Restaurant } from '../../interface_data/index.ts';
 import { type Comment } from '../../interface_data/index.ts';
 import { type User } from '../../interface_data/index.ts';
 import { getRestaurantsMock, getCommentsMock  } from '../../api_data/client.ts';
 import { useNavigate } from 'react-router-dom';
-import { getLoggedInUser } from '../../api_data/client.ts';
 import { FaTh, FaHeart, FaRegComment, FaShareSquare, FaComment} from "react-icons/fa";
+import { GlobalStateContext } from '../../global_state/global_state.ts';
 
 interface Post extends Comment{
   totalReplies?: number;
@@ -97,7 +97,7 @@ const mockPosts: Post[] = [
   {
     id: "5",
     username: "user_005",
-    images: [/*placeholder*/],
+    images: [placeholder],
     body: "other top level comment text only",
     deleted: false,
     rating: 1,
@@ -138,8 +138,10 @@ const Profile = () => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [favoritesOpen, setFavoritesOpen] = useState(false);
   const [favorites, setFavorites] = useState<string[]>(["in n out", "mcdonalds"]);
-  const [profileImage, setProfileImage] = useState();
+  const [profileImage, setProfileImage] = useState<string>();
   const [hoveredPostId, setHoveredPostId] = useState<string | null>(null);
+  const  globalState = useContext(GlobalStateContext)
+  const [userAuthenticationState, setUserAuthenticationState] = globalState!.userAuthState;
   const [followers] = useState(2);
   const [following] = useState(1);
 
@@ -163,33 +165,54 @@ const Profile = () => {
 
   useEffect(() => {
     console.log('fetching user data');
-    fetch('/api/v1/authed-user')
-    .then(response => response.json())
-    .then(async (user) => {
-      setUsername(user.username);
-      console.log('name changed to', user.username);
-      setBio(user.bio || "");
-      console.log('bio changed to', user.bio);
-      setProfileImage(user.profileImage || defaultAvatar); 
-      if (user.comments && user.comments.length > 0){
-        const topLevelComments = user.comments.filter((comment: Post) => comment.rating !== undefined);
-        const commentList = topLevelComments.map(async (comment: Post) => {
-          const response = await fetch(`/api/v1/comment/${comment.id}`);
-          return await response.json();
+    const user = globalState!.userAuthState[0] as User;
+    setUsername(user.username);
+    console.log('name changed to', user.username);
+    setBio(user.bio || "");
+    console.log('bio changed to', user.bio);
+    setProfileImage(user.profileImage || defaultAvatar); 
+    if (user.comments && user.comments.length > 0){
+      const fetchComments = async () => {
+        try {
+        const commentFetches = user.comments.map(async (commentId: CommentId) => {
+          const response = await fetch(`/api/v1/comment/${commentId}`);
+          return await response.json() as Comment;
         });
-        let comments = await Promise.all(commentList);
+
+        const comments = await Promise.all(commentFetches);
         
-        const imagePosts = comments.filter(post => !post.deleted).map(post => ({
-        ...post, 
-        images: post.images?.length > 0 ? post.images : [/*placeholder*/]
+        const topLevelComments = comments.filter(comment => comment.rating !== undefined && !comment.deleted);
+        const imagePosts = topLevelComments.map(comment => ({
+          ...comment,
+          images: comment.images.length > 0 ? comment.images : [placeholder],
         }));
-        // const textPosts = comments.filter(post => post.images.length === 0 && !post.deleted);
         setImagePosts(imagePosts);
-        // setTextPosts(textPosts);
+      } 
+      catch (err) {
+        console.error('Error fetching comments:', err);
       }
-    })
-    .catch(error => console.error('Fetch error:', error));
-  }, []);
+      }
+      fetchComments();
+    }
+    
+  })
+  //   .catch(error => console.error('Fetch error:', error));
+  // }, []);
+
+      // const topLevelComments = user.comments.filter((comment: Post) => comment.rating !== undefined);
+    // const commentList = topLevelComments.map(async (comment: Post) => {
+    //   const response = await fetch(`/api/v1/comment/${comment.id}`);
+    //   return await response.json();
+    // });
+    // let comments = await Promise.all(commentList);
+    
+    // const imagePosts = comments.filter(post => !post.deleted).map(post => ({
+    // ...post, 
+    // images: post.images?.length > 0 ? post.images : [/*placeholder*/]
+    // }));
+    // // const textPosts = comments.filter(post => post.images.length === 0 && !post.deleted);
+    // setImagePosts(imagePosts);
+    // // setTextPosts(textPosts);
 
   for (const post of posts) {
   post.totalReplies = countReplies(post);
@@ -204,41 +227,6 @@ const Profile = () => {
     countRecursive(comment);
     return count - 1;
   }
-
-  // RATHER THAN RECURSIVELY RENDERING, REDIRECT TO RESTAURANT PAGE
-
-  // const CommentComponent = ({comment} : {comment: Post}) => {
-  //   return (
-  //     <div>
-  //     {comment.deleted ? (
-  //       <div>[Deleted comment]</div>
-  //     ) : (
-  //       <div>
-  //       <strong>{comment.username}:</strong>
-  //       <p>{comment.body}</p>
-  //       {comment.images?.length > 0 && (
-  //         <div>
-  //           {comment.images.map((base64Img, i) => (
-  //             <img 
-  //               key={i}
-  //               src={`data:image/jpeg;base64,${base64Img}`} 
-  //               alt={`Comment image ${i + 1}`}
-  //             />
-  //           ))}
-  //         </div>
-  //       )}
-  //       </div>
-  //     )}
-  //     {comment.replies.length > 0 && (
-  //       <div>
-  //         {comment.replies.map((reply) => (
-  //           <CommentComponent key={reply.id} comment={reply} />
-  //         ))}
-  //       </div>
-  //     )}
-  //   </div>
-  //   );
-  // }
 
   /* function that, given an array of Post objects (replies to a comment), will render the top level ones */
   function ReplyList({ replies }: { replies: Post[] }) {
@@ -283,7 +271,6 @@ const Profile = () => {
                 <span>See more replies ({reply.replies.length})</span>
               </div>
             )}
-            {/*eventually need endpoint for restaurant page that we will get redirected to + issue: we lose the comment we were tracking*/}
           </div>
         ))}
       </div>
@@ -308,20 +295,15 @@ const Profile = () => {
     {/* user info */}
     <section style={{textAlign: 'center',}}>
       <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', marginTop: 30}}>
-        <img src={defaultAvatar} alt="Profile picture" width={150} height={150} style={{marginRight: 20}}/>
+        <img src={profileImage} alt="Profile picture" width={150} height={150} style={{marginRight: 20}}/>
         <div style={{display: 'flex', flexDirection: 'column'}}>
           <div style={{display: 'flex', flexDirection: 'row', alignItems: 'flex-start', height: 'fit-content'}}>
             <p className={styles.username}>{username}</p>
-            {/* <button onClick={editProfile} style={{alignSelf: 'center', marginRight: 10}}>Edit Profile</button>
-            <button style={{alignSelf: 'center'}} onClick={() => setFavoritesOpen(true)}>Favorites</button> */}
           </div>
           <div style={{textAlign: 'left'}}>
             <p>
               <span className={styles.postsCount}><strong>{posts.length}</strong> Posts</span> 
-              {/* <span style={{marginRight: 15}}><strong>{followers}</strong> Followers</span> 
-              <span style={{marginRight: 15}}><strong>{following}</strong> Following</span>  */}
             </p>
-            {/* <p className={styles.bio}>{bio}</p> */}
           </div>
         </div>
       </div>
@@ -370,17 +352,15 @@ const Profile = () => {
         </div>
         )}
         {/* shows all the top level comments with images in a gallery format */}
-        {selectedPost && ( /* FIX THIS PART TO SHOW ALL THE IMAGES IN THE ARRAY */
+        {selectedPost && (
         <div className={styles.popupOverlay} onClick={() => setSelectedPost(null)}> 
           <div className={styles.popupContent} onClick={e => e.stopPropagation()}>
-            {/* <div className={styles.popupleftSide}> */}
-              <div className={styles.imageWrapper}>
-                <img src={selectedPost.images[0]} alt={selectedPost.body} style={{width: '100%', borderRadius: '8px'}} />
-                {(tablet || mobile) && (<div className={styles.mainComment}>
-                  <p>{selectedPost.body}</p>
-                </div>)}
-              </div>
-            {/* </div> */}
+            <div className={styles.imageWrapper}>
+              <img src={selectedPost.images[0]} alt={selectedPost.body} style={{width: '100%', borderRadius: '8px'}} />
+              {(tablet || mobile) && (<div className={styles.mainComment}>
+                <p>{selectedPost.body}</p>
+              </div>)}
+            </div>
             <div className={styles.popupRightSide}> 
               {full && (
                 <div className={styles.mainComment}>
@@ -400,22 +380,6 @@ const Profile = () => {
           </div>
         </div>
       )}
-      {/* <div className={styles.textPostsSection}>
-        <h3>Text Posts</h3>
-        {textPosts.length > 0 ? (
-          textPosts.map(post => (
-            <div key={post.id} className={styles.textPost}>
-              <p>You commented on {post.date}:</p>
-              <p>{post.body}</p>
-              <div style={{paddingLeft: 8}}>
-                <ReplyList replies={post.replies}/>
-              </div>
-            </div>
-          ))
-        ) : (
-          <p>No text-only posts yet.</p>
-        )}
-      </div> */}
       </section>
       {favoritesOpen && (
         <div className={styles.popupOverlay} onClick={() => setFavoritesOpen(false)}>
