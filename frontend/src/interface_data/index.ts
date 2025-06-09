@@ -18,10 +18,10 @@ export interface Comment {
     body: string;
     images: Base64Data[];
     likes: number;
-    rating?: number;
+    rating: number;
     deleted: boolean;
     replies: Comment[];
-    parentId?: string;
+    parentId: string;
 }
 
 export interface InputComment {
@@ -42,6 +42,14 @@ export interface User {
 // https://stackoverflow.com/questions/14425568/interface-type-check-with-typescript
 export const isUser = (obj: any): obj is User => {
     if (typeof obj === 'object' && 'username' in obj) {
+        return true;
+    } else {
+        return false;
+    }
+};
+
+export const isCommentTopLevel = (comment: Comment) => {
+    if (Number.isNaN(comment.rating)) {
         return true;
     } else {
         return false;

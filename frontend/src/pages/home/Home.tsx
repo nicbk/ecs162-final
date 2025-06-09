@@ -11,6 +11,7 @@ import { getGpsCoords, useGpsSetter } from './helpers.ts';
 import { useParams } from 'react-router-dom'
 import { ThrottledImage } from '../../components/ThrottledImage/ThrottledImage.tsx';
 import { LoadingSpinner } from '../../components/LoadingSpinner/LoadingSpinner.tsx';
+import { useComments, useRestaurantCommentMap, useRestaurants } from '../../global_state/hooks.ts';
 
 const DEFAULT_NUM_RESTAURANTS = 6;
 
@@ -21,21 +22,17 @@ export default function Home() {
   const userLocation = globalState!.userLocationState[0];
   const userAuthState = globalState!.userAuthState[0];
 
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([])
-  const [commentMap, setCommentMap] = useState<Record<string, Comment[]>>({})
+  const [restaurants, setRestaurants] = useRestaurants();
+  const [comments, setComments] = useComments();
+  //const commentMap = useRestaurantCommentMap();
   const [activeRest, setActiveRest] = useState<Restaurant | null>(null)
   const [popupType, setpopupType] = useState<'comment' | 'share' | null>(null)
   const [text, setText] = useState('')
   const { restaurantId: copyId } = useParams<{ restaurantId?: string }>();
 
-  const comments = Object.values(commentMap).flat();
-
   const refetchCommentThread = async (restaurantId: string) => {
     const comments = await getResourceComments(restaurantId);
-    setCommentMap({
-      ...commentMap,
-      restaurantId: comments
-    });
+    setComments(comments);
   };
 
   const toggleLike = async (restaurantId: string, commentId: string) => {
@@ -115,15 +112,17 @@ export default function Home() {
       try {
         const restaurantsData = await getRestaurants(userLocation?.latitude!, userLocation?.longitude!, DEFAULT_NUM_RESTAURANTS);
         const commentsList = await Promise.all(restaurantsData.map(restaurant => getResourceComments(restaurant.restaurantId)));
+        const commentsAll = commentsList.flat();
 
-        const zippedList = restaurantsData.map((restaurant, i) => [restaurant.restaurantId, commentsList[i]] as [string, Comment[]]);
+        /*const zippedList = restaurantsData.map((restaurant, i) => [restaurant.restaurantId, commentsList[i]] as [string, Comment[]]);
         const commentMap: Record<string, Comment[]> = {};
         for (const pair of zippedList) {
           commentMap[pair[0]] = pair[1];
-        }
+        }*/
 
         setRestaurants(restaurantsData)
-        setCommentMap(commentMap);
+        //setCommentMap(commentMap);
+        setComments(commentsAll);
       } catch (error) {
         console.error('Failed to load data', error)
       }
