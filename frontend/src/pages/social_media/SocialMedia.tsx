@@ -77,6 +77,7 @@ export default function SocialMedia() {
                   navigator.clipboard.writeText( `${window.location.origin}/threads/${comm.id}`);
                   alert('Comment URL copied!');
                 }}
+                aria-label= "Share Comment"
               >
                 <FaShareSquare />
               </span>

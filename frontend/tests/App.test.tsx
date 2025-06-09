@@ -246,5 +246,74 @@ test('Delete all posts from profile', async () => {
   expect(screen.getByText("No posts yet.")).toBeVisible();
 })
 
-// *** Threads test ***
+// *** Social test ***
+test('Test navigation between social and home page', async () => {
+   //On Home page
+  const screen = page.render(
+    <MemoryRouter initialEntries={['/Home']}>
+        <App />
+    </MemoryRouter>
+  )
+  //Visit social tab
+  const socialButton = screen.getByText("Social");
+  await socialButton.click();
+
+  // Should see social page title
+  expect(screen.getByText("Social page")).toBeVisible();
+
+  //Go back to home page
+  const homeButton = screen.getByText("Home").first();
+  await homeButton.click();
+
+  // See home page title
+  expect(screen.getByText("Restaurants")).toBeVisible();
+
+})
+
+test('Test social page like feature', async () => {
+   //On Home page
+  const screen = page.render(
+    <MemoryRouter initialEntries={['/SocialMedia']}>
+        <App />
+    </MemoryRouter>
+  )
+
+  // Should see social page title
+  expect(screen.getByText("Social page")).toBeVisible();
+
+  //Get first post like button
+  const likeButton = screen.getByLabelText("Like Comment").first();
+  await likeButton.click();
+
+  //Theres now a post with 16 likes
+  expect(screen.getByText("16")).toBeVisible();
+
+  //Only 1 post with 15 likes
+  expect(screen.getByText("15").length == 1);
+
+  //Unlike the post
+  await likeButton.click();
+
+  //There should be 2 posts with 15 likes again
+  expect(screen.getByText("15").length == 2);
+
+})
+
+test('Test social page share feature', async () => {
+   //On Home page
+  const screen = page.render(
+    <MemoryRouter initialEntries={['/SocialMedia']}>
+        <App />
+    </MemoryRouter>
+  )
+
+  // Should see social page title
+  expect(screen.getByText("Social page")).toBeVisible();
+
+  //Get share button of first post
+  const shareButton = screen.getByLabelText("Share Comment").first();
+  await shareButton.click();
+
+})
+
 
