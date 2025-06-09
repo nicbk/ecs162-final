@@ -357,6 +357,16 @@ def getUserInformation():
         mongo_user_data = mongo_instance.get_user_by_oauth_id(user_id)
         return jsonify(mongo_user_data), 200
     except Exception as e:
+        if e.args[0] == 'User not found':
+            # If user not found, create a new user in the database
+            try:
+                mongo_instance.add_new_user(user_data['username'], user_data['email'], user_id)
+                mongo_user_data = mongo_instance.get_user_by_oauth_id(user_id)
+                return jsonify(mongo_user_data), 201 # 201 is successful creation
+            
+            except Exception as e:
+                return jsonify({'error': str(e)}), 500
+            
         return jsonify(user_data), 202
 
 
