@@ -9,6 +9,7 @@ from werkzeug.exceptions import BadRequest
 from google_maps import get_nearby_restaurants
 import json
 from db.mongodb import MongoDBInterface
+from db.data import Comment
 import base64
 import jwt
 
@@ -214,10 +215,11 @@ def getListofComments():
     if parent_id is None:
         return jsonify({'error': 'parent_id is required'}), 400
 
-    comments = mongo_instance.get_all_comments_on_parent(parent_id)
-    # print(f"\n\n\nRetrieved comments for parent_id {parent_id}: {comments}")
+    comments:list[Comment] = mongo_instance.get_all_comments_on_parent(parent_id)
+    # Convert each comment (tuple) to dict before jsonify
+    comments_dicts = [comment._asdict() if hasattr(comment, '_asdict') else dict(comment) for comment in comments]
 
-    return jsonify(comments), 200
+    return jsonify(comments_dicts), 200
 
 # Posts a comment to the restaurant or reply to comment
 @app.route('/api/v1/comment/<string:restaurant_id_or_comment_id>', methods=['POST'])

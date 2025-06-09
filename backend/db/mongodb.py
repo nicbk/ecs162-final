@@ -278,7 +278,7 @@ class MongoDBInterface():
                     body=comment['body'],
                     likes=comment['likes'],
                     deleted=comment['deleted'],
-                    date=comment['date'],
+                    date=str(comment['date']),
                     replies=self.get_all_comments_on_parent(comment['id'], is_root_call = False))
                 
                 all_unpacked_comments.append(unpacked_comment)
