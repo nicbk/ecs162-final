@@ -7,7 +7,6 @@ import Threads from './pages/threads/Threads';
 import { GlobalStateContext, type UserAuthState, type GPSCoordinatesNullable, type GlobalCache } from './global_state/global_state';
 import { useState } from 'react';
 import SocialMedia from './pages/social_media/SocialMedia';
-import type { User } from './interface_data';
 
 export default function App() {
   const userLocationState = useState<GPSCoordinatesNullable>(null);
