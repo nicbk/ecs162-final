@@ -36,7 +36,6 @@ export default function SocialMedia() {
 
   return (
     <div className={styles.socialM}>
-      {firstLayerForActive.length === 0 && <p>No comments Found.</p>}
       <div className={styles.socialSection}>
         {firstLayerForActive.map(comm => (
           <div key={comm.id} className={styles.socialCard}>
