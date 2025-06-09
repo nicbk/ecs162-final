@@ -4,7 +4,7 @@ import styles from './Layout.module.scss'
 import { useState, useEffect, useContext } from 'react';
 import { getCommentsMock  } from '../../api_data/client.ts'
 import { FaBars, FaTimes } from 'react-icons/fa'
-import { GlobalStateContext, type UserAuthenticationState } from '../../global_state/global_state';
+import { GlobalStateContext} from '../../global_state/global_state';
 import type { User } from '../../interface_data/index.ts';
 import { initFirebaseHandler, onLoginButtonPress, onLogoutButtonPress } from './helpers.ts';
 
@@ -53,17 +53,31 @@ export default function Layout() {
 
   const [navigOpen, setNavOpen] = useState(false)
   const toggleNav = () => setNavOpen(open => !open)
+  const SocialM = location.pathname === '/SocialMedia'
+  const [isSocialM, setIsSocial] = useState(SocialM)
+
+  useEffect(() => {
+    setIsSocial(location.pathname === '/SocialMedia')
+  }, [location.pathname])
+
+  const toggle = () => {
+    setIsSocial(!isSocialM)
+    navigate(!isSocialM ? '/SocialMedia' : '/Home')
+  }
 
   return (
     <div>
       <div className={styles.header}>
-        <button className={styles.contentToggle}
-          onClick={() =>navigate(location.pathname === '/SocialMedia' ? '/Home' : '/SocialMedia')}>
-          {location.pathname === '/SocialMedia' ? 'Home' : 'Social'}
-        </button>
-        <h1 className={styles.title}>
-          {location.pathname === '/Home' ? 'Restaurants' : location.pathname === '/SocialMedia' ? 'Social page' : 'Foodie'}
-        </h1>
+        <div className={styles.contentToggle}>
+          <label className={styles.toggleSwitch}>
+            <input type="checkbox" checked={isSocialM} onChange={toggle} />
+            <div className={styles.switcher}>
+              <span className={styles.changeable}>Restaurants</span>
+              <span className={styles.changeable}>Social</span>
+              <div className={styles.selector} />
+            </div>
+          </label>
+        </div>
         {!navigOpen && (<button className={styles.navigToggle}
             onClick={toggleNav}
             aria-label="Open menu"
@@ -83,6 +97,7 @@ export default function Layout() {
               <FaTimes />
             </button>
           )}
+          {typeof userAuthenticationState === 'object' ? (<span><strong>Welcome {(userAuthenticationState as User).username}!</strong></span>) : null}
           <div className={styles.logo}>
             <h2>Foodie</h2>
             <button className={styles.theme} onClick={toggleTheme}>
@@ -119,7 +134,6 @@ export default function Layout() {
                 <button className={`${styles.profile} ${location.pathname === '/Profile' ? styles.active : ''}`}
                   onClick={() => navigate('/Profile')}>Profile</button>
                 <div className={styles.authSection}>
-                  <span>Hi, {(userAuthenticationState as User).username}!</span>
                   <button
                     className={styles.logout}
                     onClick={(e) => {

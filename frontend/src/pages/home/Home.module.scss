@@ -1,11 +1,13 @@
 .home {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  flex-wrap: wrap;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: space-evenly;
   height: 100%;
   margin: auto;
   width: 100%;
+  gap: 10px 20px;
   background-color: var(--background);
 }
 .card {
@@ -13,10 +15,23 @@
   align-items: center;
   justify-content: center;
   color: var(--text);
-  box-shadow: -3px 8px 20px 0px var(--accent);
+  border: 1px solid var(--secondary);
+  box-shadow: 0px 0px 13px 0px var(--secondary);
   padding: 5px 20px 5px 20px;
   border-radius: 10px;
   margin: 5px 5px 50px 5px;
+  &:hover {
+    box-shadow: 0px 0px 20px 0px var(--accent);
+    transform: scale(1.01);
+    transition: all 0.5s ease;
+    & .cardImage img {
+      transform: scale(1.02);
+      transition: all 0.5s ease;
+      &:hover {
+        transform: scale(1.04);
+      }
+    }
+  }
 }
 .cardImage{
     img{
@@ -373,4 +388,20 @@ img{
   text-align: center;
   color: #9b2222;
   margin: 1rem 0;
+}
+
+@media screen and (max-width: 768px) {
+  .home {
+    grid-template-columns: 1fr;
+  }
+}
+@media screen and (max-width: 1025px) and (min-width: 769px) {
+  .home {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media screen and (min-width: 1026px) {
+  .home {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
 }
