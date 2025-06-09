@@ -18,7 +18,10 @@ export default function Threads() {
   const fetchCommentTree = useFetchCommentForest();
   const parentComment = useThread(commentId!);
 
-  fetchCommentTree(commentId!);
+  // Fetch comment tree for comment on page load
+  useEffect(() => {
+    fetchCommentTree(commentId!);
+  }, []);
 
   const togExp = (id: string) => {
     setExpanded((pre) => ({ ...pre, [id]: !pre[id] }));
