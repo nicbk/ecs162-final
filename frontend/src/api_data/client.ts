@@ -86,7 +86,7 @@ export const getRestaurants = async (latitude: number, longitude: number, limit:
     radius: radius.toString()
   });
 
-  return await fetchAPI<Restaurant[]>(`restaurants${urlParams}`);
+  return await fetchAPI<Restaurant[]>(`restaurants?${urlParams}`);
 };
 
 /*
@@ -98,7 +98,7 @@ export const getRestaurants = async (latitude: number, longitude: number, limit:
 export const getResourceComments = async (resourceId: string) => {
   const urlParams = new URLSearchParams({ parent_id: resourceId });
   
-  return await fetchAPI<Comment[]>(`comments${urlParams}`);
+  return await fetchAPI<Comment[]>(`comments?${urlParams}`);
 }
 
 /*
@@ -110,7 +110,7 @@ export const getResourceComments = async (resourceId: string) => {
 export const getCommentTree = async (commentId: string) => {
   const urlParams = new URLSearchParams({ commentId });
   
-  return await fetchAPI<Comment[]>(`comments${urlParams}`);
+  return await fetchAPI<Comment[]>(`comments?${urlParams}`);
 }
 
 /*

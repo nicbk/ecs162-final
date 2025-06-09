@@ -31,7 +31,7 @@ export default function SocialMedia() {
     return account;
   }, {});
 
-  const firstLayerForActive = comments.filter(comm => comm.parent_id != null && resturantTitleId[comm.parent_id] != null);
+  const firstLayerForActive = comments.filter(comm => comm.parentId != null && resturantTitleId[comm.parentId] != null);
   const togLike = (id: string) => setLiked(pre => ({ ...pre, [id]: !pre[id] }));
 
   return (
@@ -43,7 +43,7 @@ export default function SocialMedia() {
             <div className={styles.socialHeader}>
               {'By ' + comm.username + ' For '}
               <span className={styles.restName}>
-                {comm.parent_id && resturantTitleId[comm.parent_id]}
+                {comm.parentId && resturantTitleId[comm.parentId]}
               </span>
             </div>
 
