@@ -21,6 +21,14 @@ export default defineConfig(({ mode }) => {
           { browser: 'chromium' },
         ],
       },
+      coverage: {
+       exclude: [
+        '**/*.config.*', //Dont have to test config files
+        '**/main.tsx', //Each route tested separately already
+        '**/index.ts', //Simple interface file doesnt need testing
+        '**/vite-env.d.ts',
+       ]
+      },
       env: {
         VITE_GOOGLE_FIREBASE_API_KEY: env.VITE_GOOGLE_FIREBASE_API_KEY
       }
