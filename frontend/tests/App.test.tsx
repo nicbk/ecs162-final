@@ -132,197 +132,119 @@ test('Opening and closing the sidebar', async () => {
   expect(likeButton).toBeVisible()
 })
 
+// *** Test google login ***
+test('Try logging in', async () => {
+
+  //On Home page
+  const screen = page.render(
+    <MemoryRouter initialEntries={['/Home']}>
+        <App />
+    </MemoryRouter>
+  )
+  //Open the menu
+  const openButton = screen.getByLabelText("Open menu");
+  expect(openButton).toBeVisible();
+  await openButton.click()
+
+  //Now foodie text should be on screen
+  await expect.element(page.getByText("Foodie")).toBeVisible()
+
+  //Hit login button
+  const loginButton = screen.getByText("Login");
+  expect(loginButton).toBeVisible();
+  await loginButton.click();
+})
+
 // *** PROFILE TESTS need to be changed to account for login now ***
 
 
-// test('Go to profile page and back to home', async () => {
-//   //On Home page
-//   const screen = page.render(
-//     <MemoryRouter initialEntries={['/Home']}>
-//         <App />
-//     </MemoryRouter>
-//   )
-//   //Open the menu
-//   const openButton = screen.getByLabelText("Open menu");
-//   expect(openButton).toBeVisible();
-//   await openButton.click()
+test('Go to profile page and back to home', async () => {
+  //On Home page
+  const screen = page.render(
+    <MemoryRouter initialEntries={['/Profile']}>
+        <App />
+    </MemoryRouter>
+  )
+  //Open the menu
+  const openButton = screen.getByLabelText("Open menu");
+  expect(openButton).toBeVisible();
+  await openButton.click()
 
-//   //Go to profile
-//   const profileButton = screen.getByText('Profile');
-//   await profileButton.click();
+  //Verify we are at profile page
+  const commentSection = screen.getByText("Posts").nth(1);
+  expect(commentSection).toBeVisible();
 
-//   //Verify we are at profile page
-//   const commentSection = screen.getByText("Your comments");
-//   expect(commentSection).toBeVisible();
+  //Go back to home page
+  const homeButton = screen.getByText('Home');
+  await homeButton.click();
 
-//   //Go back to home page
-//   const homeButton = screen.getByText('Home');
-//   await homeButton.click();
+  const likeButton = screen.getByLabelText("Like").first();
+  expect(likeButton).toBeVisible()
+})
 
-//   const likeButton = screen.getByLabelText("Like").first();
-//   expect(likeButton).toBeVisible()
-// })
+test('Delete a post from profile', async () => {
+   //On Home page
+  const screen = page.render(
+    <MemoryRouter initialEntries={['/Profile']}>
+        <App />
+    </MemoryRouter>
+  )
+  //Open the menu
+  const openButton = screen.getByLabelText("Open menu");
+  expect(openButton).toBeVisible();
+  await openButton.click()
 
-// test('Go to profile page and editing bio', async () => {
-//   //On Home page
-//   const screen = page.render(
-//     <MemoryRouter initialEntries={['/Home']}>
-//         <App />
-//     </MemoryRouter>
-//   )
-//   //Open the menu
-//   const openButton = screen.getByLabelText("Open menu");
-//   expect(openButton).toBeVisible();
-//   await openButton.click()
+  //Close menu
+  const closeButton = screen.getByLabelText("Close menu");
+  await closeButton.click();
 
-//   //Go to profile
-//   const profileButton = screen.getByText('Profile');
-//   await profileButton.click();
+  //Verify all posts intially
+  expect(screen.getByText("4 Posts")).toBeVisible();
 
-//   //Close menu
-//   const closeButton = screen.getByLabelText("Close menu");
-//   await closeButton.click();
+  //Click first post
+  const firstPost = screen.getByRole('img').last();
+  await firstPost.click();
 
-//   //See if original bio is there (test bio)
-//   const originalBio = screen.getByText("test bio");
-//   expect(originalBio).toBeVisible();
+  //Delete the post
+  const deleteButton = screen.getByText("Delete Post");
+  await deleteButton.click();
 
-//   //Edit profile
-//   const editProfileButton = screen.getByText('Edit Profile');
-//   await editProfileButton.click();
+  //Verify 3 posts left
+  expect(screen.getByText("3 Posts")).toBeVisible();
+})
 
-//   //Get the bio area since can also edit username currently
-//   const bioTextarea = screen.getByRole('textbox').nth(1);
-//   await bioTextarea.fill("new bio");
+test('Delete all posts from profile', async () => {
+   //On Home page
+  const screen = page.render(
+    <MemoryRouter initialEntries={['/Profile']}>
+        <App />
+    </MemoryRouter>
+  )
+  //Open the menu
+  const openButton = screen.getByLabelText("Open menu");
+  expect(openButton).toBeVisible();
+  await openButton.click()
 
-//   // Save the changes
-//   const saveButton = screen.getByText('Save');
-//   await saveButton.click();
+  //Close menu
+  const closeButton = screen.getByLabelText("Close menu");
+  await closeButton.click();
 
-//   // Verify the new bio is displayed
-//   const newBio = screen.getByText("new bio");
-//   expect(newBio).toBeVisible();
-// })
+  //Verify all posts intially
+  expect(screen.getByText("4 Posts")).toBeVisible();
 
-// test('Go to profile page and cancel bio edit', async () => {
-//   //On Home page
-//   const screen = page.render(
-//     <MemoryRouter initialEntries={['/Home']}>
-//         <App />
-//     </MemoryRouter>
-//   )
-//   //Open the menu
-//   const openButton = screen.getByLabelText("Open menu");
-//   expect(openButton).toBeVisible();
-//   await openButton.click()
+  //Delete all 4 posts
+  for (let i = 0; i < 4; i++){
+    let post = screen.getByRole('img').last();
+    await post.click();
 
-//   //Go to profile
-//   const profileButton = screen.getByText('Profile');
-//   await profileButton.click();
+    let deleteButton = screen.getByText("Delete Post");
+    await deleteButton.click();
+  }
 
-//   //Close menu
-//   const closeButton = screen.getByLabelText("Close menu");
-//   await closeButton.click();
+  //Verify no posts left
+  expect(screen.getByText("0 Posts")).toBeVisible();
+  expect(screen.getByText("No posts yet.")).toBeVisible();
+})
 
-//   //See if original bio is there (test bio)
-//   const originalBio = screen.getByText("test bio");
-//   expect(originalBio).toBeVisible();
+// *** Threads test ***
 
-//   //Edit profile
-//   const editProfileButton = screen.getByText('Edit Profile');
-//   await editProfileButton.click();
-
-//   //Get the bio area since can also edit username currently
-//   const bioTextarea = screen.getByRole('textbox').nth(1);
-//   await bioTextarea.fill("new bio");
-
-//   // cancel the changes
-//   const cancelButton = screen.getByText('Cancel');
-//   await cancelButton.click();
-
-//   // Verify the original bio is still there
-//   const originalBio2 = screen.getByText("test bio");
-//   expect(originalBio2).toBeVisible();
-// })
-
-// test('Go to profile page and look at favorites', async () => {
-//   //On Home page
-//   const screen = page.render(
-//     <MemoryRouter initialEntries={['/Home']}>
-//         <App />
-//     </MemoryRouter>
-//   )
-//   //Open the menu
-//   const openButton = screen.getByLabelText("Open menu");
-//   expect(openButton).toBeVisible();
-//   await openButton.click()
-
-//   //Go to profile
-//   const profileButton = screen.getByText('Profile');
-//   await profileButton.click();
-
-//   //Close menu
-//   const closeButton = screen.getByLabelText("Close menu");
-//   await closeButton.click();
-
-//   //See if original bio is there (test bio)
-//   const originalBio = screen.getByText("test bio");
-//   expect(originalBio).toBeVisible();
-
-//   //Edit profile
-//   const editProfileButton = screen.getByText('Favorites');
-//   await editProfileButton.click();
-
-//   //should now see my favorite restaurants
-//   expect(screen.getByText("My Favorite Restaurants")).toBeVisible();
-// })
-
-// test('Delete a post from profile', async () => {
-//    //On Home page
-//   const screen = page.render(
-//     <MemoryRouter initialEntries={['/Home']}>
-//         <App />
-//     </MemoryRouter>
-//   )
-//   //Open the menu
-//   const openButton = screen.getByLabelText("Open menu");
-//   expect(openButton).toBeVisible();
-//   await openButton.click()
-
-//   //Go to profile
-//   const profileButton = screen.getByText('Profile');
-//   await profileButton.click();
-
-//   //Close menu
-//   const closeButton = screen.getByLabelText("Close menu");
-//   await closeButton.click();
-
-//   //Verify all posts intially
-//   expect(screen.getByAltText("1 this pizza sucked")).toBeVisible();
-//   expect(screen.getByAltText("2 this pizza sucked")).toBeVisible();
-//   expect(screen.getByAltText("3 this pizza sucked")).toBeVisible();
-//   expect(screen.getByAltText("4 this pizza sucked")).toBeVisible();
-
-//   // Click the first post
-//   const firstPost = screen.getByAltText("1 this pizza sucked");
-//   await firstPost.click();
-
-//   // Delete the post
-//   const deleteButton = screen.getByText('Delete Post');
-//   await deleteButton.click();
-
-//    // Verify the first post is gone using try-catch timeout
-//   try {
-//     const deletedPost = screen.getByAltText("1 this pizza sucked", { timeout: 100 });
-//     // If we get here, the post still exists (test should fail)
-//     expect(false).toBe(true);
-//   } catch (error) {
-//     // Post was successfully deleted - this is what we want
-//     expect(true).toBe(true);
-//   }
-
-//   // Verify the other 3 posts still exist
-//   expect(screen.getByAltText("2 this pizza sucked")).toBeVisible();
-//   expect(screen.getByAltText("3 this pizza sucked")).toBeVisible();
-//   expect(screen.getByAltText("4 this pizza sucked")).toBeVisible();
-// })
