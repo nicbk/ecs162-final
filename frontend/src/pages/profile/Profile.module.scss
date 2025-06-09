@@ -140,11 +140,6 @@ section button:active {
 
 .galleryImage {
   transition: transform 0.2s;
-  &:hover {
-    // transform: scale(1.03);
-    // opacity:0.4;
-    // box-shadow: 0 2px 12px rgba(0,0,0,0.2);
-  }
 }
 
 .popupOverlay {
@@ -206,12 +201,6 @@ $themes: (
   height: clamp(300px, 80vh, 1800px);
 }
 
-.popupContent > * {
-  outline: 1px dashed red;
-}
-.popupRightSide > *{
-  outline: 1px dashed blue;
-}
 
 .imageWrapper {
   flex: 0 1 auto;
@@ -221,7 +210,6 @@ $themes: (
   align-items: center;
   justify-content: center;
   position: relative;
-  outline: 1px dashed green;
   max-width: 600px;    /* Restrict max width */
   max-height: 600px;
   object-fit: cover;

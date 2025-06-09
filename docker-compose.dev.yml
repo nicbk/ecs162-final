@@ -12,6 +12,10 @@ services:
     env_file:
       - .env
       - .env.dev
+    #this will not be able to reload bc before it was not reloading correctly
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "120"
   backend:
     image: python:3.10-slim
     working_dir: /app
