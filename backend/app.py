@@ -215,6 +215,8 @@ def getListofComments():
         return jsonify({'error': 'parent_id is required'}), 400
 
     comments = mongo_instance.get_all_comments_on_parent(parent_id)
+    # print(f"\n\n\nRetrieved comments for parent_id {parent_id}: {comments}")
+
     return jsonify(comments), 200
 
 # Posts a comment to the restaurant or reply to comment
