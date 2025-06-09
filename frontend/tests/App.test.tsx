@@ -49,7 +49,7 @@ test('Home page, test comment posting', async () => {
 
 })
 
-test('Home page, test share button', async () => {
+test('Home page, test share button cancel', async () => {
   //On Home page
   const screen = page.render(
     <MemoryRouter initialEntries={['/Home']}>
@@ -72,6 +72,37 @@ test('Home page, test share button', async () => {
   //Comment menu should still be open and comment at top
   expect(screen.getByText("Share In-N-Out Burger")).toBeVisible();
 
+  //Cancel share
+  const cancelbutton = screen.getByText("Cancel");
+  await cancelbutton.click();
+})
+
+test('Home page, test share button copy', async () => {
+  //On Home page
+  const screen = page.render(
+    <MemoryRouter initialEntries={['/Home']}>
+        <App />
+    </MemoryRouter>
+  )
+  //Open the menu
+  const openButton = screen.getByLabelText("Open menu");
+  expect(openButton).toBeVisible();
+  await openButton.click()
+
+  //Close menu
+  const closeButton = screen.getByLabelText("Close menu");
+  await closeButton.click();
+
+  //Test share button
+  const shareButton = screen.getByLabelText("Share").first();
+  await shareButton.click();
+
+  //Comment menu should still be open and comment at top
+  expect(screen.getByText("Share In-N-Out Burger")).toBeVisible();
+
+  //Copy share
+  const copybutton = screen.getByText("Copy!");
+  await copybutton.click();
 })
 
 test('Home page, test comment cancel', async () => {
@@ -228,6 +259,7 @@ test('Delete all posts from profile', async () => {
 
   }
 
+  // Verify no posts left
   expect(screen.getByText("0 Posts")).toBeVisible();
   expect(screen.getByText("No posts yet.")).toBeVisible();
 })
@@ -370,3 +402,28 @@ test('Try logging in', async () => {
   expect(loginButton).toBeVisible();
   await loginButton.click();
 })
+
+//Try theme change
+test('Try changing themes without error', async() => {
+  //On Home page
+  const screen = page.render(
+    <MemoryRouter initialEntries={['/Home']}>
+        <App />
+    </MemoryRouter>
+  )
+  //Open the menu
+  const openButton = screen.getByLabelText("Open menu");
+  expect(openButton).toBeVisible();
+  await openButton.click()
+
+  //get theme button
+  const darkModeButton = screen.getByText("Dark Mode");
+  await darkModeButton.click();
+
+  //Go back to light mode
+  const lightModeButton = screen.getByText("Light Mode");
+  await lightModeButton.click();
+})
+
+
+

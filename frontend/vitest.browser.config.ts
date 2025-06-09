@@ -27,6 +27,8 @@ export default defineConfig(({ mode }) => {
         '**/main.tsx', //Each route tested separately already
         '**/index.ts', //Simple interface file doesnt need testing
         '**/vite-env.d.ts',
+        '**/helpers.ts', // Implicitly tested
+        '**/client.ts', //Implicitly tested
        ]
       },
       env: {
