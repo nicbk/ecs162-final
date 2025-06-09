@@ -6,9 +6,16 @@ export const getRestaurantsMock = (): Promise<Restaurant[]> => Promise.resolve(m
 export const getCommentsMock = (): Promise<Comment[]> => Promise.resolve(mockPublish)
 
 const BASE = '/api/v1/';
+export let FirebaseJWT = {
+  jwt: null as string | null
+};
 
 async function fetchAPI<T>(paths: string): Promise<T> {
-  const response = await fetch(`${BASE}${paths}`);
+  const response = await fetch(`${BASE}${paths}`, {
+    headers: {
+      Authorization: FirebaseJWT.jwt ? `Bearer ${FirebaseJWT.jwt}`: ''
+    }
+  });
 
   //the T is the type of the data we are getting which for now is Restaurant[] or Publish[]
   return response.json() as T;
@@ -17,7 +24,11 @@ async function fetchAPI<T>(paths: string): Promise<T> {
 async function postAPI<T>(paths: string, body: any = null): Promise<T> {
   const response = await fetch(`${BASE}${paths}`, {
     method: 'POST',
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: FirebaseJWT.jwt ? `Bearer ${FirebaseJWT.jwt}`: ''
+    }
   });
 
   return response.json() as T;
@@ -25,7 +36,10 @@ async function postAPI<T>(paths: string, body: any = null): Promise<T> {
 
 async function deleteAPI<T>(paths: string): Promise<T> {
   const response = await fetch(`${BASE}${paths}`, {
-    method: 'DELETE'
+    method: 'DELETE',
+    headers: {
+      Authorization: FirebaseJWT.jwt ? `Bearer ${FirebaseJWT.jwt}`: ''
+    }
   });
 
   return response.json() as T;
@@ -103,7 +117,7 @@ export const getCommentTree = async (commentId: string) => {
  * Gets the currently logged in user
  * @returns boolean 'false' is returned if no user logged in. Otherwise, a User object is returned.
  */
-export const getLoggedInUser = fetchAPI<User | boolean>('authed-user');
+export const getLoggedInUser = () => fetchAPI<User | boolean>('authed-user');
 
 ///////////////////////
 // UPDATE OPERATIONS //

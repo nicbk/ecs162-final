@@ -104,6 +104,7 @@ export default function Threads() {
               );
               alert('Post URL copied!');
             }}
+            aria-label="Share Comment"
           >
             <FaShareSquare />
           </span>
@@ -111,7 +112,7 @@ export default function Threads() {
 
         {comment.replies?.length > 0 && (
           <div className={styles.showMore}>
-            <button onClick={() => togExp(comment.id)}>
+            <button onClick={() => togExp(comment.id)} aria-label="Nested Replies">
               {/*I will change the Icons after this is from google for now */}
               {expanded[comment.id] ? '▼' : '►'}
               {expanded[comment.id]
@@ -145,7 +146,7 @@ export default function Threads() {
         <div className={styles.descripModel}>
           <p>{ParentComm.body}</p>
         </div>
-        
+
         {ParentComm.images?.length > 0 && (
           <div className={styles.commimgs}>
             {ParentComm.images.map((img, num) => (<img key={num} src={img} alt={`Post Image ${num + 1}`} />))}
@@ -168,6 +169,7 @@ export default function Threads() {
               navigator.clipboard.writeText( `${window.location.origin}/Threads/${ParentComm.id}`);
               alert('Post URL copied!');
             }}
+            aria-label="Reply Share Comment"
           >
             <FaShareSquare />
           </span>

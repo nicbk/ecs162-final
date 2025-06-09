@@ -3,7 +3,7 @@ import styles from './Profile.module.scss';
 import React, { useEffect, useState } from "react";
 import defaultAvatar from '../../assets/default-avatar.png';
 import food from '../../assets/food.jpg';
-import placeholder from '../../assets/image2vector.svg';
+// import placeholder from '../../assets/image2vector.svg';
 import { mockResturantsData } from '../../api_data/mock_data';
 import { mockPublish } from '../../api_data/mock_data';
 import { type Restaurant } from '../../interface_data/index.ts';
@@ -97,7 +97,7 @@ const mockPosts: Post[] = [
   {
     id: "5",
     username: "user_005",
-    images: [placeholder],
+    images: [/*placeholder*/],
     body: "other top level comment text only",
     deleted: false,
     rating: 1,
@@ -181,7 +181,7 @@ const Profile = () => {
         
         const imagePosts = comments.filter(post => !post.deleted).map(post => ({
         ...post, 
-        images: post.images?.length > 0 ? post.images : [placeholder]
+        images: post.images?.length > 0 ? post.images : [/*placeholder*/]
         }));
         // const textPosts = comments.filter(post => post.images.length === 0 && !post.deleted);
         setImagePosts(imagePosts);
