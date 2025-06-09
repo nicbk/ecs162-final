@@ -3,7 +3,7 @@ import { useNavigate, Outlet, useLocation, useParams } from 'react-router-dom'
 import styles from './Layout.module.scss'
 import { useState, useEffect, useContext } from 'react';
 import { getCommentsMock  } from '../../api_data/client.ts'
-import { FaBars, FaTimes } from 'react-icons/fa'
+import { FaBars, FaTimes, FaUserCircle} from 'react-icons/fa'
 import { GlobalStateContext} from '../../global_state/global_state';
 import type { User } from '../../interface_data/index.ts';
 import { initFirebaseHandler, onLoginButtonPress, onLogoutButtonPress } from './helpers.ts';
@@ -65,19 +65,50 @@ export default function Layout() {
     navigate(!isSocialM ? '/SocialMedia' : '/Home')
   }
 
+  const handleP = (event: React.MouseEvent) => {
+    event.preventDefault()
+    if (userAuthenticationState === 'not-logged-in') {
+      onLoginButtonPress(setUserAuthenticationState)
+    } 
+    else if (userAuthenticationState !== 'loading') {
+      navigate('/Profile')
+    }
+  }
+
+  const getLogin = 
+    userAuthenticationState !== 'not-logged-in' &&
+    userAuthenticationState !== 'loading'
+  const pAvatar = getLogin
+    ? (userAuthenticationState as User).profileImage
+    : undefined
+
+  const isProfile = location.pathname === '/Profile'
+
   return (
     <div>
+      <div className={styles.avatar} onClick={handleP}>
+        {pAvatar ? (
+          <img
+            src={pAvatar}
+            alt="pic"
+          />
+        ) : (
+          <FaUserCircle />
+        )}
+      </div>
       <div className={styles.header}>
-        <div className={styles.contentToggle}>
-          <label className={styles.toggleSwitch}>
-            <input type="checkbox" checked={isSocialM} onChange={toggle} />
-            <div className={styles.switcher}>
-              <span className={styles.changeable}>Restaurants</span>
-              <span className={styles.changeable}>Social</span>
-              <div className={styles.selector} />
-            </div>
-          </label>
-        </div>
+        {!isProfile && (
+          <div className={styles.contentToggle}>
+            <label className={styles.toggleSwitch}>
+              <input type="checkbox" checked={isSocialM} onChange={toggle} />
+              <div className={styles.switcher}>
+                <span className={styles.changeable}>Restaurants</span>
+                <span className={styles.changeable}>Social</span>
+                <div className={styles.selector} />
+              </div>
+            </label>
+          </div>
+        )}
         {!navigOpen && (<button className={styles.navigToggle}
             onClick={toggleNav}
             aria-label="Open menu"
@@ -120,8 +151,8 @@ export default function Layout() {
             {userAuthenticationState === 'not-logged-in' ? (
               <button
                 className={styles.login}
-                onClick={(e) => {
-                  e.preventDefault();
+                onClick={(event) => {
+                  event.preventDefault();
                   onLoginButtonPress(setUserAuthenticationState);
                 }}
               >
@@ -136,8 +167,8 @@ export default function Layout() {
                 <div className={styles.authSection}>
                   <button
                     className={styles.logout}
-                    onClick={(e) => {
-                      e.preventDefault();
+                    onClick={(event) => {
+                      event.preventDefault();
                       onLogoutButtonPress(setUserAuthenticationState);
                     }}
                   >
