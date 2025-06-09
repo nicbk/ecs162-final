@@ -9,11 +9,11 @@ export interface GPSCoordinates {
 };
 
 export type GPSCoordinatesNullable = GPSCoordinates | null;
-export type UserAuthenticationState = User | 'not-logged-in' | 'loading';
+export type UserAuthState = User | 'not-logged-in' | 'loading';
 
 export interface GlobalStateProps {
     userLocationState: [GPSCoordinatesNullable, Dispatch<SetStateAction<GPSCoordinatesNullable>>];
-    userAuthenticationState: [UserAuthenticationState, Dispatch<SetStateAction<UserAuthenticationState>>];
+    userAuthState: [UserAuthState, Dispatch<SetStateAction<UserAuthState>>];
 };
 
 export const GlobalStateContext = createContext<GlobalStateProps | null>(null);

@@ -3,7 +3,7 @@ import { useNavigate, Outlet, useLocation, useParams } from 'react-router-dom'
 import styles from './Layout.module.scss'
 import { useState, useEffect, useContext } from 'react';
 import { getCommentsMock  } from '../../api_data/client.ts'
-import { FaBars, FaTimes, FaUserCircle} from 'react-icons/fa'
+import { FaBars, FaTimes FaUserCircle} from 'react-icons/fa'
 import { GlobalStateContext} from '../../global_state/global_state';
 import type { User } from '../../interface_data/index.ts';
 import { initFirebaseHandler, onLoginButtonPress, onLogoutButtonPress } from './helpers.ts';
@@ -13,7 +13,7 @@ export default function Layout() {
   const location = useLocation();
   const { commentId } = useParams<{ commentId: string }>()
   const globalState = useContext(GlobalStateContext);
-  const [userAuthenticationState, setUserAuthenticationState] = globalState!.userAuthenticationState;
+  const [userAuthenticationState, setUserAuthenticationState] = globalState!.userAuthState;
 
   // Init the firebase auth event handler
   useEffect(() => {
