@@ -20,6 +20,7 @@ export default function Threads() {
   const toggleLike = useToggleLike();
   const fetchCommentTree = useFetchCommentTree();
   const parentComment = useThread(commentId || null);
+  console.log(parentComment)
   const [loading, setLoading] = useState(true);
   // Fetch comment tree for comment on page load
   useEffect(() => {

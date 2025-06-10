@@ -90,6 +90,16 @@ export const getRestaurants = async (latitude: number, longitude: number, limit:
 };
 
 /*
+const commentify = (comment: Comment) => {
+  comment.replies = comment.replies.map(reply => reply as Comment);
+
+  for (const reply of comment.replies) {
+    commentify(reply);
+  }
+};
+*/
+
+/*
  * Gets the forest of comments associated with a given resource.
  * A resource is either a restaurant or a comment.
  * @param resourceId ID of a resource (restaurant or comment)
@@ -97,8 +107,9 @@ export const getRestaurants = async (latitude: number, longitude: number, limit:
  */
 export const getResourceComments = async (resourceId: string) => {
   const urlParams = new URLSearchParams({ parent_id: resourceId });
-  
-  return await fetchAPI<Comment[]>(`comments?${urlParams}`);
+  const resourceForest = await fetchAPI<Comment[]>(`comments?${urlParams}`);
+  //resourceForest.map(tree => commentify(tree));
+  return resourceForest;
 }
 
 /*
@@ -108,7 +119,9 @@ export const getResourceComments = async (resourceId: string) => {
  * @returns promise for when data is retrieved from backend
  */
 export const getCommentTree = async (commentId: string) => {
-  return await fetchAPI<Comment>(`comment/${commentId}`);
+  const commentTree = await fetchAPI<Comment>(`comment/${commentId}`);
+  //commentify(commentTree);
+  return commentTree;
 }
 
 /*

@@ -242,13 +242,15 @@ class MongoDBInterface():
                 {'$set': {'deleted': True}}
             )
 
+    '''
     def get_comments_on_parent(self, parent_id: str):
-        '''Get all comments made on a restaurant or comment by all users'''
+        # Get all comments made on a restaurant or comment by all users
         with self.transaction_wrapper(self.mongo) as session:
             comments = list(self.comments.find({'parentId': parent_id}).sort('date', 1))
             return comments
+    '''
 
-    def get_comment_by_id(self, comment_id: str) -> Comment:
+    def get_comment_by_id(self, comment_id: str) -> Any:
         '''
         Get a comments and its replies by its ID.
         '''
@@ -269,14 +271,15 @@ class MongoDBInterface():
                 date=str(comment['date']),
                 replies=self.get_all_comments_on_parent(comment['id'], is_root_call = False))
 
-            return unpacked_comment
+            # https://stackoverflow.com/questions/26180528/convert-a-namedtuple-into-a-dictionary
+            return unpacked_comment._asdict()
 
     def get_user_comments_id(self, user_id: str) -> list[str]:
         comments = self.comments.find({'creatorId': user_id}).sort('date', 1)
 
         return list(map(lambda comment: comment['id'], comments))
         
-    def get_all_comments_on_parent(self, parent_id: str, is_root_call = True) -> list[Comment]:
+    def get_all_comments_on_parent(self, parent_id: str, is_root_call = True) -> list[Any]:
         '''
         Get all comments made on a restaurant or comment by all users.
         Returns a list of Comment objects with replies included.
@@ -285,7 +288,7 @@ class MongoDBInterface():
             comments = self.comments.find({'parentId': parent_id}).sort('date', 1)
             # for comment in comments:
             #     comment['replies'] = self.get_all_comments_on_parent(comment['id'], is_root_call = False)
-            all_unpacked_comments = []
+            all_unpacked_comments: list[Any] = []
 
             for comment in comments:
                 unpacked_comment = Comment(parentId=comment['parentId'],
@@ -300,7 +303,8 @@ class MongoDBInterface():
                     date=str(comment['date']),
                     replies=self.get_all_comments_on_parent(comment['id'], is_root_call = False))
                 
-                all_unpacked_comments.append(unpacked_comment)
+                # https://stackoverflow.com/questions/26180528/convert-a-namedtuple-into-a-dictionary
+                all_unpacked_comments.append(unpacked_comment._asdict())
 
             return all_unpacked_comments
 

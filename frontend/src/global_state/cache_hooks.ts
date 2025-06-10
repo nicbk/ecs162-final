@@ -77,6 +77,22 @@ export const useComments = (): [Comment[], (comments: Comment[]) => void] => {
   return [returnComments, setComments];
 };
 
+const treeCommentLikeUpdate = (targetId: string, commentRoot: Comment, shouldIncrease: boolean): Comment => {
+  if (targetId === commentRoot.id) {
+    if (shouldIncrease) {
+      commentRoot.likes += 1;
+    } else {
+      commentRoot.likes -= 1;
+    }
+  } else {
+    for (const reply of commentRoot.replies) {
+      treeCommentLikeUpdate(targetId, reply, shouldIncrease);
+    }
+  }
+
+  return commentRoot;
+};
+
 export const useToggleCacheLike = () => {
   const [globalCache, setGlobalCache] = useContext(GlobalStateContext)!.globalCache;
   const [userAuthState, setUserAuthState] = useContext(GlobalStateContext)!.userAuthState;
@@ -94,9 +110,15 @@ export const useToggleCacheLike = () => {
       };
 
       if (isLiked) {
-        updatedCache.comments[commentId].likes -= 1;
+        //updatedCache.comments[commentId].likes -= 1;
+        for (const rootComment of Object.values(updatedCache.comments)) {
+          treeCommentLikeUpdate(commentId, rootComment, false);
+        }
       } else {
-        updatedCache.comments[commentId].likes += 1;
+        //updatedCache.comments[commentId].likes += 1;
+        for (const rootComment of Object.values(updatedCache.comments)) {
+          treeCommentLikeUpdate(commentId, rootComment, true);
+        }
       }
 
       setGlobalCache(updatedCache);

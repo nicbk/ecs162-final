@@ -205,12 +205,9 @@ def getRestaurantInformation():
 #Gets a comment, as well as all nested replies for that comment.
 @app.route('/api/v1/comment/<string:comment_id>', methods=['GET'])
 def getCommentById(comment_id):
-    comment: Comment = mongo_instance.get_comment_by_id(comment_id)
-    comment_dict = comment._asdict() if hasattr(comment, '_asdict') else dict(comment)
-    app.logger.warning('DEBUGGER FOR COMMENT')
-    app.logger.warning(comment_dict)
+    comment = mongo_instance.get_comment_by_id(comment_id)
     
-    return jsonify(comment_dict), 200
+    return jsonify(comment), 200
 
 # Gets the tree of comments (comments and replies) for either a restaurant or parent comment
 @app.route('/api/v1/comments', methods=['GET'])
@@ -219,11 +216,9 @@ def getListofComments():
     if parent_id is None:
         return jsonify({'error': 'parent_id is required'}), 400
 
-    comments:list[Comment] = mongo_instance.get_all_comments_on_parent(parent_id)
-    # Convert each comment (tuple) to dict before jsonify
-    comments_dicts = [comment._asdict() if hasattr(comment, '_asdict') else dict(comment) for comment in comments]
+    comments = mongo_instance.get_all_comments_on_parent(parent_id)
 
-    return jsonify(comments_dicts), 200
+    return jsonify(comments), 200
 
 # Posts a comment to the restaurant or reply to comment
 @app.route('/api/v1/comment/<string:restaurant_id_or_comment_id>', methods=['POST'])
