@@ -1,17 +1,14 @@
 
 import styles from './Profile.module.scss';
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import defaultAvatar from '../../assets/default-avatar.png';
 import food from '../../assets/food.jpg';
 import placeholder from '../../assets/image2vector.svg';
-import { mockResturantsData } from '../../api_data/mock_data';
-import { mockPublish } from '../../api_data/mock_data';
-import { type CommentId, type Restaurant } from '../../interface_data/index.ts';
+import { type CommentId} from '../../interface_data/index.ts';
 import { type Comment } from '../../interface_data/index.ts';
 import { type User } from '../../interface_data/index.ts';
-import { getRestaurantsMock, getCommentsMock  } from '../../api_data/client.ts';
 import { useNavigate } from 'react-router-dom';
-import { FaTh, FaHeart, FaRegComment, FaShareSquare, FaComment} from "react-icons/fa";
+import { FaHeart, FaComment} from "react-icons/fa";
 import { GlobalStateContext } from '../../global_state/global_state.ts';
 
 interface Post extends Comment{
@@ -133,31 +130,16 @@ const Profile = () => {
   // const [textPosts, setTextPosts] = useState<Post[]>(mockPosts.filter(post => post.images.length === 0));
   const [username, setUsername] = useState("tempuser");
   const [bio, setBio] = useState("testbio");
-  const [isEditing, setIsEditing] = useState(false);
-  const [tempBio, setTempBio] = useState(bio);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [favoritesOpen, setFavoritesOpen] = useState(false);
-  const [favorites, setFavorites] = useState<string[]>(["in n out", "mcdonalds"]);
   const [profileImage, setProfileImage] = useState<string>();
   const [hoveredPostId, setHoveredPostId] = useState<string | null>(null);
   const  globalState = useContext(GlobalStateContext)
-  const [userAuthenticationState, setUserAuthenticationState] = globalState!.userAuthState;
-  const [followers] = useState(2);
-  const [following] = useState(1);
+  // const [userAuthenticationState, setUserAuthenticationState] = globalState!.userAuthState;
+
 
   const navigate = useNavigate();
 
-  function editProfile() {
-    setIsEditing(true);
-  }
-  function cancelEdit() {
-    setIsEditing(false);
-  }
   // we need the setTempuserName and setTempBio stuff so it doesn't save if we want to cancel: intermediate values
-  function saveProfile() {
-    setBio(tempBio);
-    setIsEditing(false);
-  }
   function deletePost(id: string) { // FIX THIS CALL API DELETE
     setImagePosts(posts.filter((post) => post.id !== id));
     fetch(`/api/v1/comment/${id}`, {method: 'DELETE'});
@@ -240,7 +222,7 @@ const Profile = () => {
             <div style={{marginBottom:4, display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
               <span><strong>{reply.username}</strong></span>
               <span style={{marginLeft: 'auto', display: 'flex', alignItems: 'center'}}>
-                
+              
               </span>
             </div>
             <div style={{marginLeft:8}}>
@@ -295,11 +277,12 @@ const Profile = () => {
     {/* user info */}
     <section style={{textAlign: 'center',}}>
       <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', marginTop: 30}}>
-        <img src={profileImage} alt="Profile picture" width={150} height={150} style={{marginRight: 20}}/>
+        <img src={profileImage} alt="Profile picture" width={125} height={125} style={{marginRight: 20, borderRadius: '50%'}}/>
         <div style={{display: 'flex', flexDirection: 'column'}}>
           <div style={{display: 'flex', flexDirection: 'row', alignItems: 'flex-start', height: 'fit-content'}}>
             <p className={styles.username}>{username}</p>
           </div>
+          {/* <p>{bio}</p> */}
           <div style={{textAlign: 'left'}}>
             <p>
               <span className={styles.postsCount}><strong>{posts.length}</strong> Posts</span> 
@@ -307,16 +290,6 @@ const Profile = () => {
           </div>
         </div>
       </div>
-      {isEditing && (
-        <div>
-          <textarea value={tempBio} onChange={e => setTempBio(e.target.value)} rows={3} style={{width: "50%", marginBottom: "8px"}}/>
-          <br/>
-          <div style={{display: 'flex', flexDirection: 'row'}}>          
-            <button onClick={saveProfile}>Save</button>
-            <button onClick={cancelEdit} style={{marginLeft: "8px"}}>Cancel</button>
-          </div>
-        </div>
-      )}
     </section>
 
     {/* comments and posts collection */}
@@ -381,19 +354,6 @@ const Profile = () => {
         </div>
       )}
       </section>
-      {favoritesOpen && (
-        <div className={styles.popupOverlay} onClick={() => setFavoritesOpen(false)}>
-          <div className={styles.popupContent} style={{flexDirection: 'column'}} onClick={e => e.stopPropagation()}>
-            <h3>My Favorite Restaurants</h3>
-            <ul style={{listStyleType: 'none', paddingLeft: 0}}>
-              {favorites.map((restaurant, index) => (
-                <li key={index}>{restaurant}</li>
-              ))}
-            </ul>
-            <button onClick={() => setFavoritesOpen(false)}>Close</button>
-        </div>
-      </div>
-      )}
     </div>
   );
 };
