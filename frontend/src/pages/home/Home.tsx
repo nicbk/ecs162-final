@@ -59,13 +59,8 @@ export default function Home() {
 
   // We need to come up with a way of sharing the restaurant.
   const giveShare = () => {
-    console.log('POST /api/v1/haven"t yet decided', {
-      restaurantId: activeRest?.restaurantId,
-    })
     if (!activeRest) return;
-    //I think this is the best way now unless there is a better way?
-    alert('Comment URL copied!');
-    const shareUrl = `${window.location.origin}/Home/${activeRest.restaurantId}`;
+    const shareUrl = `${activeRest.address}`;
     navigator.clipboard.writeText(shareUrl);
     closeModal()
   };
@@ -209,9 +204,9 @@ export default function Home() {
                 </h3>
                 <div className={styles.popupBoxBody}>
                   <p>Either copy and paste this to a new link or click the copy button to copy it to your clipboard:</p>
-                  <input
+                  <input className={styles.shareInput}
                     readOnly
-                    value={`${window.location.origin}/Home/${activeRest.restaurantId}`}
+                    value={`${activeRest.address}`}
                     onFocus={(event) => event.target.select()}
                   />
                   <div className={styles.popupBoxFooter}>

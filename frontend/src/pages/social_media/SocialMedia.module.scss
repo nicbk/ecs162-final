@@ -65,40 +65,54 @@
     padding: 10px;
     margin: 5px;
     .likeIcon{
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    color: var(--inverse-background);
-    padding: 0 5px;
-    font-size: 1.5rem;
-    cursor: pointer;
-    &:hover {
-      color: var(--accent);
-      transform: scale(1.1);
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      color: var(--inverse-background);
+      padding: 0 5px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      &:hover {
+        color: var(--accent);
+        transform: scale(1.1);
+      }
+      &.liked {
+        transform: scale(1.2);
+        transition: all 0.2s ease-in-out;
+        color: red;
+      }
+      .likeCount{
+        padding: 5px;
+        margin: 1px;
+        font-size: 1.25rem;
+      }
     }
-    &.liked {
-      transform: scale(1.2);
-      transition: all 0.2s ease-in-out;
-      color: red;
-    }
-    .likeCount{
+    .shareIcon {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
       padding: 5px;
       margin: 1px;
-      font-size: 1.25rem;
+      font-size: 1.2rem;
+    
+      &:hover {
+        color: var(--accent);
+        transform: scale(1.1);
+      }
     }
-  }
-  .shareIcon {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 1.2rem;
-
-    &:hover {
-      transform: scale(1.1);
+    .commentIcon {
+      color: var(--inverse-background);
+      padding: 5px 0 0 0;
+      margin-top: 2px;
+      margin: 1px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      &:hover {
+        color: var(--accent);
+        transform: scale(1.1);
+      }
     }
-  }
   }
 }
 

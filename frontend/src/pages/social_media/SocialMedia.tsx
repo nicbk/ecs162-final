@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { type Restaurant, type Comment } from '../../interface_data/index.ts';
 import { getRestaurantsMock, getCommentsMock } from '../../api_data/client.ts';
-import { FaHeart, FaShareSquare } from 'react-icons/fa';
+import { FaHeart, FaShareSquare,FaRegComment } from 'react-icons/fa';
 import styles from './SocialMedia.module.scss';
+import { useNavigate } from 'react-router-dom';
 
 export default function SocialMedia() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
@@ -33,6 +34,7 @@ export default function SocialMedia() {
 
   const firstLayerForActive = comments.filter(comm => comm.parentId != null && resturantTitleId[comm.parentId] != null);
   const togLike = (id: string) => setLiked(pre => ({ ...pre, [id]: !pre[id] }));
+  const navigate = useNavigate();
 
   return (
     <div className={styles.socialM}>
@@ -68,6 +70,15 @@ export default function SocialMedia() {
                 <p className={styles.likeCount}>
                   {liked[comm.id] ? comm.likes + 1 : comm.likes}
                 </p>
+              </span>
+
+              <span
+                className={styles.commentIcon}
+                onClick={() => {navigate(`/Threads/${comm.id}`)}}
+                role="button"
+                aria-label="will be threads"
+              >
+                <FaRegComment />
               </span>
 
               <span
