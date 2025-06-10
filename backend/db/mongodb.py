@@ -14,6 +14,7 @@ from contextlib import contextmanager
 from db.data import Comment, Restaurant
 from datetime import datetime, timezone
 from threading import Lock
+from typing import Any
 
 COMMENT_REMOVED_STR = 'Comment was removed by moderator'
 
@@ -66,7 +67,7 @@ class MongoDBInterface():
 
     ### Users Collection Methods ###
     ################################
-    def add_new_user(self, username: str, email: str, oauth_id: str):
+    def add_new_user(self, token: Any):
         '''
         Add a new user to the database.
 
@@ -79,16 +80,16 @@ class MongoDBInterface():
         with self.transaction_wrapper(self.mongo) as session:
             with self.db_lock:
                 # Insert the new user into the database
-                existing_user = self.users.find_one({'oauthId': oauth_id})
+                existing_user = self.users.find_one({'oauthId': token['sub']})
                 if existing_user is not None:
                     raise Exception('User already exists with this OAuth ID')
                 
                 self.users.insert_one({
-                    'username': username,
-                    'email': email,
-                    'oauthId': oauth_id,
+                    'username': token['name'],
+                    'email': token['email'],
+                    'oauthId': token['sub'],
                     'bio': '',
-                    'profileImage': None,
+                    'profileImage': token['picture'],
                     'wishList': [],
                     'likedComments': [],
                 })

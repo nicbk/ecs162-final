@@ -1,8 +1,8 @@
 import { useState, useEffect, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { didUserLikeComment, type Comment } from '../../interface_data/index.ts';
-import { getCommentsMock } from '../../api_data/client.ts';
-import { FaHeart, FaShareSquare } from 'react-icons/fa';
+import { didUserLikeComment, type Comment, type InputComment } from '../../interface_data/index.ts';
+import { postComment } from '../../api_data/client.ts';
+import { FaHeart, FaShareSquare, FaRegComment } from 'react-icons/fa';
 import styles from './Threads.module.scss';
 import { useInitialDataLoad, useFetchCommentForest, useThread } from '../../global_state/cache_hooks.ts';
 import { GlobalStateContext } from '../../global_state/global_state.ts';
@@ -14,14 +14,33 @@ export default function Threads() {
 
   const { commentId } = useParams<{ commentId: string }>();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [openChat, onCancel] = useState<Record<string, boolean>>({});
+  const [textComm, setReplyText] = useState<Record<string, string>>({});
   const toggleLike = useToggleLike();
   const fetchCommentTree = useFetchCommentForest();
   const parentComment = useThread(commentId!);
-
+  const [loading, setLoading] = useState(true);
   // Fetch comment tree for comment on page load
   useEffect(() => {
-    fetchCommentTree(commentId!);
-  }, []);
+    setLoading(true);
+    fetchCommentTree(commentId!).then(() => setLoading(false));
+  }, [commentId]);
+
+  if (loading) {
+    return <div>Loading. . . </div>;
+  }
+  if (!parentComment) {
+    return <p>I am Sorry But no comments found.</p>;
+  }
+  const handlePostComment = async (parentId: string) => {
+    const body = (textComm[parentId] || '').trim();
+    if (!body) return;
+    const newComment: InputComment = { body, rating: 0, images: [] };
+    await postComment(newComment, parentId);
+    await fetchCommentTree(commentId!);
+    setReplyText(pre => ({ ...pre, [parentId]: '' }));
+    onCancel(pre => ({ ...pre, [parentId]: false }));
+  };
 
   const togExp = (id: string) => {
     setExpanded((pre) => ({ ...pre, [id]: !pre[id] }));
@@ -83,6 +102,16 @@ export default function Threads() {
             </p>
           </span>
           <span
+            className={styles.commentIcon}
+            onClick={() =>
+              onCancel(pre => ({ ...pre, [comment.id]: !pre[comment.id] }))
+            }
+            role="button"
+            aria-label="Reply to Comment"
+          >
+            <FaRegComment />
+          </span>
+          <span
             className={styles.shareIcon}
             onClick={() => {
               navigator.clipboard.writeText(
@@ -90,17 +119,37 @@ export default function Threads() {
               );
               alert('Post URL copied!');
             }}
+            role="button"
             aria-label="Share Comment"
           >
             <FaShareSquare />
           </span>
         </div>
+        {openChat[comment.id] && (
+          <div className={styles.replycomm}>
+            <textarea value={textComm[comment.id] || ''}
+              onChange={event => setReplyText(pre => ({ ...pre, [comment.id]: event.target.value }))}
+              placeholder="Write your reply..."
+            />
+            <div className={styles.replyButtons}>
+              <button onClick={() => handlePostComment(comment.id)}
+                disabled={!textComm[comment.id]?.trim()}
+              >
+                Post Reply
+              </button>
+              <button onClick={() => onCancel(pre => ({ ...pre, [comment.id]: false }))}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
 
         {comment.replies?.length > 0 && (
           <div className={styles.showMore}>
             <button onClick={() => togExp(comment.id)} aria-label="Nested Replies">
               {/*I will change the Icons after this is from google for now */}
-              {expanded[comment.id] ? '▼' : '►'}
+              {expanded[comment.id] ? '▼' : '►'}{' '}
               {expanded[comment.id]
                 ? ` Hide replies (${comment.replies.length})`
                 : ` Show replies (${comment.replies.length})`}
@@ -149,17 +198,44 @@ export default function Threads() {
               {parentComment.likes}
             </p>
           </span>
+          <div
+            className={styles.commentIcon}
+            onClick={() => onCancel(pre => ({ ...pre, [parentComment.id]: !pre[parentComment.id] }))}
+            role="button"
+            aria-label="Reply to Thread"
+          >
+            <FaRegComment />
+          </div>
           <span
             className={styles.shareIcon}
             onClick={() => {
               navigator.clipboard.writeText( `${window.location.origin}/Threads/${parentComment.id}`);
               alert('Post URL copied!');
             }}
+            role="button"
             aria-label="Reply Share Comment"
           >
             <FaShareSquare />
           </span>
         </div>
+        {openChat[parentComment.id] && (
+          <div className={styles.replycomm}>
+            <textarea value={textComm[parentComment.id] || ''}
+              onChange={event => setReplyText(pre => ({ ...pre, [parentComment.id]: event.target.value,}))}
+              placeholder="Write your reply . . ."
+            />
+            <div className={styles.replyButtons}>
+              <button onClick={() => handlePostComment(parentComment.id)}
+                disabled={!textComm[parentComment.id]?.trim()}
+              >
+                Post Reply
+              </button>
+              <button onClick={() => onCancel(pre => ({...pre, [parentComment.id]: false,}))}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className={styles.threadCon}>

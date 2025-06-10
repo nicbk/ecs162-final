@@ -388,7 +388,7 @@ def getUserInformation():
         if e.args[0] == 'User not found':
             # If user not found, create a new user in the database
             try:
-                mongo_instance.add_new_user(username, user_data['email'], user_id)
+                mongo_instance.add_new_user(token)
                 mongo_user_data = mongo_instance.get_user_by_oauth_id(user_id)
                 return jsonify(mongo_user_data), 201 # 201 is successful creation
             

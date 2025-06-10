@@ -211,7 +211,6 @@ function CommentingPost({
   const navigate = useNavigate();
 
   return (
-    <div>
       <div className={styles.popupModelBody}>
         <div className={styles.commentListCon}>
           {comments.length === 0 ? (
@@ -297,6 +296,5 @@ function CommentingPost({
           </div>
         </div>
       </div>
-    </div>
   )
 }

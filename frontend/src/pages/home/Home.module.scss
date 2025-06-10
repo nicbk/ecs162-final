@@ -181,69 +181,71 @@ img{
 }
 .commentListCon {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  justify-content: center;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
   overflow-y: auto;
   gap: 0.5rem;
   margin-bottom: 1rem;
-  max-height: 70vh;
   box-shadow: inset 0px 0px 20px 13px var(--inverse-background);
   border-radius: 20px;
   padding: 30px;
   margin: 10px;
   background-color: var(--background);
-  min-width: 300px;
+  min-width: calc(100% - 400px);
+  max-width: 1700px;
+  max-height: calc(100vh - 270px);
 }
 .popupBody {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
   background: var(--background);
-  border-radius: 20px 100px 20px 100px;
+  border-radius: 20px;
   padding: 15px;
-  margin: 5px;
-  min-width: 700px;
+  width: 100%;
+  max-width: min(90vw, 1500px);
+  min-width: 0;
+  height: auto;
+  max-height: calc(100% - 100px);
+  min-height: 500px;
+  display: flex;
+  box-sizing: border-box;
 }
 .popupOverlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background-color: rgba(0, 0, 0, 0.459);
   backdrop-filter: blur(15px);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: stretch;
   z-index: 1000;
+  padding: 2vw;
 }
-.popupModelHeader{
+.popupModelHeader {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
   background: var(--background);
   border-radius: 20px 100px 20px 100px;
-  padding: 15px;
+  padding: 15px 0;
   width: 100%;
+  flex: 0 0 auto;
 }
-.popupModelBody{
+.popupModelBody {
   display: flex;
-  align-items: center;
   flex-direction: row;
-  justify-content: center;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  align-items: center;
   background: transparent;
-  padding: 15px;
-  margin: 10px;
-  max-width: 95%;
-  min-width: 700px;
-    @media screen and (max-width: 950px) {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-  }
+  padding: 15px 0;
+  margin: 10px 0;
+  width: 100%;
+  min-width: 0;
+  overflow: auto;
+  box-sizing: border-box;
+  min-width: calc(100% - 400px);
 }
 .popupBoxBody {
   display: flex;
@@ -253,24 +255,18 @@ img{
   background: var(--background);
   border-radius: 50px;
   padding: 5px;
-  width: 90%;
-  height: 100%;
-  max-height: 500px;
-  min-height: 50px;
-  @media screen and (max-width: 768px) {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    
-  }
+  max-width: 100%;
+  max-height: 350px;
+  box-sizing: border-box;
 }
-.popupBoxFooter{
+.popupBoxFooter {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-evenly;
   width: 100%;
   margin-top: 20px;
+  flex: 0 0 auto;
 
   button {
     padding: 5px 10px;
@@ -280,14 +276,42 @@ img{
     color: var(--inverse-background);
     font-size: 1rem;
     cursor: pointer;
+    transition: all 0.3s;
     &:hover {
       background-color: var(--inverse-background);
       color: var(--background);
       transform: scale(1.1);
-      transition: all 0.3s ease-in-out;
     }
   }
 }
+
+@media (max-width: 800px) {
+  .popupBody {
+    max-width: 98vw;
+    max-height: 98vh;
+    padding: 8px;
+    border-radius: 15px 40px 15px 40px;
+  }
+  .popupModelHeader {
+    padding: 10px 0;
+  }
+  .popupModelBody {
+    flex-direction: column;
+    padding: 5px 0;
+    margin: 2px 0;
+    gap: 0.5rem;
+  }
+  .popupBoxBody {
+    max-height: 200px;
+    padding: 2px;
+    border-radius: 25px;
+  }
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 
 .commentCard {
   display: flex;
@@ -295,12 +319,11 @@ img{
   justify-content: center;
   color: var(--text);
   box-shadow: -3px 8px 20px 0px var(--accent);
-  padding: 5px 10px 5px 10px;
+  padding: 5px 8px 5px 8px;
   border-radius: 10px;
-  margin: 5px 5px 25px 5px;
+  margin: 5px 1px 25px 1px;
   max-height: 600px;
-  max-width: 80%;
-  width: 100%;
+  width: 99%;
 }
 
 .commentHeader {
