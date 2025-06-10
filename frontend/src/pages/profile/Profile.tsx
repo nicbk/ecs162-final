@@ -195,7 +195,7 @@ const Profile = () => {
       fetchComments();
     }
     
-  })
+  }), [];
   //   .catch(error => console.error('Fetch error:', error));
   // }, []);
 

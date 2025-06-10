@@ -13,6 +13,7 @@ from contextlib import contextmanager
 # from db.data import Resource, Comment
 from db.data import Comment, Restaurant
 from datetime import datetime, timezone
+from threading import Lock
 
 COMMENT_REMOVED_STR = 'Comment was removed by moderator'
 
@@ -24,6 +25,7 @@ class MongoDBInterface():
         # PyMongo documentation followed for tutorial on how to use the library https://pymongo.readthedocs.io/en/stable/tutorial.html
         self.mongo = MongoClient(mongo_uri)
         self.db = self.mongo["foodie_database"]
+        self.db_lock = Lock()
 
         # Initialize collections
         self.__initialize_collections()
@@ -75,24 +77,27 @@ class MongoDBInterface():
         '''
 
         with self.transaction_wrapper(self.mongo) as session:
-            # Insert the new user into the database
-            existing_user = self.users.find_one({'oauthId': oauth_id})
-            if existing_user is not None:
-                raise Exception('User already exists with this OAuth ID')
+            with self.db_lock:
+                # Insert the new user into the database
+                existing_user = self.users.find_one({'oauthId': oauth_id})
+                if existing_user is not None:
+                    raise Exception('User already exists with this OAuth ID')
 
-            existing_username = self.users.find_one({'username': username})
-            if existing_username is not None:
-                raise Exception('Username already exists')
-            
-            self.users.insert_one({
-                'username': username,
-                'email': email,
-                'oauthId': oauth_id,
-                'bio': '',
-                'profileImage': None,
-                'wishList': [],
-                'likedComments': [],
-            })
+                existing_username = self.users.find_one({'username': username})
+                if existing_username is not None:
+                    raise Exception('Username already exists')
+                
+                print(f'\n\nAdding new user: {username}, {email}, {oauth_id}\n')
+                
+                self.users.insert_one({
+                    'username': username,
+                    'email': email,
+                    'oauthId': oauth_id,
+                    'bio': '',
+                    'profileImage': None,
+                    'wishList': [],
+                    'likedComments': [],
+                })
 
     def get_user_by_username(self, username: str):
         ''' Get a user by their username.'''
