@@ -179,6 +179,8 @@ const Profile = () => {
         }
       }
       fetchComments();
+    } else {
+      setLoading(false);
     }
   }, [globalState!.userAuthState[0]]); // run this effect when the user changes
 
@@ -280,7 +282,10 @@ const Profile = () => {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
           <h3 className={styles.posts}>Posts</h3>
         </div>
-        {posts.length === 0 ? (<p>No posts yet.</p>) : 
+        {posts.length === 0 ? (
+          <div className={styles['no-posts-msg-container']}>
+            <p className={styles['no-posts-msg']}>No posts yet.</p>
+          </div>) : 
         (
         <div className={styles.galleryGrid}> 
           {posts.map((post) => ( 
