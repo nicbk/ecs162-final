@@ -4,27 +4,12 @@ import { getRestaurantsMock, getCommentsMock } from '../../api_data/client.ts';
 import { FaHeart, FaShareSquare,FaRegComment } from 'react-icons/fa';
 import styles from './SocialMedia.module.scss';
 import { useNavigate } from 'react-router-dom';
+import { useComments, useRestaurants } from '../../global_state/cache_hooks.ts';
 
 export default function SocialMedia() {
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [comments, setComm] = useState<Comment[]>([]);
+  const restaurants = useRestaurants()[0];
+  const comments = useComments()[0];
   const [liked, setLiked] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    const loadTheData = async () => {
-      try {
-      const [restaurantsData, commentsData] = await Promise.all([ getRestaurantsMock(), getCommentsMock()]);
-      setRestaurants(restaurantsData)
-      console.log('got restaurants:', restaurantsData)
-      setComm(commentsData)
-      console.log('got comments:', commentsData)
-      } catch (error) {
-        console.error('Failed to load data', error)
-      }
-    };
-    loadTheData()}, []
-  );
-
   //I am right now just getting the info using the restaurantId and restaurantTitle
   //But well have to change it later maybe for the nearby info available
   const resturantTitleId = restaurants.reduce<Record<string,string>>((account, restaurants) => {

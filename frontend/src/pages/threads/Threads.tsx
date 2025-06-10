@@ -17,11 +17,19 @@ export default function Threads() {
   const toggleLike = useToggleLike();
   const fetchCommentTree = useFetchCommentForest();
   const parentComment = useThread(commentId!);
-
+  const [loading, setLoading] = useState(true);
   // Fetch comment tree for comment on page load
   useEffect(() => {
-    fetchCommentTree(commentId!);
-  }, []);
+    setLoading(true);
+    fetchCommentTree(commentId!).then(() => setLoading(false));
+  }, [commentId]);
+
+  if (loading) {
+    return <div>Loading. . . </div>;
+  }
+  if (!parentComment) {
+    return <p>I am Sorry But no comments found.</p>;
+  }
 
   const togExp = (id: string) => {
     setExpanded((pre) => ({ ...pre, [id]: !pre[id] }));
