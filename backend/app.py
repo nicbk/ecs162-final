@@ -393,6 +393,63 @@ def getUserInformation():
                 return jsonify({'error': str(e)}), 500
             
         raise e 
+    
+# Gets the wishlist of the current logged in user
+@app.route('/api/v1/user/wish', methods=['GET'])
+def getUserWishlist():
+    # Getting request headers:
+    # https://stackoverflow.com/questions/29386995/how-to-get-http-headers-in-flask
+    token = get_authorization(request.headers.get('Authorization'))
+    if not token:
+        return jsonify({'error': 'User not authenticated'}), 401
+
+    user_id = token['sub']
+    
+    try:
+        wishlist = mongo_instance.get_user_wishlist(user_id)
+        return jsonify(wishlist), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+# Adds a restaurant to the current logged in user's wishlist
+@app.route('/api/v1/user/wish/add/<string:restaurant_id>', methods=['POST'])
+def addToUserWishlist(restaurant_id):
+    # Getting request headers:
+    # https://stackoverflow.com/questions/29386995/how-to-get-http-headers-in-flask
+    token = get_authorization(request.headers.get('Authorization'))
+    if not token:
+        return jsonify({'error': 'User not authenticated'}), 401
+
+    user_id = token['sub']
+
+    if restaurant_id is None:
+        return jsonify({'error': 'restaurantId is required'}), 400
+
+    try:
+        mongo_instance.add_restaurant_to_wishlist(user_id, restaurant_id)
+        return jsonify({'status': 'Restaurant added to wishlist'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Removes a restaurant from the current logged in user's wishlist 
+@app.route('/api/v1/user/wish/remove/<string:restaurant_id>', methods=['POST'])
+def removeFromUserWishlist(restaurant_id):
+    # Getting request headers:
+    # https://stackoverflow.com/questions/29386995/how-to-get-http-headers-in-flask
+    token = get_authorization(request.headers.get('Authorization'))
+    if not token:
+        return jsonify({'error': 'User not authenticated'}), 401
+
+    user_id = token['sub']
+
+    if restaurant_id is None:
+        return jsonify({'error': 'restaurantId is required'}), 400
+
+    try:
+        mongo_instance.remove_restaurant_from_wishlist(user_id, restaurant_id)
+        return jsonify({'status': 'Restaurant removed from wishlist'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 ################# mock routes #################

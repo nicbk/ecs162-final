@@ -9,6 +9,7 @@ class User(NamedTuple):
     profileImage: str
     bio: str
     wishList: list[str]
+    likedComments: set[str]
 
 class Image(NamedTuple):
     id: str

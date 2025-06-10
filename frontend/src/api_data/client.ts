@@ -136,10 +136,19 @@ export const getLoggedInUser = () => fetchAPI<User | boolean>('authed-user').the
 
     return {
       ...userCasted,
-      likedComments: new Set(userCasted.likedComments)
+      likedComments: new Set(userCasted.likedComments),
+      wishlist: new Set(userCasted.wishlist)
     }
   }
 });
+
+/*
+ * Gets the currently logged in user's wishlist
+ * @returns list of restaurant IDs that the user has added to their wishlist
+ */
+export const getWishlist = async () => {
+  return await fetchAPI<string[]>('user/wish');
+}
 
 ///////////////////////
 // UPDATE OPERATIONS //
@@ -186,6 +195,24 @@ export const addLike = async (commentId: string) => {
 export const removeLike = async (commentId: string) => {
   return await postAPI<any>(`comment/${commentId}/remove-like`);
 };
+
+/*
+  * Adds a restaurant to the user's wishlist
+  * @param restaurantId ID of the restaurant to add to wishlist
+  * @returns does not return anything on success. On error, exception is thrown
+  */
+export const addToWishlist = async (restaurantId: string) => {
+  return await postAPI<any>(`user/wish/add/${restaurantId}`);
+}
+
+/*
+  * Removes a restaurant to the user's wishlist
+  * @param restaurantId ID of the restaurant to remove from wishlist
+  * @returns does not return anything on success. On error, exception is thrown
+  */
+export const removeFromWishlist = async (restaurantId: string) => {
+  return await postAPI<any>(`user/wish/remove/${restaurantId}`);
+}
 
 ///////////////////////
 // DELETE OPERATIONS //
