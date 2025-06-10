@@ -82,12 +82,6 @@ class MongoDBInterface():
                 existing_user = self.users.find_one({'oauthId': oauth_id})
                 if existing_user is not None:
                     raise Exception('User already exists with this OAuth ID')
-
-                existing_username = self.users.find_one({'username': username})
-                if existing_username is not None:
-                    raise Exception('Username already exists')
-                
-                print(f'\n\nAdding new user: {username}, {email}, {oauth_id}\n')
                 
                 self.users.insert_one({
                     'username': username,
@@ -99,23 +93,25 @@ class MongoDBInterface():
                     'likedComments': [],
                 })
 
-    def get_user_by_username(self, username: str):
-        ''' Get a user by their username.'''
-        with self.transaction_wrapper(self.mongo) as session:
-            # Find the user in the database
-            user = self.users.find_one({'username': username})
-            if user is None:
-                raise Exception('User not found')
+    # username cannot be unique if using firebase auth
+    ##################################################
+    # def get_user_by_username(self, username: str):
+    #     ''' Get a user by their username.'''
+    #     with self.transaction_wrapper(self.mongo) as session:
+    #         # Find the user in the database
+    #         user = self.users.find_one({'username': username})
+    #         if user is None:
+    #             raise Exception('User not found')
 
-            oauthId = user.get('oauthId', None)
+    #         oauthId = user.get('oauthId', None)
 
-            return {
-                "bio": user.get('bio', ''),
-                "profileImage": user.get('profileImage', None),
-                "comments": list(self.comments.find({'creatorId': oauthId})),
-                "wishList": user.get('wishList', []),
-                "likedComments": user.get('likedComments', []),
-            }
+    #         return {
+    #             "bio": user.get('bio', ''),
+    #             "profileImage": user.get('profileImage', None),
+    #             "comments": list(self.comments.find({'creatorId': oauthId})),
+    #             "wishList": user.get('wishList', []),
+    #             "likedComments": user.get('likedComments', []),
+    #         }
 
     def update_user_bio(self, user_id: str, bio: str):
         '''Update the bio of a user'''

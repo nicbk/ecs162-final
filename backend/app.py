@@ -302,15 +302,27 @@ def removeLikeFromComment(comment_id):
 
 
 @app.route('/api/v1/user/<string:username>', methods=['GET'])
-def getUserByUsername(username):
-    user = mongo_instance.get_user_by_username(username)
+def getLoggedInUserUsername(username):
+    token = get_authorization(request.headers.get('Authorization'))
+    if not token:
+        return jsonify({'error': 'User not authenticated'}), 401
+
+    user_id = token['sub']
+
+    user = mongo_instance.get_user_by_oauth_id(user_id)
     if user is None:
         return jsonify({'error': 'User not found'}), 404
     return jsonify(user), 200
 
 @app.route('/api/v1/user/<string:username>/bio', methods=['GET'])
-def getUserBioByUsername(username):
-    user = mongo_instance.get_user_by_username(username)
+def getLoggedInUserBio(username):
+    token = get_authorization(request.headers.get('Authorization'))
+    if not token:
+        return jsonify({'error': 'User not authenticated'}), 401
+
+    user_id = token['sub']
+
+    user = mongo_instance.get_user_by_oauth_id(user_id)
     if user is None:
         return jsonify({'error': 'User not found'}), 404
     return jsonify(user.get("bio", None)), 200
@@ -337,7 +349,13 @@ def updateUserProfileImage(username):
     if profileImage is None:
         return jsonify({'error': 'profileImage is required'}), 400
 
-    mongo_instance.update_user_profile_image(username, profileImage)
+    token = get_authorization(request.headers.get('Authorization'))
+    if not token:
+        return jsonify({'error': 'User not authenticated'}), 401
+
+    user_id = token['sub']
+
+    mongo_instance.update_user_profile_image(user_id, profileImage)
     return jsonify({'status': 'Profile image updated successfully'}), 200
 
 # Gets Current Logged In User Information
@@ -350,6 +368,10 @@ def getUserInformation():
         return jsonify({'error': 'User not authenticated'}), 401
 
     user_id = token['sub']
+    username = token.get('name', None)
+
+    if username is None:
+        return jsonify({'error': 'Username not found in token'}), 400
     
     # Fast fallback - return session data immediately
     user_data = {
@@ -357,7 +379,6 @@ def getUserInformation():
         'email': token['email'],
         'oauthId': token['sub']
     }
-    user_id = token['sub']
     
     try :
         mongo_user_data = mongo_instance.get_user_by_oauth_id(user_id)
@@ -367,7 +388,7 @@ def getUserInformation():
         if e.args[0] == 'User not found':
             # If user not found, create a new user in the database
             try:
-                mongo_instance.add_new_user(user_data['username'], user_data['email'], user_id)
+                mongo_instance.add_new_user(username, user_data['email'], user_id)
                 mongo_user_data = mongo_instance.get_user_by_oauth_id(user_id)
                 return jsonify(mongo_user_data), 201 # 201 is successful creation
             
