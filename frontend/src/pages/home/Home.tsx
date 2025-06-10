@@ -5,14 +5,17 @@ import mapIcon from '../../assets/map-icon.svg';
 import {FaHeart, FaRegComment, FaShareSquare, FaRegBookmark, FaBookmark} from "react-icons/fa";
 import { postComment, removeLike, addLike  } from '../../api_data/client.ts';
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { GlobalStateContext, type UserAuthState } from '../../global_state/global_state.ts';
 import { useParams } from 'react-router-dom'
 import { ThrottledImage } from '../../components/ThrottledImage/ThrottledImage.tsx';
 import { LoadingSpinner } from '../../components/LoadingSpinner/LoadingSpinner.tsx';
-import { useComments, useFetchCommentForest, useRestaurants } from '../../global_state/cache_hooks.ts';
-import { useInitialDataLoad } from '../../global_state/cache_hooks.ts';
+import { useComments, useFetchCommentForest, useRestaurants, useUpdateRestaurants } from '../../global_state/cache_hooks.ts';
+import { getRestaurants } from '../../api_data/client.ts';
 import { useToggleLike } from '../../global_state/comment_hooks.ts';
+
+const PAGE_SIZE = 10;
+const SCROLL_THRESHOLD = 100;
 
 export default function Home() {
   const globalState = useContext(GlobalStateContext);
@@ -20,12 +23,15 @@ export default function Home() {
 
   const refetchCommentForest = useFetchCommentForest();
   const toggleLike = useToggleLike();
-  const restaurants = useRestaurants()[0];
+  const [restaurants, setRestaurants] = useRestaurants();
+  const updateRestaurants = useUpdateRestaurants();
   const comments = useComments()[0];
   const [activeRest, setActiveRest] = useState<Restaurant | null>(null)
   const [popupType, setpopupType] = useState<'comment' | 'share' | null>(null)
   const [text, setText] = useState('')
   const { restaurantId: copyId } = useParams<{ restaurantId?: string }>();
+  const [page, setPage] = useState(0);
+  const [loadMorePost, setLoadingMore] = useState(false);
 
   console.log(comments)
 
@@ -36,6 +42,50 @@ export default function Home() {
     navigator.clipboard.writeText(shareUrl);
     closeModal()
   };
+  const loadMoreR = useCallback(async () => {
+    const loc = globalState!.userLocationState[0];
+    if (!loc) return;
+    setLoadingMore(true);
+    try {
+      const newData = await getRestaurants(loc.latitude, loc.longitude, ((page + 2) * PAGE_SIZE), 10000);
+      const Idchecker = new Set(restaurants.map(r => r.restaurantId));
+      const uniq = newData.filter(r => !Idchecker.has(r.restaurantId));
+      if (uniq.length) {
+        updateRestaurants(uniq);
+      }
+      setPage(prev => prev + 1);
+    } catch (err) {
+      console.error('Error loading more restaurants', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [globalState!.userLocationState, restaurants, updateRestaurants, page]);
+
+  useEffect(() => {
+    loadMoreR();
+  }, [loadMoreR]);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (loadMorePost)
+         return;
+      const goDown = window.scrollY || window.pageYOffset;
+      const viewP = window.innerHeight;
+      const fullH = document.documentElement.scrollHeight;
+
+      if (goDown + viewP >= fullH - SCROLL_THRESHOLD) {
+        loadMoreR();
+      }
+    };
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [loadMorePost, loadMoreR]);
+
+  useEffect(() => {
+    if (!copyId) return;
+    const element = document.getElementById(copyId);
+    if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [copyId, restaurants]);
 
   const firstLayerForActive = activeRest
     ? comments.filter((comm: Comment) => comm.parentId === activeRest.restaurantId)
@@ -71,18 +121,11 @@ export default function Home() {
     setpopupType(null)
   }
 
-  useEffect(() => {
-    if (!copyId) return;
-      const start_element = document.getElementById(copyId);
-      if (start_element) {
-        start_element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    return;
-  }, [copyId, restaurants]);
+  if (!restaurants.length) return <LoadingSpinner />;
 
-  const mainRestaurants = (
-    <>
-      {restaurants.map((rest: Restaurant) => (
+  return (
+    <div className={styles.home}>
+      {restaurants.map(rest => (
         <div id={rest.restaurantId} className={styles.card} key={rest.restaurantId}>
           <div className={styles.post}>
             <div className={styles.cardHeader}>
@@ -136,6 +179,7 @@ export default function Home() {
           </div>
         </div>
       ))}
+      {loadMorePost && <div className={styles.loadMorePost}>Loading more...</div>}
 
       {activeRest && popupType && (
         <div className={styles.popupOverlay} onClick={closeModal}>
@@ -179,16 +223,7 @@ export default function Home() {
           </div>
         </div>
       )}
-    </>
-  );
-
-  return (
-    restaurants.length > 0 &&
-      <div className={styles.home}>
-        {mainRestaurants}
       </div>
-    ||
-      <LoadingSpinner />
   );
 }
 
