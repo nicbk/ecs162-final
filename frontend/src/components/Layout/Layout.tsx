@@ -7,6 +7,7 @@ import { FaBars, FaTimes, FaUserCircle} from 'react-icons/fa'
 import { GlobalStateContext} from '../../global_state/global_state';
 import type { User } from '../../interface_data/index.ts';
 import { initFirebaseHandler, onLoginButtonPress, onLogoutButtonPress } from './helpers.ts';
+import { useInitialDataLoad } from '../../global_state/cache_hooks.ts';
 
 export default function Layout() {
   const navigate = useNavigate()
@@ -14,6 +15,8 @@ export default function Layout() {
   const { commentId } = useParams<{ commentId: string }>()
   const globalState = useContext(GlobalStateContext);
   const [userAuthenticationState, setUserAuthenticationState] = globalState!.userAuthState;
+
+  useInitialDataLoad();
 
   // Init the firebase auth event handler
   useEffect(() => {

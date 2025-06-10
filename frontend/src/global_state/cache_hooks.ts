@@ -3,6 +3,7 @@ import { GlobalStateContext } from "./global_state";
 import { isCommentTopLevel, isUser, type Comment, type Restaurant, type User } from "../interface_data";
 import { getCommentTree, getResourceComments, getRestaurants } from "../api_data/client";
 import { useGpsSetter } from "./gps_hooks";
+import { GiConsoleController } from "react-icons/gi";
 
 export const useRestaurants = (): [Restaurant[], (restaurants: Restaurant[]) => void] => {
   const globalState = useContext(GlobalStateContext);
@@ -168,7 +169,7 @@ export const useFirstLevelComments = () => {
   const comments = useComments()[0];
   const restaurantMap = useContext(GlobalStateContext)!.globalCache[0].restaurants;
 
-  const firstLevelComments = Object.values(comments).filter(comment => !comment.rating || Number.isNaN(comment.rating));
+  const firstLevelComments = Object.values(comments).filter(comment => comment.rating && !Number.isNaN(comment.rating));
   const commentsWithRestaurant: CommentWithRestaurant[] = firstLevelComments.map(comment => ({
     restaurant: restaurantMap[comment.parentId],
     comment

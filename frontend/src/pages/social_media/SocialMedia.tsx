@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { FaHeart, FaShareSquare,FaRegComment } from 'react-icons/fa';
 import styles from './SocialMedia.module.scss';
 import { useNavigate } from 'react-router-dom';
-import { useComments, useFirstLevelComments, useRestaurants } from '../../global_state/cache_hooks.ts';
+import { useComments, useFirstLevelComments, useInitialDataLoad, useRestaurants } from '../../global_state/cache_hooks.ts';
 import { didUserLikeComment, type User } from '../../interface_data/index.ts';
 import { GlobalStateContext } from '../../global_state/global_state.ts';
 import { useToggleLike } from '../../global_state/comment_hooks.ts';

@@ -35,7 +35,7 @@ export default function Threads() {
   const handlePostComment = async (parentId: string) => {
     const body = (textComm[parentId] || '').trim();
     if (!body) return;
-    const newComment: InputComment = { body, rating: 0, images: [] };
+    const newComment: InputComment = { body, rating: NaN, images: [] };
     await postComment(newComment, parentId);
     await fetchCommentTree(commentId!);
     setReplyText(pre => ({ ...pre, [parentId]: '' }));
@@ -92,7 +92,7 @@ export default function Threads() {
             className={`${styles.likeIcon} ${
               didUserLikeComment(userAuthState, comment.id) ? styles.liked : ''
             }`}
-            onClick={() => toggleLike(parentComment!.id, comment.id)}
+            onClick={() => /*toggleLike(parentComment!.id, comment.id)*/console.log('')}
             role="button"
             aria-label="Like Comment"
           >

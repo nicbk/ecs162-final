@@ -15,8 +15,6 @@ import { useInitialDataLoad } from '../../global_state/cache_hooks.ts';
 import { useToggleLike } from '../../global_state/comment_hooks.ts';
 
 export default function Home() {
-  useInitialDataLoad();
-
   const globalState = useContext(GlobalStateContext);
   const userAuthState = globalState!.userAuthState[0];
 
@@ -48,7 +46,7 @@ export default function Home() {
 
     const newComment: InputComment = {
       body: text.trim(),
-      rating: NaN,
+      rating: 5,
       images: [],
     };
 

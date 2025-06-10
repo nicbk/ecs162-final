@@ -53,9 +53,9 @@ export const isUser = (obj: any): obj is User => {
 
 export const isCommentTopLevel = (comment: Comment) => {
     if (!comment.rating || Number.isNaN(comment.rating)) {
-        return true;
-    } else {
         return false;
+    } else {
+        return true;
     }
 };
 
