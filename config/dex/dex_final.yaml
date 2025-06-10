@@ -11,7 +11,7 @@ staticClients:
   - id: flask-app
     redirectURIs:
       - http://localhost:8000/authorize
-    name: flask_app
+    name: Flask App
     secret: flask-secret
 
 enablePasswordDB: true

@@ -265,10 +265,25 @@ class MongoDBInterface():
         '''
         with self.transaction_wrapper(self.mongo, recursive_use_transaction=is_root_call) as session:
             comments = self.comments.find({'parentId': parent_id}).sort('date', 1)
-            for comment in comments:
-                comment['replies'] = self.get_all_comments_on_parent(comment['id'], is_root_call = False)
+            # for comment in comments:
+            #     comment['replies'] = self.get_all_comments_on_parent(comment['id'], is_root_call = False)
+            all_unpacked_comments = []
 
-            return [Comment(**comment) for comment in comments]
+            for comment in comments:
+                unpacked_comment = Comment(parentId=comment['parentId'],
+                    id=comment['id'],
+                    creatorId=comment['creatorId'],
+                    rating=comment['rating'],
+                    images=comment['images'],
+                    body=comment['body'],
+                    likes=comment['likes'],
+                    deleted=comment['deleted'],
+                    date=str(comment['date']),
+                    replies=self.get_all_comments_on_parent(comment['id'], is_root_call = False))
+                
+                all_unpacked_comments.append(unpacked_comment)
+
+            return all_unpacked_comments
 
     ### Image Collection Methods ###
     ################################

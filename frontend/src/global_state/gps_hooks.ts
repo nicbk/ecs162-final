@@ -1,5 +1,5 @@
 import { useContext, useEffect } from "react";
-import { GlobalStateContext, type GPSCoordinates } from "../../global_state/global_state";
+import { GlobalStateContext, type GPSCoordinates } from "./global_state";
 
 // Promisify getting GPS coordinates to make code inside main Home component more elegant
 export const getGpsCoords = (): Promise<GPSCoordinates> => {
@@ -47,4 +47,3 @@ export const useGpsSetter = () => {
     }
   }, []);
 }
-

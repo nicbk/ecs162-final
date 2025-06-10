@@ -1,61 +1,33 @@
 import styles from './Home.module.scss';
-import { isUser, type InputComment, type Restaurant, type User } from '../../interface_data/index.ts';
+import { didUserLikeComment, isUser, type InputComment, type Restaurant, type User } from '../../interface_data/index.ts';
 import { type Comment } from '../../interface_data/index.ts';
 import mapIcon from '../../assets/map-icon.svg';
 import {FaHeart, FaRegComment, FaShareSquare} from "react-icons/fa";
-import { getRestaurantsMock, getCommentsMock, getResourceComments, postComment, getRestaurants, removeLike, addLike  } from '../../api_data/client.ts';
+import { postComment, removeLike, addLike  } from '../../api_data/client.ts';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useContext } from 'react';
-import { GlobalStateContext } from '../../global_state/global_state.ts';
-import { getGpsCoords, useGpsSetter } from './helpers.ts';
+import { GlobalStateContext, type UserAuthState } from '../../global_state/global_state.ts';
 import { useParams } from 'react-router-dom'
 import { ThrottledImage } from '../../components/ThrottledImage/ThrottledImage.tsx';
 import { LoadingSpinner } from '../../components/LoadingSpinner/LoadingSpinner.tsx';
-import { useComments, useRestaurantCommentMap, useRestaurants } from '../../global_state/hooks.ts';
-
-const DEFAULT_NUM_RESTAURANTS = 6;
+import { useComments, useFetchCommentForest, useRestaurants } from '../../global_state/cache_hooks.ts';
+import { useInitialDataLoad } from '../../global_state/cache_hooks.ts';
+import { useToggleLike } from '../../global_state/comment_hooks.ts';
 
 export default function Home() {
-  useGpsSetter();
+  useInitialDataLoad();
 
   const globalState = useContext(GlobalStateContext);
-  const userLocation = globalState!.userLocationState[0];
   const userAuthState = globalState!.userAuthState[0];
 
-  const [restaurants, setRestaurants] = useRestaurants();
-  const [comments, setComments] = useComments();
-  //const commentMap = useRestaurantCommentMap();
+  const refetchCommentForest = useFetchCommentForest();
+  const toggleLike = useToggleLike();
+  const restaurants = useRestaurants()[0];
+  const comments = useComments()[0];
   const [activeRest, setActiveRest] = useState<Restaurant | null>(null)
   const [popupType, setpopupType] = useState<'comment' | 'share' | null>(null)
   const [text, setText] = useState('')
   const { restaurantId: copyId } = useParams<{ restaurantId?: string }>();
-
-  const refetchCommentThread = async (restaurantId: string) => {
-    const comments = await getResourceComments(restaurantId);
-    setComments(comments);
-  };
-
-  const toggleLike = async (restaurantId: string, commentId: string) => {
-    if (!isUser(userAuthState)) {
-      return;
-    }
-
-    if ((userAuthState as User).likedComments.has(commentId)) {
-      await removeLike(commentId);
-    } else {
-      await addLike(commentId);
-    }
-
-    await refetchCommentThread(restaurantId);
-  }
-
-  const didUserLikeComment = (commentId: string) => {
-    if (!isUser(userAuthState)) {
-      return false;
-    }
-
-    return ((userAuthState as User).likedComments.has(commentId));
-  };
 
   // We need to come up with a way of sharing the restaurant.
   const giveShare = () => {
@@ -79,7 +51,7 @@ export default function Home() {
     };
 
     postComment(newComment, parentId)
-      .then(() => refetchCommentThread(restaurantId));
+      .then(() => refetchCommentForest(restaurantId));
 
     setText('');
   }
@@ -93,37 +65,11 @@ export default function Home() {
     setActiveRest(rest)
     setpopupType('share')
   }
+
   const closeModal = () => {
     setActiveRest(null)
     setpopupType(null)
   }
-
-  useEffect(() => {
-    const loadTheData = async () => {
-      if (!userLocation || !userLocation.latitude || !userLocation.longitude) {
-        return;
-      }
-
-      try {
-        const restaurantsData = await getRestaurants(userLocation?.latitude!, userLocation?.longitude!, DEFAULT_NUM_RESTAURANTS);
-        const commentsList = await Promise.all(restaurantsData.map(restaurant => getResourceComments(restaurant.restaurantId)));
-        const commentsAll = commentsList.flat();
-
-        /*const zippedList = restaurantsData.map((restaurant, i) => [restaurant.restaurantId, commentsList[i]] as [string, Comment[]]);
-        const commentMap: Record<string, Comment[]> = {};
-        for (const pair of zippedList) {
-          commentMap[pair[0]] = pair[1];
-        }*/
-
-        setRestaurants(restaurantsData)
-        //setCommentMap(commentMap);
-        setComments(commentsAll);
-      } catch (error) {
-        console.error('Failed to load data', error)
-      }
-    }
-    loadTheData()
-  }, [userLocation]);
 
   useEffect(() => {
     if (!copyId) return;
@@ -161,7 +107,7 @@ export default function Home() {
             </div>
             <div className={styles.cardFooter}>
                 <span
-                  className={`${styles.likeIcon} ${didUserLikeComment(rest.restaurantId) ? styles.liked : ''}`}
+                  className={`${styles.likeIcon} ${didUserLikeComment(userAuthState, rest.restaurantId) ? styles.liked : ''}`}
                   onClick={() => toggleLike(rest.restaurantId, rest.restaurantId)}
                   role="button"
                   aria-label="Like"
@@ -257,10 +203,13 @@ function CommentingPost({
   toggleLike: (restaurantId: string, commentId: string) => void;
   text: string;
   setText: (s: string) => void;
-  didUserLikeComment: (commentId: string) => boolean;
+  didUserLikeComment: (user: UserAuthState, commentId: string) => boolean;
   handlePostComment: (restaurantId: string, parentId: string) => void;
 }) {
+  const globalState = useContext(GlobalStateContext);
+  const userAuthState = globalState!.userAuthState[0];
   const navigate = useNavigate();
+
   return (
     <div>
       <div className={styles.popupModelBody}>
@@ -290,7 +239,7 @@ function CommentingPost({
                 <div className={styles.commentFoot}>
                   <span
                     className={`${styles.likeIcon} ${
-                      didUserLikeComment(comm.id) ? styles.liked : ''
+                      didUserLikeComment(userAuthState, comm.id) ? styles.liked : ''
                     }`}
                     onClick={() => toggleLike(activeRest.restaurantId, comm.id)}
                     role="button"
@@ -298,7 +247,7 @@ function CommentingPost({
                   >
                     <FaHeart />
                     <p className={styles.likeCount}>
-                      {didUserLikeComment(comm.id) ? comm.likes + 1 : comm.likes}
+                      {comm.likes}
                     </p>
                   </span>
 

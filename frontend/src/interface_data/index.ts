@@ -1,5 +1,7 @@
 //This wil be used for the data interfaces and also fields that we will get from the backend for now it is all mock data
 
+import type { UserAuthState } from "../global_state/global_state";
+
 export type Base64Data = string; // example: [ 'data:image/jpeg;base64,sdifjaijewfijaisefjawje9fja8wjef...', 'data:image/jpeg;base64,aifwjwjefijaweifjaiwejf' ]
 export type CommentId = string; // UUID of a comment
 
@@ -54,4 +56,12 @@ export const isCommentTopLevel = (comment: Comment) => {
     } else {
         return false;
     }
+};
+
+export const didUserLikeComment = (user: UserAuthState, commentId: string) => {
+if (!isUser(user)) {
+    return false;
+}
+
+return ((user as User).likedComments.has(commentId));
 };

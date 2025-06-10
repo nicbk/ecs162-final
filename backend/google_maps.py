@@ -56,7 +56,7 @@ def get_nearby_restaurants(app: Any, latitude: float, longitude: float, limit: i
         return image_response_raw.headers.get('Location')
 
   google_response = requests.post(f'{GOOGLE_PLACES_ENDPOINT}/places:searchNearby', data=json.dumps(payload), headers=headers)
-  app.logger.warning(google_response.json())
+  #app.logger.warning(google_response.json())
   # Return empty list if no restaurants found
   if 'places' not in google_response.json():
       return jsonify([]), 200
