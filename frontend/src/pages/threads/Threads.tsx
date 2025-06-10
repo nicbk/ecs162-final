@@ -7,6 +7,7 @@ import styles from './Threads.module.scss';
 import { useInitialDataLoad, useFetchCommentForest, useThread, useFetchCommentTree } from '../../global_state/cache_hooks.ts';
 import { GlobalStateContext } from '../../global_state/global_state.ts';
 import { useToggleLike } from '../../global_state/comment_hooks.ts';
+import { LoadingSpinner } from '../../components/LoadingSpinner/LoadingSpinner.tsx';
 
 export default function Threads() {
   const globalState = useContext(GlobalStateContext);
@@ -18,21 +19,31 @@ export default function Threads() {
   const [textComm, setReplyText] = useState<Record<string, string>>({});
   const toggleLike = useToggleLike();
   const fetchCommentTree = useFetchCommentTree();
-  const parentComment = useThread(commentId!);
+  const parentComment = useThread(commentId || null);
   const [loading, setLoading] = useState(true);
   // Fetch comment tree for comment on page load
   useEffect(() => {
     setLoading(true);
     //fetchCommentTree(commentId!).then(() => setLoading(false));
-    fetchCommentTree(commentId!).then((val) => console.log('Test value: ' + val))
+    if (commentId) {
+      fetchCommentTree(commentId!);
+    }
   }, [commentId]);
 
   if (loading) {
-    return <div>Loading. . . </div>;
+    if (parentComment) {
+      setLoading(false);
+    }
+
+    return (
+      <LoadingSpinner />
+    );
   }
+
   if (!parentComment) {
     return <p>I am Sorry But no comments found.</p>;
   }
+
   const handlePostComment = async (parentId: string) => {
     const body = (textComm[parentId] || '').trim();
     if (!body) return;
@@ -93,7 +104,7 @@ export default function Threads() {
             className={`${styles.likeIcon} ${
               didUserLikeComment(userAuthState, comment.id) ? styles.liked : ''
             }`}
-            onClick={() => /*toggleLike(parentComment!.id, comment.id)*/console.log('')}
+            onClick={() => toggleLike(parentComment!.id, comment.id)}
             role="button"
             aria-label="Like Comment"
           >

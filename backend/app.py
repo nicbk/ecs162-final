@@ -205,8 +205,10 @@ def getRestaurantInformation():
 #Gets a comment, as well as all nested replies for that comment.
 @app.route('/api/v1/comment/<string:comment_id>', methods=['GET'])
 def getCommentById(comment_id):
-    comment = mongo_instance.get_comment_by_id(comment_id)
+    comment: Comment = mongo_instance.get_comment_by_id(comment_id)
     comment_dict = comment._asdict() if hasattr(comment, '_asdict') else dict(comment)
+    app.logger.warning('DEBUGGER FOR COMMENT')
+    app.logger.warning(comment_dict)
     
     return jsonify(comment_dict), 200
 

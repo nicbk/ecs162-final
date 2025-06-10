@@ -121,8 +121,12 @@ export const useToggleCacheLike = () => {
   return toggleCacheLike;
 };
 
-export const useThread = (parentId: string) => {
+export const useThread = (parentId: string | null) => {
   const comments = useContext(GlobalStateContext)!.globalCache[0].comments;
+
+  if (!parentId) {
+    return null;
+  }
 
   if (parentId in comments) {
     return comments[parentId];
@@ -166,11 +170,20 @@ export const useFirstLevelComments = () => {
   const comments = useComments()[0];
   const restaurantMap = useContext(GlobalStateContext)!.globalCache[0].restaurants;
 
-  const firstLevelComments = Object.values(comments).filter(comment => comment.rating && !Number.isNaN(comment.rating));
-  const commentsWithRestaurant: CommentWithRestaurant[] = firstLevelComments.map(comment => ({
-    restaurant: restaurantMap[comment.parentId],
-    comment
-  }));
+  const firstLevelComments = Object.values(comments).filter(comment => comment.rating && !Number.isNaN(comment.rating))
+    // TODO: remove this line \/ when restaurant retrieval code is implemented
+    .filter(comment => comment.parentId in restaurantMap);
+
+  const commentsWithRestaurant: CommentWithRestaurant[] = firstLevelComments.map(comment => {
+    if (!(comment.parentId in restaurantMap)) {
+      // TODO: execute code here to get the restaurant from the backend, given the restaurantId (parentId)
+    }
+
+    return {
+      restaurant: restaurantMap[comment.parentId],
+      comment
+    };
+  });
 
   return commentsWithRestaurant;
 };
@@ -204,7 +217,8 @@ export const useInitialDataLoad = () => {
   const userLocation = globalState.userLocationState[0];
 
   const setRestaurants = useRestaurants()[1];
-  const setComments = useComments()[1];
+  //const setComments = useComments()[1];
+  const updateComments = useUpdateComments();
 
   // Initial data load
   useEffect(() => {
@@ -219,7 +233,8 @@ export const useInitialDataLoad = () => {
         const commentsAll = commentsList.flat();
 
         setRestaurants(restaurantsData)
-        setComments(commentsAll);
+        //setComments(commentsAll);
+        updateComments(commentsAll);
       } catch (error) {
         console.error('Failed to load data', error)
       }
@@ -245,7 +260,7 @@ export const useFetchCommentTree = () => {
   return (
     async (restaurantId: string) => {
       const comments = await getCommentTree(restaurantId);
-      updateComments(comments);
+      updateComments([comments]);
     }
   )
 };

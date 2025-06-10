@@ -259,15 +259,15 @@ class MongoDBInterface():
 
             unpacked_comment = Comment(parentId=comment['parentId'],
                 id=comment['id'],
-                username=comment['username'],
                 creatorId=comment['creatorId'],
+                username=comment['username'],
                 rating=comment['rating'],
                 images=comment['images'],
                 body=comment['body'],
                 likes=comment['likes'],
                 deleted=comment['deleted'],
                 date=str(comment['date']),
-                replies=self.get_all_comments_on_parent(comment['id']))
+                replies=self.get_all_comments_on_parent(comment['id'], is_root_call = False))
 
             return unpacked_comment
 

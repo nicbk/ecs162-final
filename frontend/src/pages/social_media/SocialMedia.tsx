@@ -26,6 +26,11 @@ export default function SocialMedia() {
   //const togLike = (id: string) => setLiked(pre => ({ ...pre, [id]: !pre[id] }));
   const navigate = useNavigate();
 
+  if (firstLayerComments.length === 0) {
+    return <p>(Either the page is loading or no posts have been made yet. To make this logic more robust, first implement the restaurant retrieval logic in the useFirstLevelComments() hook)</p>
+    //return <p>No posts have been made yet! You can try going to the Home page and commenting on a restaurant.</p>
+  }
+
   return (
     <div className={styles.socialM}>
       <div className={styles.socialSection}>
