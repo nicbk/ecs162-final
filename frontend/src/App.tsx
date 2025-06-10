@@ -4,19 +4,23 @@ import { Routes, Route } from 'react-router-dom'
 import Profile from './pages/profile/Profile';
 import './global_styles/_global.scss';
 import Threads from './pages/threads/Threads';
-import { GlobalStateContext, type UserAuthState, type GPSCoordinatesNullable } from './global_state/global_state';
+import { GlobalStateContext, type UserAuthState, type GPSCoordinatesNullable, type GlobalCache } from './global_state/global_state';
 import { useState } from 'react';
 import SocialMedia from './pages/social_media/SocialMedia';
-import type { User } from './interface_data';
 
 export default function App() {
   const userLocationState = useState<GPSCoordinatesNullable>(null);
   const userAuthState = useState<UserAuthState>('not-logged-in');
+  const globalCache = useState<GlobalCache>({
+    restaurants: {},
+    comments: {}
+  });
 
   return (
     <GlobalStateContext value={{
       userLocationState,
-      userAuthState
+      userAuthState,
+      globalCache
     }}>
       <Routes>
         {/* for now temp we will have the login stuff here but we need to remove it after it is done */}

@@ -1,47 +1,33 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { type Comment } from '../../interface_data/index.ts';
+import { didUserLikeComment, type Comment } from '../../interface_data/index.ts';
 import { getCommentsMock } from '../../api_data/client.ts';
 import { FaHeart, FaShareSquare } from 'react-icons/fa';
 import styles from './Threads.module.scss';
+import { useInitialDataLoad, useFetchCommentForest, useThread } from '../../global_state/cache_hooks.ts';
+import { GlobalStateContext } from '../../global_state/global_state.ts';
+import { useToggleLike } from '../../global_state/comment_hooks.ts';
 
 export default function Threads() {
+  const globalState = useContext(GlobalStateContext);
+  const userAuthState = globalState!.userAuthState[0];
+
   const { commentId } = useParams<{ commentId: string }>();
-  const [comments, setComm] = useState<Comment[]>([]);
-  const [ParentComm, SetParentComm] = useState<Comment | null>(null);
-  const [liked, setLiked] = useState<Record<string, boolean>>({});
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const toggleLike = useToggleLike();
+  const fetchCommentTree = useFetchCommentForest();
+  const parentComment = useThread(commentId!);
 
+  // Fetch comment tree for comment on page load
   useEffect(() => {
-    async function load() {
-      try {
-        const commData = await getCommentsMock();
-        setComm(commData);
-      } catch (error) {
-        console.error('Failed to load comments', error);
-      }
-    }
-    load();
+    fetchCommentTree(commentId!);
   }, []);
-
-  useEffect(() => {
-    if (!commentId) {
-      SetParentComm(null);
-      return;
-    }
-    const found = comments.find((comm) => comm.id === commentId) ?? null;
-    SetParentComm(found);
-  }, [comments, commentId]);
-
-  const togLike = (id: string) => {
-    setLiked((pre) => ({ ...pre, [id]: !pre[id] }));
-  };
 
   const togExp = (id: string) => {
     setExpanded((pre) => ({ ...pre, [id]: !pre[id] }));
   };
 
-  function renCommTree(comment: Comment, level = 1, parentUsername?: string)
+  function renCommTree(comment: Comment, level = 1, parentUsername: string)
   {
     const displayHeader = level >= 2 && parentUsername ? (
         <Link to={`/Profile/${parentUsername}`} className={styles.usernameLink}>
@@ -85,15 +71,15 @@ export default function Threads() {
         <div className={styles.commFoot}>
           <span
             className={`${styles.likeIcon} ${
-              liked[comment.id] ? styles.liked : ''
+              didUserLikeComment(userAuthState, comment.id) ? styles.liked : ''
             }`}
-            onClick={() => togLike(comment.id)}
+            onClick={() => toggleLike(parentComment!.id, comment.id)}
             role="button"
             aria-label="Like Comment"
           >
             <FaHeart />
             <p className={styles.likeCount}>
-              {liked[comment.id] ? comment.likes + 1 : comment.likes}
+              {comment.likes}
             </p>
           </span>
           <span
@@ -132,7 +118,7 @@ export default function Threads() {
 
   //I need to fast check before anything else to see if the it is null or not
   //IDK if this is a good way yet?
-  if (!ParentComm) {
+  if (!parentComment) {
     return <p>Sorry, No Comment found.</p>;
   }
 
@@ -140,33 +126,33 @@ export default function Threads() {
     <div className={styles.threads}>
       <div className={ `${styles.commCard} ${styles.pComm}`}>
         <div className={styles.threadHeader}>
-          <strong>{ParentComm.username}</strong>
+          <strong>{parentComment.username}</strong>
         </div>
 
         <div className={styles.descripModel}>
-          <p>{ParentComm.body}</p>
+          <p>{parentComment.body}</p>
         </div>
 
-        {ParentComm.images?.length > 0 && (
+        {parentComment.images?.length > 0 && (
           <div className={styles.commimgs}>
-            {ParentComm.images.map((img, num) => (<img key={num} src={img} alt={`Post Image ${num + 1}`} />))}
+            {parentComment.images.map((img, num) => (<img key={num} src={img} alt={`Post Image ${num + 1}`} />))}
           </div>
         )}
         <div className={styles.commFoot}>
-          <span className={ `${styles.likeIcon} ${ liked[ParentComm.id] ? styles.liked : ''}`}
-            onClick={() => togLike(ParentComm.id)}
+          <span className={ `${styles.likeIcon} ${ didUserLikeComment(userAuthState, parentComment.id) ? styles.liked : ''}`}
+            onClick={() => toggleLike(parentComment.id, parentComment.id)}
             role="button"
             aria-label="Like Comment"
           >
             <FaHeart />
             <p className={styles.likeCount}>
-              {liked[ParentComm.id] ? ParentComm.likes + 1 : ParentComm.likes}
+              {parentComment.likes}
             </p>
           </span>
           <span
             className={styles.shareIcon}
             onClick={() => {
-              navigator.clipboard.writeText( `${window.location.origin}/Threads/${ParentComm.id}`);
+              navigator.clipboard.writeText( `${window.location.origin}/Threads/${parentComment.id}`);
               alert('Post URL copied!');
             }}
             aria-label="Reply Share Comment"
@@ -177,7 +163,7 @@ export default function Threads() {
       </div>
 
       <div className={styles.threadCon}>
-        {ParentComm.replies?.map((reply) => renCommTree(reply, 1, ParentComm.username))}
+        {parentComment.replies?.map((reply) => renCommTree(reply, 1, parentComment.username))}
       </div>
     </div>
   );

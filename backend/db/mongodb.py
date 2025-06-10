@@ -13,6 +13,7 @@ from contextlib import contextmanager
 # from db.data import Resource, Comment
 from db.data import Comment, Restaurant
 from datetime import datetime, timezone
+from threading import Lock
 
 COMMENT_REMOVED_STR = 'Comment was removed by moderator'
 
@@ -24,6 +25,7 @@ class MongoDBInterface():
         # PyMongo documentation followed for tutorial on how to use the library https://pymongo.readthedocs.io/en/stable/tutorial.html
         self.mongo = MongoClient(mongo_uri)
         self.db = self.mongo["foodie_database"]
+        self.db_lock = Lock()
 
         # Initialize collections
         self.__initialize_collections()
@@ -75,42 +77,41 @@ class MongoDBInterface():
         '''
 
         with self.transaction_wrapper(self.mongo) as session:
-            # Insert the new user into the database
-            existing_user = self.users.find_one({'oauthId': oauth_id})
-            if existing_user is not None:
-                raise Exception('User already exists with this OAuth ID')
+            with self.db_lock:
+                # Insert the new user into the database
+                existing_user = self.users.find_one({'oauthId': oauth_id})
+                if existing_user is not None:
+                    raise Exception('User already exists with this OAuth ID')
+                
+                self.users.insert_one({
+                    'username': username,
+                    'email': email,
+                    'oauthId': oauth_id,
+                    'bio': '',
+                    'profileImage': None,
+                    'wishList': [],
+                    'likedComments': [],
+                })
 
-            existing_username = self.users.find_one({'username': username})
-            if existing_username is not None:
-                raise Exception('Username already exists')
-            
-            self.users.insert_one({
-                'username': username,
-                'email': email,
-                'oauthId': oauth_id,
-                'bio': '',
-                'profileImage': None,
-                'wishList': [],
-                'likedPosts': [],
-            })
+    # username cannot be unique if using firebase auth
+    ##################################################
+    # def get_user_by_username(self, username: str):
+    #     ''' Get a user by their username.'''
+    #     with self.transaction_wrapper(self.mongo) as session:
+    #         # Find the user in the database
+    #         user = self.users.find_one({'username': username})
+    #         if user is None:
+    #             raise Exception('User not found')
 
-    def get_user_by_username(self, username: str):
-        ''' Get a user by their username.'''
-        with self.transaction_wrapper(self.mongo) as session:
-            # Find the user in the database
-            user = self.users.find_one({'username': username})
-            if user is None:
-                raise Exception('User not found')
+    #         oauthId = user.get('oauthId', None)
 
-            oauthId = user.get('oauthId', None)
-
-            return {
-                "bio": user.get('bio', ''),
-                "profileImage": user.get('profileImage', None),
-                "comments": list(self.comments.find({'creatorId': oauthId})),
-                "wishList": user.get('wishList', []),
-                "likedPosts": user.get('likedPosts', []),
-            }
+    #         return {
+    #             "bio": user.get('bio', ''),
+    #             "profileImage": user.get('profileImage', None),
+    #             "comments": list(self.comments.find({'creatorId': oauthId})),
+    #             "wishList": user.get('wishList', []),
+    #             "likedComments": user.get('likedComments', []),
+    #         }
 
     def update_user_bio(self, user_id: str, bio: str):
         '''Update the bio of a user'''
@@ -145,9 +146,9 @@ class MongoDBInterface():
                 "email": user.get('email', ''),
                 "bio": user.get('bio', ''),
                 "profileImage": user.get('profileImage', None),
-                "comments": list(self.comments.find({'creatorId': oauth_id})),
+                "comments": self.get_user_comments_id(oauth_id),
                 "wishList": user.get('wishList', []),
-                "likedPosts": user.get('likedPosts', []),
+                "likedComments": user.get('likedComments', []),
             }
         
 
@@ -190,7 +191,7 @@ class MongoDBInterface():
         '''Add a like to a comment'''
         with self.transaction_wrapper(self.mongo) as session:
             # Only add like if user hasn't already liked the comment
-            user = self.users.find_one({'oauthId': user_id, 'likedPosts': comment_id})
+            user = self.users.find_one({'oauthId': user_id, 'likedComments': comment_id})
             if user is None:
                 self.comments.update_one(
                     {'id': comment_id},
@@ -198,14 +199,14 @@ class MongoDBInterface():
                 )
                 self.users.update_one(
                     {'oauthId': user_id},
-                    {'$addToSet': {'likedPosts': comment_id}}
+                    {'$addToSet': {'likedComments': comment_id}}
                 )
 
     def remove_comment_like(self, comment_id: str, user_id: str):
         '''Remove a like from a comment'''
         with self.transaction_wrapper(self.mongo) as session:
             # Only remove like if user has already liked the comment
-            user = self.users.find_one({'oauthId': user_id, 'likedPosts': comment_id})
+            user = self.users.find_one({'oauthId': user_id, 'likedComments': comment_id})
             if user is not None:
                 # Remove the like from the comment and user
                 self.comments.update_one(
@@ -215,7 +216,7 @@ class MongoDBInterface():
 
                 self.users.update_one(
                     {'oauthId': user_id},
-                    {'$pull': {'likedPosts': comment_id}}
+                    {'$pull': {'likedComments': comment_id}}
                 )
 
     def delete_comment_by_id(self, comment_id: str):
@@ -254,9 +255,23 @@ class MongoDBInterface():
             if comment is None:
                 raise Exception('Comment not found')
 
-            comment['replies'] = self.get_all_comments_on_parent(comment_id)
+            unpacked_comment = Comment(parentId=comment['parentId'],
+                id=comment['id'],
+                creatorId=comment['creatorId'],
+                rating=comment['rating'],
+                images=comment['images'],
+                body=comment['body'],
+                likes=comment['likes'],
+                deleted=comment['deleted'],
+                date=str(comment['date']),
+                replies=self.get_all_comments_on_parent(comment['id']))
 
-            return Comment(**comment)
+            return unpacked_comment
+
+    def get_user_comments_id(self, user_id: str) -> list[str]:
+        comments = self.comments.find({'creatorId': user_id}).sort('date', 1)
+
+        return list(map(lambda comment: comment['id'], comments))
         
     def get_all_comments_on_parent(self, parent_id: str, is_root_call = True) -> list[Comment]:
         '''
@@ -265,10 +280,25 @@ class MongoDBInterface():
         '''
         with self.transaction_wrapper(self.mongo, recursive_use_transaction=is_root_call) as session:
             comments = self.comments.find({'parentId': parent_id}).sort('date', 1)
-            for comment in comments:
-                comment['replies'] = self.get_all_comments_on_parent(comment['id'], is_root_call = False)
+            # for comment in comments:
+            #     comment['replies'] = self.get_all_comments_on_parent(comment['id'], is_root_call = False)
+            all_unpacked_comments = []
 
-            return [Comment(**comment) for comment in comments]
+            for comment in comments:
+                unpacked_comment = Comment(parentId=comment['parentId'],
+                    id=comment['id'],
+                    creatorId=comment['creatorId'],
+                    rating=comment['rating'],
+                    images=comment['images'],
+                    body=comment['body'],
+                    likes=comment['likes'],
+                    deleted=comment['deleted'],
+                    date=str(comment['date']),
+                    replies=self.get_all_comments_on_parent(comment['id'], is_root_call = False))
+                
+                all_unpacked_comments.append(unpacked_comment)
+
+            return all_unpacked_comments
 
     ### Image Collection Methods ###
     ################################

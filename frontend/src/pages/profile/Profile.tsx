@@ -135,28 +135,45 @@ const Profile = () => {
     if (user.comments && user.comments.length > 0){
       const fetchComments = async () => {
         try {
-        const commentFetches = user.comments.map(async (commentId: CommentId) => {
-          const response = await fetch(`/api/v1/comment/${commentId}`);
-          return await response.json() as Comment;
-        });
+          const commentFetches = user.comments.map(async (commentId: CommentId) => {
+            const response = await fetch(`/api/v1/comment/${commentId}`);
+            return await response.json() as Comment;
+          });
 
-        const comments = await Promise.all(commentFetches);
-        
-        const topLevelComments = comments.filter(comment => comment.rating !== undefined && !comment.deleted);
-        const imagePosts = topLevelComments.map(comment => ({
-          ...comment,
-          images: comment.images.length > 0 ? comment.images : [placeholder],
-        }));
-        setImagePosts(imagePosts);
-      } 
-      catch (err) {
-        console.error('Error fetching comments:', err);
-      }
+          const comments = await Promise.all(commentFetches);
+          
+          const topLevelComments = comments.filter(comment => comment.rating !== undefined && !comment.deleted);
+          const imagePosts = topLevelComments.map(comment => ({
+            ...comment,
+            images: comment.images.length > 0 ? comment.images : [placeholder],
+          }));
+          setImagePosts(imagePosts);
+        } 
+        catch (err) {
+          console.error('Error fetching comments:', err);
+        }
       }
       fetchComments();
     }
     
-  })
+  }, [globalState!.userAuthState[0]]); // run this effect when the user changes
+  //   .catch(error => console.error('Fetch error:', error));
+  // }, []);
+
+      // const topLevelComments = user.comments.filter((comment: Post) => comment.rating !== undefined);
+    // const commentList = topLevelComments.map(async (comment: Post) => {
+    //   const response = await fetch(`/api/v1/comment/${comment.id}`);
+    //   return await response.json();
+    // });
+    // let comments = await Promise.all(commentList);
+    
+    // const imagePosts = comments.filter(post => !post.deleted).map(post => ({
+    // ...post, 
+    // images: post.images?.length > 0 ? post.images : [/*placeholder*/]
+    // }));
+    // // const textPosts = comments.filter(post => post.images.length === 0 && !post.deleted);
+    // setImagePosts(imagePosts);
+    // // setTextPosts(textPosts);
 
   for (const post of posts) {
   post.totalReplies = countReplies(post);

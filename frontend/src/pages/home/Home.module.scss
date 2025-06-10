@@ -154,7 +154,7 @@ img{
   width: 100%;
   padding: 15px;
   margin: 10px;
-  border-radius: 20px 100px 20px 100px;
+  border-radius: 10px;
   border: 1px solid var(--accent);
   background-color: var(--background);
   color: var(--text);
@@ -203,9 +203,7 @@ img{
   background: var(--background);
   border-radius: 20px 100px 20px 100px;
   padding: 15px;
-  margin: 10px;
-  max-width: 80%;
-  width: 100%;
+  margin: 5px;
   min-width: 700px;
 }
 .popupOverlay {
@@ -233,12 +231,19 @@ img{
 }
 .popupModelBody{
   display: flex;
-  flex-direction: row;
   align-items: center;
+  flex-direction: row;
   justify-content: center;
-  background: var(--background);
-  border-radius: 20px 100px 20px 100px;
+  background: transparent;
   padding: 15px;
+  margin: 10px;
+  max-width: 95%;
+  min-width: 700px;
+    @media screen and (max-width: 950px) {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+  }
 }
 .popupBoxBody {
   display: flex;
@@ -246,21 +251,30 @@ img{
   align-items: center;
   justify-content: center;
   background: var(--background);
-  border-radius: 12px;
+  border-radius: 50px;
   padding: 5px;
-  width: 80%;
+  width: 90%;
+  height: 100%;
+  max-height: 500px;
+  min-height: 50px;
+  @media screen and (max-width: 768px) {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    
+  }
 }
 .popupBoxFooter{
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-evenly;
   width: 100%;
   margin-top: 20px;
 
   button {
     padding: 5px 10px;
-    border-radius: 200px 100px 200px 1000px;
+    border-radius: 10px;
     border: none;
     background-color: var(--accent);
     color: var(--inverse-background);
@@ -382,6 +396,20 @@ img{
       transform: scale(1.1);
     }
   }
+}
+.shareInput{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 20px 100px 20px 100px;
+  border: 1px solid var(--accent);
+  background-color: var(--background);
+  color: var(--text);
+  font-size: 1.5rem;
 }
 
 .solo {
