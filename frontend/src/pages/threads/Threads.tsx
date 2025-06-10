@@ -4,7 +4,7 @@ import { didUserLikeComment, type Comment, type InputComment } from '../../inter
 import { postComment } from '../../api_data/client.ts';
 import { FaHeart, FaShareSquare, FaRegComment } from 'react-icons/fa';
 import styles from './Threads.module.scss';
-import { useInitialDataLoad, useFetchCommentForest, useThread } from '../../global_state/cache_hooks.ts';
+import { useInitialDataLoad, useFetchCommentForest, useThread, useFetchCommentTree } from '../../global_state/cache_hooks.ts';
 import { GlobalStateContext } from '../../global_state/global_state.ts';
 import { useToggleLike } from '../../global_state/comment_hooks.ts';
 
@@ -17,13 +17,14 @@ export default function Threads() {
   const [openChat, onCancel] = useState<Record<string, boolean>>({});
   const [textComm, setReplyText] = useState<Record<string, string>>({});
   const toggleLike = useToggleLike();
-  const fetchCommentTree = useFetchCommentForest();
+  const fetchCommentTree = useFetchCommentTree();
   const parentComment = useThread(commentId!);
   const [loading, setLoading] = useState(true);
   // Fetch comment tree for comment on page load
   useEffect(() => {
     setLoading(true);
-    fetchCommentTree(commentId!).then(() => setLoading(false));
+    //fetchCommentTree(commentId!).then(() => setLoading(false));
+    fetchCommentTree(commentId!).then((val) => console.log('Test value: ' + val))
   }, [commentId]);
 
   if (loading) {
@@ -35,7 +36,7 @@ export default function Threads() {
   const handlePostComment = async (parentId: string) => {
     const body = (textComm[parentId] || '').trim();
     if (!body) return;
-    const newComment: InputComment = { body, rating: 0, images: [] };
+    const newComment: InputComment = { body, rating: NaN, images: [] };
     await postComment(newComment, parentId);
     await fetchCommentTree(commentId!);
     setReplyText(pre => ({ ...pre, [parentId]: '' }));
@@ -92,7 +93,7 @@ export default function Threads() {
             className={`${styles.likeIcon} ${
               didUserLikeComment(userAuthState, comment.id) ? styles.liked : ''
             }`}
-            onClick={() => toggleLike(parentComment!.id, comment.id)}
+            onClick={() => /*toggleLike(parentComment!.id, comment.id)*/console.log('')}
             role="button"
             aria-label="Like Comment"
           >

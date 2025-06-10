@@ -1,8 +1,9 @@
 import { useContext, useEffect } from "react";
-import { GlobalStateContext } from "./global_state";
+import { GlobalStateContext, UUID_LENGTH } from "./global_state";
 import { isCommentTopLevel, isUser, type Comment, type Restaurant, type User } from "../interface_data";
 import { getCommentTree, getResourceComments, getRestaurants } from "../api_data/client";
 import { useGpsSetter } from "./gps_hooks";
+import { GiConsoleController } from "react-icons/gi";
 
 export const useRestaurants = (): [Restaurant[], (restaurants: Restaurant[]) => void] => {
   const globalState = useContext(GlobalStateContext);
@@ -79,7 +80,6 @@ export const useComments = (): [Comment[], (comments: Comment[]) => void] => {
 export const useToggleCacheLike = () => {
   const [globalCache, setGlobalCache] = useContext(GlobalStateContext)!.globalCache;
   const [userAuthState, setUserAuthState] = useContext(GlobalStateContext)!.userAuthState;
-  const UUID_LENGTH = 36;
 
   const toggleCacheLike = (commentId: string) => {
     if (!isUser(userAuthState)) {
@@ -89,19 +89,17 @@ export const useToggleCacheLike = () => {
     const isLiked = user.likedComments.has(commentId);
 
     if (commentId.length === UUID_LENGTH) {
-      setGlobalCache((existingGlobalCache) => {
-        const updatedCache = {
-          ...existingGlobalCache
-        };
+      const updatedCache = {
+        ...globalCache
+      };
 
-        if (isLiked) {
-          updatedCache.comments[commentId].likes -= 1;
-        } else {
-          updatedCache.comments[commentId].likes += 1;
-        }
+      if (isLiked) {
+        updatedCache.comments[commentId].likes -= 1;
+      } else {
+        updatedCache.comments[commentId].likes += 1;
+      }
 
-        return updatedCache;
-      });
+      setGlobalCache(updatedCache);
     }
 
     setUserAuthState((existingUser) => {
@@ -168,7 +166,7 @@ export const useFirstLevelComments = () => {
   const comments = useComments()[0];
   const restaurantMap = useContext(GlobalStateContext)!.globalCache[0].restaurants;
 
-  const firstLevelComments = Object.values(comments).filter(comment => !comment.rating || Number.isNaN(comment.rating));
+  const firstLevelComments = Object.values(comments).filter(comment => comment.rating && !Number.isNaN(comment.rating));
   const commentsWithRestaurant: CommentWithRestaurant[] = firstLevelComments.map(comment => ({
     restaurant: restaurantMap[comment.parentId],
     comment
