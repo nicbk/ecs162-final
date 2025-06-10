@@ -200,12 +200,9 @@ class MongoDBInterface():
                     {'$inc': {'likes': 1}}
                 )
 
-                # #if the comment is not found its a restaurant and we add it to the wishlist
-                # if comments_result.modified_count == 0:
-                #     self.users.update_one(
-                #         {'oauthId': user_id},
-                #         {'$addToSet': {'wishList': comment_id}}
-                #     )
+                # if the comment is not found its an error
+                if comments_result.modified_count == 0:
+                    raise Exception('Comment not found')
 
                 self.users.update_one(
                     {'oauthId': user_id},
@@ -224,12 +221,9 @@ class MongoDBInterface():
                     {'$inc': {'likes': -1}}
                 )
 
-                # #if the comment is not found its a restaurant and we remove it to the wishlist
-                # if comments_result.modified_count == 0:
-                #     self.users.update_one(
-                #         {'oauthId': user_id},
-                #         {'$pull': {'wishList': comment_id}}
-                #     )
+                # if the comment is not found its an error
+                if comments_result.modified_count == 0:
+                    raise Exception('Comment not found')
 
                 self.users.update_one(
                     {'oauthId': user_id},
