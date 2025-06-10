@@ -206,7 +206,9 @@ def getRestaurantInformation():
 @app.route('/api/v1/comment/<string:comment_id>', methods=['GET'])
 def getCommentById(comment_id):
     comment = mongo_instance.get_comment_by_id(comment_id)
-    return jsonify(comment), 200
+    comment_dict = comment._asdict() if hasattr(comment, '_asdict') else dict(comment)
+    
+    return jsonify(comment_dict), 200
 
 # Gets the tree of comments (comments and replies) for either a restaurant or parent comment
 @app.route('/api/v1/comments', methods=['GET'])
@@ -249,7 +251,7 @@ def deleteComment(comment_id):
 
 
 # Add a like to a specified comment
-@app.route('/api/v1/comment/<string:comment_id>/add_like', methods=['POST'])
+@app.route('/api/v1/comment/<string:comment_id>/add-like', methods=['POST'])
 def addLikeToComment(comment_id):
     # Getting request headers:
     # https://stackoverflow.com/questions/29386995/how-to-get-http-headers-in-flask
@@ -263,7 +265,7 @@ def addLikeToComment(comment_id):
 
 
 # Remove a like from a specified comment
-@app.route('/api/v1/comment/<string:comment_id>/remove_like', methods=['POST'])
+@app.route('/api/v1/comment/<string:comment_id>/remove-like', methods=['POST'])
 def removeLikeFromComment(comment_id):
     # Getting request headers:
     # https://stackoverflow.com/questions/29386995/how-to-get-http-headers-in-flask
@@ -279,39 +281,51 @@ def removeLikeFromComment(comment_id):
 ###############################################
 
 # After creating a new user in dex, we need to create a user in our MongoDB
-@app.route('/api/v1/user/create', methods=['POST'])
-def createUser():
-    # Getting request headers:
-    # https://stackoverflow.com/questions/29386995/how-to-get-http-headers-in-flask
+# @app.route('/api/v1/user/create', methods=['POST'])
+# def createUser():
+#     # Getting request headers:
+#     # https://stackoverflow.com/questions/29386995/how-to-get-http-headers-in-flask
+#     token = get_authorization(request.headers.get('Authorization'))
+#     if not token:
+#         return jsonify({'error': 'User not authenticated'}), 401
+
+#     user_id = token['sub']
+#     user_email = token.get('email', '')
+#     username = token.get('username', 'User')
+
+#     try:
+#         mongo_instance.add_new_user(username, user_email, user_id)
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500
+    
+#     return jsonify({'status': 'User created successfully'}), 200
+
+
+@app.route('/api/v1/user/<string:username>', methods=['GET'])
+def getLoggedInUserUsername(username):
     token = get_authorization(request.headers.get('Authorization'))
     if not token:
         return jsonify({'error': 'User not authenticated'}), 401
 
     user_id = token['sub']
-    user_email = token.get('email', '')
-    username = token.get('username', 'User')
 
-    try:
-        mongo_instance.add_new_user(username, user_email, user_id)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-    
-    return jsonify({'status': 'User created successfully'}), 200
-
-
-@app.route('/api/v1/user/<string:username>', methods=['GET'])
-def getUserByUsername(username):
-    user = mongo_instance.get_user_by_username(username)
+    user = mongo_instance.get_user_by_oauth_id(user_id)
     if user is None:
         return jsonify({'error': 'User not found'}), 404
     return jsonify(user), 200
 
 @app.route('/api/v1/user/<string:username>/bio', methods=['GET'])
-def getUserBioByUsername(username):
-    bio = mongo_instance.update_user_bio(username)
-    if bio is None:
+def getLoggedInUserBio(username):
+    token = get_authorization(request.headers.get('Authorization'))
+    if not token:
+        return jsonify({'error': 'User not authenticated'}), 401
+
+    user_id = token['sub']
+
+    user = mongo_instance.get_user_by_oauth_id(user_id)
+    if user is None:
         return jsonify({'error': 'User not found'}), 404
-    return jsonify(bio), 200
+    return jsonify(user.get("bio", None)), 200
 
 @app.route('/api/v1/user/<string:username>/bio', methods=['POST'])
 def updateUserBio(username):
@@ -335,7 +349,13 @@ def updateUserProfileImage(username):
     if profileImage is None:
         return jsonify({'error': 'profileImage is required'}), 400
 
-    mongo_instance.update_user_profile_image(username, profileImage)
+    token = get_authorization(request.headers.get('Authorization'))
+    if not token:
+        return jsonify({'error': 'User not authenticated'}), 401
+
+    user_id = token['sub']
+
+    mongo_instance.update_user_profile_image(user_id, profileImage)
     return jsonify({'status': 'Profile image updated successfully'}), 200
 
 # Gets Current Logged In User Information
@@ -348,6 +368,10 @@ def getUserInformation():
         return jsonify({'error': 'User not authenticated'}), 401
 
     user_id = token['sub']
+    username = token.get('name', None)
+
+    if username is None:
+        return jsonify({'error': 'Username not found in token'}), 400
     
     # Fast fallback - return session data immediately
     user_data = {
@@ -355,23 +379,23 @@ def getUserInformation():
         'email': token['email'],
         'oauthId': token['sub']
     }
-    user_id = token['sub']
     
     try :
         mongo_user_data = mongo_instance.get_user_by_oauth_id(user_id)
+        # app.logger.warning(mongo_user_data)
         return jsonify(mongo_user_data), 200
     except Exception as e:
         if e.args[0] == 'User not found':
             # If user not found, create a new user in the database
             try:
-                mongo_instance.add_new_user(user_data['username'], user_data['email'], user_id)
+                mongo_instance.add_new_user(username, user_data['email'], user_id)
                 mongo_user_data = mongo_instance.get_user_by_oauth_id(user_id)
                 return jsonify(mongo_user_data), 201 # 201 is successful creation
             
             except Exception as e:
                 return jsonify({'error': str(e)}), 500
             
-        return jsonify(user_data), 202
+        raise e 
 
 
 ################# mock routes #################

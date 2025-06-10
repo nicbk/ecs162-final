@@ -1,6 +1,6 @@
 import { useContext, useEffect } from "react";
 import { GlobalStateContext } from "./global_state";
-import { isCommentTopLevel, type Comment, type Restaurant } from "../interface_data";
+import { isCommentTopLevel, isUser, type Comment, type Restaurant, type User } from "../interface_data";
 import { getCommentTree, getResourceComments, getRestaurants } from "../api_data/client";
 import { useGpsSetter } from "./gps_hooks";
 
@@ -75,6 +75,53 @@ export const useComments = (): [Comment[], (comments: Comment[]) => void] => {
   const returnComments = Object.values(globalCache.comments);
   return [returnComments, setComments];
 };
+
+/*
+export const useToggleCacheLike = () => {
+  const [globalCache, setGlobalCache] = useContext(GlobalStateContext)!.globalCache;
+  const [userAuthState, setUserAuthState] = useContext(GlobalStateContext)!.userAuthState;
+
+  const toggleCacheLike = (commentId: string) => {
+    if (!isUser(userAuthState)) {
+      return;
+    }
+    const user = userAuthState as User;
+
+    const isLiked = user.likedComments.has(commentId);
+
+    setGlobalCache((existingGlobalCache) => {
+      const updatedCache = {
+        ...existingGlobalCache
+      };
+
+      if (isLiked) {
+        updatedCache.comments[commentId].likes -= 1;
+      } else {
+        updatedCache.comments[commentId].likes += 1;
+      }
+
+      return updatedCache;
+    });
+
+    setUserAuthState((existingUser) => {
+      const castedExistingUser = existingUser as User;
+      const updatedUser = {
+        ...castedExistingUser
+      };
+
+      if (isLiked) {
+        updatedUser.likedComments.delete(commentId);
+      } else {
+        updatedUser.likedComments.add(commentId);
+      }
+
+      return updatedUser;
+    });
+  }
+
+  return toggleCacheLike;
+};
+*/
 
 export const useThread = (parentId: string) => {
   const comments = useContext(GlobalStateContext)!.globalCache[0].comments;

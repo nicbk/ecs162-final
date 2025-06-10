@@ -117,7 +117,18 @@ export const getCommentTree = async (commentId: string) => {
  * Gets the currently logged in user
  * @returns boolean 'false' is returned if no user logged in. Otherwise, a User object is returned.
  */
-export const getLoggedInUser = () => fetchAPI<User | boolean>('authed-user');
+export const getLoggedInUser = () => fetchAPI<User | boolean>('authed-user').then((user) => {
+  if (!user) {
+    return user;
+  } else {
+    const userCasted = user as User;
+
+    return {
+      ...userCasted,
+      likedComments: new Set(userCasted.likedComments)
+    }
+  }
+});
 
 ///////////////////////
 // UPDATE OPERATIONS //
