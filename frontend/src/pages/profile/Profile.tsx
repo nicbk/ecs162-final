@@ -6,10 +6,12 @@ import food from '../../assets/food.jpg';
 import placeholder from '../../assets/image2vector.svg';
 import { isCommentTopLevel, type CommentId, type Comment } from '../../interface_data/index.ts';
 import { addLike, deleteComment } from '../../api_data/client.ts'
-import { type User } from '../../interface_data/index.ts';
+import { type User, type Restaurant } from '../../interface_data/index.ts';
 import { useNavigate } from 'react-router-dom';
-import { FaHeart, FaComment} from "react-icons/fa";
+import { FaHeart, FaComment, FaChevronDown} from "react-icons/fa";
 import { GlobalStateContext } from '../../global_state/global_state.ts';
+import { LoadingSpinner } from '../../components/LoadingSpinner/LoadingSpinner.tsx';
+import { useLikedRestaurants } from '../../global_state/user_hooks.ts';
 
 interface Post extends Comment{
   totalReplies?: number;
@@ -29,6 +31,7 @@ const Profile = () => {
   const  globalState = useContext(GlobalStateContext)
   const [userAuthenticationState, setUserAuthenticationState] = globalState!.userAuthState;
   const [isFetched, setIsFetched] = useState(false);
+  const [wishlistOpen, setWishlistOpen] = useState(false);
   console.log(userAuthenticationState)
 
   const navigate = useNavigate();
@@ -87,7 +90,7 @@ const Profile = () => {
     let count = 0;
     const countRecursive = (c: Post) => {
       count++;
-      c.replies.forEach(reply => countRecursive(reply));
+      (c.replies || []).forEach(reply => countRecursive(reply));
     };
     countRecursive(comment);
     return count - 1;
@@ -105,11 +108,10 @@ const Profile = () => {
             <div style={{marginBottom:4, display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
               <span><strong>{reply.username}</strong></span>
               <span style={{marginLeft: 'auto', display: 'flex', alignItems: 'center'}}>
-              
               </span>
             </div>
             <div style={{marginLeft:8}}>
-              {reply.images.map((img, idx) => (
+              {reply.images && reply.images.length > 0 && reply.images.map((img, idx) => (
                 <img
                   key={idx}
                   src={img}
@@ -130,7 +132,7 @@ const Profile = () => {
                 </span>
               </strong>
             </div>
-            {reply.replies.length > 0 && (
+            {reply.replies && reply.replies.length > 0 && (
               <div className={styles.moreReplies} onClick={() => navigate(`Threads/${reply.id}`)}>
                 <span style={{marginTop:8, marginRight:15}} className={styles.line}></span>
                 <span>See more replies ({reply.replies.length})</span>
@@ -155,6 +157,28 @@ const Profile = () => {
   const full = width >= 1200;
   const tablet = width < 1200 && width >= 768;
   const mobile = width < 768;
+
+  // const wishlist = useLikedRestaurants();
+
+  const wishlist: Restaurant[] = [
+  {
+    restaurantId: "1",
+    restaurantTitle: "restaurant1",
+    rating: 4.5,
+    address: "",
+    images: [],
+    googleMapsUrl: ""
+  },
+  {
+    restaurantId: "2",
+    restaurantTitle: "restaurant2",
+    rating: 4.8,
+    address: "",
+    images: [],
+    googleMapsUrl: ""
+  }
+];
+
   return (
     <div className={styles.profile}>
     {/* user info */}
@@ -162,8 +186,28 @@ const Profile = () => {
       <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', marginTop: 30}}>
         <img src={profileImage} alt="Profile picture" width={125} height={125} style={{marginRight: 20, borderRadius: '50%'}}/>
         <div style={{display: 'flex', flexDirection: 'column'}}>
-          <div style={{display: 'flex', flexDirection: 'row', alignItems: 'flex-start', height: 'fit-content'}}>
+          <div style={{display: 'flex', flexDirection: 'row', alignItems: 'flex-start', height: 'fit-content', position: 'relative'}}>
             <p className={styles.username}>{username}</p>
+            <div style={{position: 'relative'}}>
+              <div className={styles.wishlistDropdown}>
+                <button className={styles.wishlistButton} onClick={() => setWishlistOpen(!wishlistOpen)}>
+                  My Wishlist <FaChevronDown style={{ transform: wishlistOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s'}} />
+                </button>
+                {wishlistOpen && (
+                  <div className={styles.dropdownMenu}>
+                    {wishlist.length > 0 ? (
+                      wishlist.map(restaurant => (
+                        <div key={restaurant.restaurantId} className={styles.wishlistItem}>
+                          <span>{restaurant.restaurantTitle}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{padding: '8px 16px'}}>Your wishlist is empty!</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
           {/* <p>{bio}</p> */}
           <div style={{textAlign: 'left'}}>
@@ -176,7 +220,7 @@ const Profile = () => {
     </section>
 
     {/* comments and posts collection */}
-    {isFetched && 
+    {isFetched ? (
       <section>
         <div className={styles.separator}></div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
@@ -237,7 +281,11 @@ const Profile = () => {
         </div>
       )}
       </section>
-      }
+      ) : (
+        <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh'}}>
+          <LoadingSpinner />
+        </div>
+      )}
     </div>
   );
 };

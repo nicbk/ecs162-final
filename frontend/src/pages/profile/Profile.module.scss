@@ -111,6 +111,47 @@ section button:active {
   }
 }
 
+
+.wishlistButton {
+  display: block;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  margin-top: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s, border-color 0.2s;
+  position: relative;
+  &:hover {
+    border-color: #aaa;
+  }
+}
+
+.dropdownMenu {
+  position: absolute;
+  display: block;
+  top: 100%;
+  left: 0;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 8px 0;
+  width: 240px;
+  margin-top: 8px;
+}
+
+.wishlistItem {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  gap: 12px;
+
+  &:hover {
+    background: #f5f5f5;
+  }
+}
+
 .galleryGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr); 
@@ -236,6 +277,7 @@ $themes: (
   flex: 0 1 auto;
   // min-height: 20%;
   max-height: 20%;
+  font-size: 1.2rem;
   font-weight: bold;
   overflow-y: auto;
   // max-width: 40%
