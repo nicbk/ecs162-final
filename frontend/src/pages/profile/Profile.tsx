@@ -14,24 +14,6 @@ import { GlobalStateContext } from '../../global_state/global_state.ts';
 interface Post extends Comment{
   totalReplies?: number;
 }
-// export interface Comment { 
-//     id: string;
-//     username: string;
-//     body: string;
-//     images: Base64Data[];
-//     likes: number;
-//     deleted: boolean;
-//     replies: Comment[];
-//     restaurantId?: string;
-// }
-
-// export interface User {
-//     username: string;
-//     profileImage: Base64Data;
-//     bio: string;
-//     comments: CommentId[];
-// }
-
 
 const mockPosts: Post[] = [
   {
@@ -127,7 +109,6 @@ const mockPosts: Post[] = [
 const Profile = () => {
   console.log('Component rendering');
   const [posts, setImagePosts] = useState<Post[]>(mockPosts);
-  // const [textPosts, setTextPosts] = useState<Post[]>(mockPosts.filter(post => post.images.length === 0));
   const [username, setUsername] = useState("tempuser");
   const [bio, setBio] = useState("testbio");
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
@@ -136,11 +117,9 @@ const Profile = () => {
   const  globalState = useContext(GlobalStateContext)
   // const [userAuthenticationState, setUserAuthenticationState] = globalState!.userAuthState;
 
-
   const navigate = useNavigate();
 
-  // we need the setTempuserName and setTempBio stuff so it doesn't save if we want to cancel: intermediate values
-  function deletePost(id: string) { // FIX THIS CALL API DELETE
+  function deletePost(id: string) { 
     setImagePosts(posts.filter((post) => post.id !== id));
     fetch(`/api/v1/comment/${id}`, {method: 'DELETE'});
   }
@@ -178,23 +157,6 @@ const Profile = () => {
     }
     
   })
-  //   .catch(error => console.error('Fetch error:', error));
-  // }, []);
-
-      // const topLevelComments = user.comments.filter((comment: Post) => comment.rating !== undefined);
-    // const commentList = topLevelComments.map(async (comment: Post) => {
-    //   const response = await fetch(`/api/v1/comment/${comment.id}`);
-    //   return await response.json();
-    // });
-    // let comments = await Promise.all(commentList);
-    
-    // const imagePosts = comments.filter(post => !post.deleted).map(post => ({
-    // ...post, 
-    // images: post.images?.length > 0 ? post.images : [/*placeholder*/]
-    // }));
-    // // const textPosts = comments.filter(post => post.images.length === 0 && !post.deleted);
-    // setImagePosts(imagePosts);
-    // // setTextPosts(textPosts);
 
   for (const post of posts) {
   post.totalReplies = countReplies(post);
@@ -343,7 +305,6 @@ const Profile = () => {
                 <ReplyList replies={selectedPost.replies}/>
               </div>
               <div className={styles.commentInfo}>
-                {/* <p>Likes: {selectedPost.likes} | Comments: {selectedPost.totalReplies} </p> */}
                 <div style={{display: 'flex', flexDirection: 'row'}}> 
                   <button onClick={() => { deletePost(selectedPost.id); setSelectedPost(null); }}>Delete Post</button>
                   <button onClick={() => setSelectedPost(null)} style={{marginLeft: "8px"}}>Close</button>
@@ -359,51 +320,3 @@ const Profile = () => {
 };
 
 export default Profile;
-
-// interface Post extends Comment{
-//   rating: number;
-// }
-
-// interface User {
-//   username: string;
-//   bio?: string;
-//   profileImage?: string;
-//   comments?: string[];
-// }
-
-// interface Post {
-//   `````````````````parent_id`````````````````: string;
-//   id: string;
-//   username: string;
-//   images: string[];
-//   body: string; 
-//   deleted: boolean;
-//   date: string; 
-//   likes: number;
-//   // rating: number; // rating out of 10?
-//   replies: Post[];
-// }
-{/* later we will make get request on pageload*/}
-// const testPosts: Post[] = [ 
-//   {parent_id: "1", id: "1", username: "user1", images: [food], body: "This is a comment", likes: 10, deleted: false, date: "2023-10-01", replies: []},
-//   {parent_id: "1", id: "2", username: "user2", images: [], body: "comment without an image", likes: 5, deleted: false, date: "2023-10-02", replies: []},
-//   {parent_id: "1", id: "3", username: "user3", images: [food], body: "comment with an image", likes: 2, deleted: false, date: "2023-10-03", replies: []},
-// ];
-
-
-
-
-//     parent_id: str
-//     id: str
-//     username: str
-//     images: list[str] # List of image IDs
-//     body: str
-//     likes: int
-//     deleted: bool
-//     date: str
-//     replies: list['Comment']
-
-//NEED:
-// - delete endpoint
-// - like endpoint
-// - list of liked comments (so we know whether the heart should be filled or not)
