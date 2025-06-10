@@ -249,7 +249,7 @@ def deleteComment(comment_id):
 
 
 # Add a like to a specified comment
-@app.route('/api/v1/comment/<string:comment_id>/add_like', methods=['POST'])
+@app.route('/api/v1/comment/<string:comment_id>/add-like', methods=['POST'])
 def addLikeToComment(comment_id):
     # Getting request headers:
     # https://stackoverflow.com/questions/29386995/how-to-get-http-headers-in-flask
@@ -263,7 +263,7 @@ def addLikeToComment(comment_id):
 
 
 # Remove a like from a specified comment
-@app.route('/api/v1/comment/<string:comment_id>/remove_like', methods=['POST'])
+@app.route('/api/v1/comment/<string:comment_id>/remove-like', methods=['POST'])
 def removeLikeFromComment(comment_id):
     # Getting request headers:
     # https://stackoverflow.com/questions/29386995/how-to-get-http-headers-in-flask
@@ -359,6 +359,7 @@ def getUserInformation():
     
     try :
         mongo_user_data = mongo_instance.get_user_by_oauth_id(user_id)
+        app.logger.warning(mongo_user_data)
         return jsonify(mongo_user_data), 200
     except Exception as e:
         if e.args[0] == 'User not found':
@@ -371,7 +372,7 @@ def getUserInformation():
             except Exception as e:
                 return jsonify({'error': str(e)}), 500
             
-        return jsonify(user_data), 202
+        raise e 
 
 
 ################# mock routes #################

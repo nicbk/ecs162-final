@@ -91,7 +91,7 @@ class MongoDBInterface():
                 'bio': '',
                 'profileImage': None,
                 'wishList': [],
-                'likedPosts': [],
+                'likedComments': [],
             })
 
     def get_user_by_username(self, username: str):
@@ -109,7 +109,7 @@ class MongoDBInterface():
                 "profileImage": user.get('profileImage', None),
                 "comments": list(self.comments.find({'creatorId': oauthId})),
                 "wishList": user.get('wishList', []),
-                "likedPosts": user.get('likedPosts', []),
+                "likedComments": user.get('likedComments', []),
             }
 
     def update_user_bio(self, user_id: str, bio: str):
@@ -145,9 +145,9 @@ class MongoDBInterface():
                 "email": user.get('email', ''),
                 "bio": user.get('bio', ''),
                 "profileImage": user.get('profileImage', None),
-                "comments": list(self.comments.find({'creatorId': oauth_id})),
+                "comments": self.get_user_comments_id(oauth_id),
                 "wishList": user.get('wishList', []),
-                "likedPosts": user.get('likedPosts', []),
+                "likedComments": user.get('likedComments', []),
             }
         
 
@@ -190,7 +190,7 @@ class MongoDBInterface():
         '''Add a like to a comment'''
         with self.transaction_wrapper(self.mongo) as session:
             # Only add like if user hasn't already liked the comment
-            user = self.users.find_one({'oauthId': user_id, 'likedPosts': comment_id})
+            user = self.users.find_one({'oauthId': user_id, 'likedComments': comment_id})
             if user is None:
                 self.comments.update_one(
                     {'id': comment_id},
@@ -198,14 +198,14 @@ class MongoDBInterface():
                 )
                 self.users.update_one(
                     {'oauthId': user_id},
-                    {'$addToSet': {'likedPosts': comment_id}}
+                    {'$addToSet': {'likedComments': comment_id}}
                 )
 
     def remove_comment_like(self, comment_id: str, user_id: str):
         '''Remove a like from a comment'''
         with self.transaction_wrapper(self.mongo) as session:
             # Only remove like if user has already liked the comment
-            user = self.users.find_one({'oauthId': user_id, 'likedPosts': comment_id})
+            user = self.users.find_one({'oauthId': user_id, 'likedComments': comment_id})
             if user is not None:
                 # Remove the like from the comment and user
                 self.comments.update_one(
@@ -215,7 +215,7 @@ class MongoDBInterface():
 
                 self.users.update_one(
                     {'oauthId': user_id},
-                    {'$pull': {'likedPosts': comment_id}}
+                    {'$pull': {'likedComments': comment_id}}
                 )
 
     def delete_comment_by_id(self, comment_id: str):
@@ -257,6 +257,11 @@ class MongoDBInterface():
             comment['replies'] = self.get_all_comments_on_parent(comment_id)
 
             return Comment(**comment)
+
+    def get_user_comments_id(self, user_id: str) -> list[str]:
+        comments = self.comments.find({'creatorId': user_id}).sort('date', 1)
+
+        return list(map(lambda comment: comment['id'], comments))
         
     def get_all_comments_on_parent(self, parent_id: str, is_root_call = True) -> list[Comment]:
         '''

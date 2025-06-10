@@ -48,14 +48,7 @@ export const initFirebaseHandler = (
 
         const backendUser = backendUserRaw as User;
 
-        setUserAuthenticationState({
-          username: user.displayName || user.email!,
-          profileImage: user.photoURL!,
-          bio: backendUser.bio,
-          comments: backendUser.comments,
-          // TODO: implement function to get liked comments
-          likedComments: new Set()
-        });
+        setUserAuthenticationState(backendUser);
       })();
     } else {
       setUserAuthenticationState('not-logged-in');
