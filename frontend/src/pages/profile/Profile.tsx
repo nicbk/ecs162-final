@@ -15,109 +15,7 @@ interface Post extends Comment{
   totalReplies?: number;
 }
 
-const mockPosts: Post[] = [
-  {
-    id: "1",
-    username: "user_001",
-    images: [food],
-    body: "top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)",
-    deleted: false,
-    rating: 9,
-    likes: 0,
-    parentId: '10',
-    replies: [
-      {
-        id: "2",
-        username: "user_002",
-        images: [food],
-        body: "top level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with replies",
-        deleted: false,
-        likes: 5,
-        rating: 0,
-        parentId: '10',
-        replies: [
-          {
-            id: "3",
-            username: "user_003",
-            images: [],
-            body: "unshown reply",
-            deleted: false,
-            likes: 0,
-            rating: 0,
-            parentId: '10',
-            replies: []
-          }
-        ]
-      },
-      {
-        id: "4",
-        username: "user_004",
-        images: [],
-        body: "top level reply 2 no replies",
-        deleted: false,
-        likes: 30,
-        rating: 0,
-        parentId: '10',
-        replies: []
-      }
-    ]
-  },
-  {id: "19",
-    username: "user_001",
-    images: [food],
-    body: "top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)",
-    deleted: false,
-    rating: 9,
-    likes: 0,
-        parentId: '10',
-    replies: []
-    },
-    {id: "20",
-    username: "user_001",
-    images: [food],
-    body: "top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)",
-    deleted: false,
-    rating: 9,
-    likes: 0,
-    parentId: '10',
-    replies: []
-    },
-  {
-    id: "5",
-    username: "user_005",
-    images: [placeholder],
-    body: "other top level comment text only",
-    deleted: false,
-    rating: 1,
-    likes: 80,
-        parentId: '10',
-    replies: [
-      {
-        id: "6",
-        username: "user_006",
-        images: [],
-        body: "top level reply 1 with replies",
-        deleted: false,
-        likes: 25,
-                rating: 0,
-        parentId: '10',
-        replies: [
-          {
-            id: "7",
-            username: "user_007",
-            images: [],
-            body: "dont show",
-            deleted: false,
-            likes: 15,
-                    rating: 0,
-        parentId: '10',
-            replies: []
-          }
-        ]
-      }
-    ]
-  }
-];
+const mockPosts: Post[] = [];
 
 
 const Profile = () => {
@@ -129,7 +27,9 @@ const Profile = () => {
   const [profileImage, setProfileImage] = useState<string>();
   const [hoveredPostId, setHoveredPostId] = useState<string | null>(null);
   const  globalState = useContext(GlobalStateContext)
-  // const [userAuthenticationState, setUserAuthenticationState] = globalState!.userAuthState;
+  const [userAuthenticationState, setUserAuthenticationState] = globalState!.userAuthState;
+  const [isFetched, setIsFetched] = useState(false);
+  console.log(userAuthenticationState)
 
   const navigate = useNavigate();
 
@@ -138,9 +38,11 @@ const Profile = () => {
     deleteComment(id);
   }
 
+  const user = globalState!.userAuthState[0] as User;
+
   useEffect(() => {
     console.log('fetching user data');
-    const user = globalState!.userAuthState[0] as User;
+
     setUsername(user.username);
     console.log('name changed to', user.username);
     setBio(user.bio || "");
@@ -151,11 +53,17 @@ const Profile = () => {
         try {
           const commentFetches = user.comments.map(async (commentId: CommentId) => {
             const response = await fetch(`/api/v1/comment/${commentId}`);
+            // console.log(`Response status for ${commentId}:`, response.status);
+            // if (!response.ok) throw new Error(`HTTP error: ${response.status}`);\
+            
             return await response.json() as Comment;
+            // let result = await response.json();
+            // console.log(`Data for ${commentId}:`, result);
+            // return result;
           });
           const comments = await Promise.all(commentFetches);
 
-          const topLevelComments = comments.filter(comment => isCommentTopLevel(comment) && !comment.deleted);
+          const topLevelComments = comments.filter(comment => !isCommentTopLevel(comment) && !comment.deleted);
           const imagePosts = topLevelComments.map(comment => ({
             ...comment,
             images: comment.images.length > 0 ? comment.images : [placeholder],
@@ -167,8 +75,9 @@ const Profile = () => {
         }
       }
       fetchComments();
+      setIsFetched(true);
     }
-  }, [globalState!.userAuthState[0]]); // run this effect when the user changes
+  }, [globalState!.userAuthState[0], user.comments]); // run this effect when the user changes
 
   for (const post of posts) {
   post.totalReplies = countReplies(post);
@@ -267,12 +176,13 @@ const Profile = () => {
     </section>
 
     {/* comments and posts collection */}
+    {isFetched && 
       <section>
         <div className={styles.separator}></div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
           <h3 className={styles.posts}>Posts</h3>
         </div>
-        {posts.length === 0 ? (<p>No posts yet.</p>) : 
+        {posts.length === 0 ? (<p>No posts yet...</p>) : 
         (
         <div className={styles.galleryGrid}> 
           {posts.map((post) => ( 
@@ -327,6 +237,7 @@ const Profile = () => {
         </div>
       )}
       </section>
+      }
     </div>
   );
 };
