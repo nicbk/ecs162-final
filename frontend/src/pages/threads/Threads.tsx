@@ -24,7 +24,7 @@ export default function Threads() {
   useEffect(() => {
     setLoading(true);
     //fetchCommentTree(commentId!).then(() => setLoading(false));
-    fetchCommentTree(commentId!).then((val) => console.log(val))
+    fetchCommentTree(commentId!).then((val) => console.log('Test value: ' + val))
   }, [commentId]);
 
   if (loading) {

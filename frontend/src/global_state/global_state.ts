@@ -3,6 +3,8 @@
 import { createContext, type Dispatch, type SetStateAction } from "react";
 import type { Restaurant, User, Comment } from "../interface_data";
 
+export const UUID_LENGTH = 36;
+
 export interface GPSCoordinates {
     latitude: number;
     longitude: number;

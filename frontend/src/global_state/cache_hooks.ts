@@ -1,5 +1,5 @@
 import { useContext, useEffect } from "react";
-import { GlobalStateContext } from "./global_state";
+import { GlobalStateContext, UUID_LENGTH } from "./global_state";
 import { isCommentTopLevel, isUser, type Comment, type Restaurant, type User } from "../interface_data";
 import { getCommentTree, getResourceComments, getRestaurants } from "../api_data/client";
 import { useGpsSetter } from "./gps_hooks";
@@ -80,7 +80,6 @@ export const useComments = (): [Comment[], (comments: Comment[]) => void] => {
 export const useToggleCacheLike = () => {
   const [globalCache, setGlobalCache] = useContext(GlobalStateContext)!.globalCache;
   const [userAuthState, setUserAuthState] = useContext(GlobalStateContext)!.userAuthState;
-  const UUID_LENGTH = 36;
 
   const toggleCacheLike = (commentId: string) => {
     if (!isUser(userAuthState)) {
