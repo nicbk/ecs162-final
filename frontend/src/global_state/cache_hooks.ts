@@ -143,6 +143,53 @@ export const useToggleCacheLike = () => {
   return toggleCacheLike;
 };
 
+export const useToggleCacheWish = () => {
+  const [globalCache, setGlobalCache] = useContext(GlobalStateContext)!.globalCache;
+  const [userAuthState, setUserAuthState] = useContext(GlobalStateContext)!.userAuthState;
+
+  
+
+  const toggleCacheWish = (restaurantId: string) => {
+    if (!isUser(userAuthState)) {
+      return;
+    }
+    const user = userAuthState as User;
+    const isWished = user.wishList.has(restaurantId);
+    console.log('toggleCacheWish', restaurantId, isWished);
+
+    if (restaurantId.length === UUID_LENGTH) {
+      const updatedCache = {
+        ...globalCache
+      };
+
+      if (isWished) {
+        updatedCache.wishList.filter((id) => id !== restaurantId);
+      } else {
+        updatedCache.wishList.push(restaurantId);
+      }
+
+      setGlobalCache(updatedCache);
+    }
+
+    setUserAuthState((existingUser) => {
+      const castedExistingUser = existingUser as User;
+      const updatedUser = {
+        ...castedExistingUser
+      };
+
+      if (isWished) {
+        updatedUser.wishList.delete(restaurantId);
+      } else {
+        updatedUser.wishList.add(restaurantId);
+      }
+
+      return updatedUser;
+    });
+  }
+
+  return toggleCacheWish;
+};
+
 export const useThread = (parentId: string | null) => {
   const comments = useContext(GlobalStateContext)!.globalCache[0].comments;
 

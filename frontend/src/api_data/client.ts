@@ -134,10 +134,12 @@ export const getLoggedInUser = () => fetchAPI<User | boolean>('authed-user').the
   } else {
     const userCasted = user as User;
 
+    console.log('User fetched from backend:', userCasted);
+
     return {
       ...userCasted,
       likedComments: new Set(userCasted.likedComments),
-      wishlist: new Set(userCasted.wishlist)
+      wishList: new Set(userCasted.wishList)
     }
   }
 });

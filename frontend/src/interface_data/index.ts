@@ -5,6 +5,7 @@ import type { UserAuthState } from "../global_state/global_state";
 
 export type Base64Data = string; // example: [ 'data:image/jpeg;base64,sdifjaijewfijaisefjawje9fja8wjef...', 'data:image/jpeg;base64,aifwjwjefijaweifjaiwejf' ]
 export type CommentId = string; // UUID of a comment
+export type RestaurantId = string; // UUID of a restaurant
 
 export interface Restaurant {
     restaurantId: string;
@@ -39,6 +40,7 @@ export interface User {
     bio: string;
     comments: CommentId[];
     likedComments: Set<CommentId>;
+    wishList: Set<RestaurantId>; // list of restaurant IDs
 }
 
 // I learn how to implement an interface type-checker from this response:
@@ -66,3 +68,11 @@ export const didUserLikeComment = (user: UserAuthState, commentId: string) => {
 
     return ((user as User).likedComments.has(commentId));
 };
+
+export const didUserWishRestaurant = (user: UserAuthState, restaurantId: string) => {
+    if (!isUser(user)) {
+        return false;
+    }
+
+    return ((user as User).wishList.has(restaurantId));
+}
