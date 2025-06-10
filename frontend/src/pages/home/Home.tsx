@@ -31,7 +31,7 @@ export default function Home() {
   const [text, setText] = useState('')
   const { restaurantId: copyId } = useParams<{ restaurantId?: string }>();
   const [page, setPage] = useState(0);
-  const [loadMorePost, setLoadingMore] = useState(false);
+  //const [loadMorePost, setLoadingMore] = useState(false);
 
   console.log(comments)
 
@@ -42,7 +42,7 @@ export default function Home() {
     navigator.clipboard.writeText(shareUrl);
     closeModal()
   };
-  const loadMoreR = useCallback(async () => {
+  /*const loadMoreR = useCallback(async () => {
     const loc = globalState!.userLocationState[0];
     if (!loc) return;
     setLoadingMore(true);
@@ -59,13 +59,13 @@ export default function Home() {
     } finally {
       setLoadingMore(false);
     }
-  }, [globalState!.userLocationState, restaurants, updateRestaurants, page]);
+  }, [globalState!.userLocationState, restaurants, updateRestaurants, page]);*/
 
-  useEffect(() => {
+  /*useEffect(() => {
     loadMoreR();
-  }, [loadMoreR]);
+  }, [loadMoreR]);*/
 
-  useEffect(() => {
+  /*useEffect(() => {
     const onScroll = () => {
       if (loadMorePost)
          return;
@@ -79,7 +79,7 @@ export default function Home() {
     };
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
-  }, [loadMorePost, loadMoreR]);
+  }, [loadMorePost, loadMoreR]);*/
 
   useEffect(() => {
     if (!copyId) return;
@@ -179,7 +179,7 @@ export default function Home() {
           </div>
         </div>
       ))}
-      {loadMorePost && <div className={styles.loadMorePost}>Loading more...</div>}
+      {/*loadMorePost && <div className={styles.loadMorePost}>Loading more...</div>*/}
 
       {activeRest && popupType && (
         <div className={styles.popupOverlay} onClick={closeModal}>

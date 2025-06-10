@@ -10,11 +10,13 @@ import { type User } from '../../interface_data/index.ts';
 import { useNavigate } from 'react-router-dom';
 import { FaHeart, FaComment} from "react-icons/fa";
 import { GlobalStateContext } from '../../global_state/global_state.ts';
+import { LoadingSpinner } from '../../components/LoadingSpinner/LoadingSpinner.tsx';
 
 interface Post extends Comment{
   totalReplies?: number;
 }
 
+/*
 const mockPosts: Post[] = [
   {
     id: "1",
@@ -118,12 +120,14 @@ const mockPosts: Post[] = [
     ]
   }
 ];
-
+*/
 
 const Profile = () => {
   console.log('Component rendering');
-  const [posts, setImagePosts] = useState<Post[]>(mockPosts);
+  const [loading, setLoading] = useState(true);
+  const [posts, setImagePosts] = useState<Post[]>([]);
   const [username, setUsername] = useState("tempuser");
+  const [width, setWidth] = useState(window.innerWidth);
   const [, setBio] = useState("testbio");
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [profileImage, setProfileImage] = useState<string>();
@@ -138,6 +142,12 @@ const Profile = () => {
     setImagePosts(posts.filter((post) => post.id !== id));
     deleteComment(id);
   }
+
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     console.log('fetching user data');
@@ -162,6 +172,7 @@ const Profile = () => {
             images: comment.images.length > 0 ? comment.images : [placeholder],
           }));
           setImagePosts(imagePosts);
+          setLoading(false);
         } 
         catch (err) {
           console.error('Error fetching comments:', err);
@@ -170,10 +181,6 @@ const Profile = () => {
       fetchComments();
     }
   }, [globalState!.userAuthState[0]]); // run this effect when the user changes
-
-  for (const post of posts) {
-  post.totalReplies = countReplies(post);
-  } 
 
   function countReplies(comment: Post){
     let count = 0;
@@ -234,16 +241,16 @@ const Profile = () => {
     );
   }
 
-  function windowWidth() {
-    const [width, setWidth] = useState(window.innerWidth);
-    useEffect(() => {
-      const handleResize = () => setWidth(window.innerWidth);
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
-    }, []);
-    return width;
-}
-  const width = windowWidth();
+  if (loading) {
+    return (
+      <LoadingSpinner />
+    )
+  }
+
+  for (const post of posts) {
+    post.totalReplies = countReplies(post);
+  } 
+
   const full = width >= 1200;
   const tablet = width < 1200 && width >= 768;
   const mobile = width < 768;
