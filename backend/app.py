@@ -310,10 +310,10 @@ def getUserByUsername(username):
 
 @app.route('/api/v1/user/<string:username>/bio', methods=['GET'])
 def getUserBioByUsername(username):
-    bio = mongo_instance.update_user_bio(username)
-    if bio is None:
+    user = mongo_instance.get_user_by_username(username)
+    if user is None:
         return jsonify({'error': 'User not found'}), 404
-    return jsonify(bio), 200
+    return jsonify(user.get("bio", None)), 200
 
 @app.route('/api/v1/user/<string:username>/bio', methods=['POST'])
 def updateUserBio(username):
