@@ -9,6 +9,41 @@ import { GlobalStateContext } from '../../global_state/global_state.ts';
 import { useToggleLike } from '../../global_state/comment_hooks.ts';
 import { LoadingSpinner } from '../../components/LoadingSpinner/LoadingSpinner.tsx';
 
+const flattenComment = (comment: Comment | null, depth = 0): Comment[] | null => {
+  if (!comment) {
+    return null;
+  }
+
+  let flattenedChildren: Comment[] = [];
+
+  for (const reply of comment.replies) {
+    const flattenedReply = flattenComment(reply, depth+1);
+    if (flattenedReply) {
+      flattenedChildren = flattenedChildren.concat(flattenedReply);
+    } else {
+      return null;
+    }
+  }
+
+  if (depth <= 1) {
+    const rootWithFlattened = {
+      ...comment
+    };
+
+    rootWithFlattened.replies = flattenedChildren;
+
+    return [rootWithFlattened];
+  }
+
+  const flattenedRoot = {
+    ...comment
+  };
+  flattenedRoot.replies = [];
+
+  const flattenedLayer = [flattenedRoot].concat(flattenedChildren);
+  return flattenedLayer;
+};
+
 export default function Threads() {
   const globalState = useContext(GlobalStateContext);
   const userAuthState = globalState!.userAuthState[0];
@@ -19,8 +54,10 @@ export default function Threads() {
   const [textComm, setReplyText] = useState<Record<string, string>>({});
   const toggleLike = useToggleLike();
   const fetchCommentTree = useFetchCommentTree();
-  const parentComment = useThread(commentId || null);
-  console.log(parentComment)
+  const parentCommentListNullable = flattenComment(useThread(commentId || null));
+  const parentComment = parentCommentListNullable ? parentCommentListNullable[0] : null;
+  console.log(parentComment);
+
   const [loading, setLoading] = useState(true);
   // Fetch comment tree for comment on page load
   useEffect(() => {
