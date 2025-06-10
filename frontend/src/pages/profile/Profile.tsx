@@ -129,7 +129,8 @@ const Profile = () => {
   const [profileImage, setProfileImage] = useState<string>();
   const [hoveredPostId, setHoveredPostId] = useState<string | null>(null);
   const  globalState = useContext(GlobalStateContext)
-  // const [userAuthenticationState, setUserAuthenticationState] = globalState!.userAuthState;
+  const [userAuthenticationState, setUserAuthenticationState] = globalState!.userAuthState;
+  console.log(userAuthenticationState)
 
   const navigate = useNavigate();
 

@@ -76,32 +76,33 @@ export const useComments = (): [Comment[], (comments: Comment[]) => void] => {
   return [returnComments, setComments];
 };
 
-/*
 export const useToggleCacheLike = () => {
   const [globalCache, setGlobalCache] = useContext(GlobalStateContext)!.globalCache;
   const [userAuthState, setUserAuthState] = useContext(GlobalStateContext)!.userAuthState;
+  const UUID_LENGTH = 36;
 
   const toggleCacheLike = (commentId: string) => {
     if (!isUser(userAuthState)) {
       return;
     }
     const user = userAuthState as User;
-
     const isLiked = user.likedComments.has(commentId);
 
-    setGlobalCache((existingGlobalCache) => {
-      const updatedCache = {
-        ...existingGlobalCache
-      };
+    if (commentId.length === UUID_LENGTH) {
+      setGlobalCache((existingGlobalCache) => {
+        const updatedCache = {
+          ...existingGlobalCache
+        };
 
-      if (isLiked) {
-        updatedCache.comments[commentId].likes -= 1;
-      } else {
-        updatedCache.comments[commentId].likes += 1;
-      }
+        if (isLiked) {
+          updatedCache.comments[commentId].likes -= 1;
+        } else {
+          updatedCache.comments[commentId].likes += 1;
+        }
 
-      return updatedCache;
-    });
+        return updatedCache;
+      });
+    }
 
     setUserAuthState((existingUser) => {
       const castedExistingUser = existingUser as User;
@@ -121,7 +122,6 @@ export const useToggleCacheLike = () => {
 
   return toggleCacheLike;
 };
-*/
 
 export const useThread = (parentId: string) => {
   const comments = useContext(GlobalStateContext)!.globalCache[0].comments;
@@ -157,6 +157,24 @@ export const useUpdateComments = () => {
   };
 
   return updateComments;
+};
+
+export interface CommentWithRestaurant {
+  restaurant: Restaurant;
+  comment: Comment;
+};
+
+export const useFirstLevelComments = () => {
+  const comments = useComments()[0];
+  const restaurantMap = useContext(GlobalStateContext)!.globalCache[0].restaurants;
+
+  const firstLevelComments = Object.values(comments).filter(comment => !comment.rating || Number.isNaN(comment.rating));
+  const commentsWithRestaurant: CommentWithRestaurant[] = firstLevelComments.map(comment => ({
+    restaurant: restaurantMap[comment.parentId],
+    comment
+  }));
+
+  return commentsWithRestaurant;
 };
 
 export const useRestaurantCommentMap = () => {

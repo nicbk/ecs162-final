@@ -18,6 +18,7 @@ class Comment(NamedTuple):
     parentId: str
     id: str
     creatorId: str
+    username: str
     rating: float
     images: list[str]
     body: str

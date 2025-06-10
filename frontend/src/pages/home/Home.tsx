@@ -29,6 +29,8 @@ export default function Home() {
   const [text, setText] = useState('')
   const { restaurantId: copyId } = useParams<{ restaurantId?: string }>();
 
+  console.log(comments)
+
   // We need to come up with a way of sharing the restaurant.
   const giveShare = () => {
     if (!activeRest) return;
@@ -46,7 +48,7 @@ export default function Home() {
 
     const newComment: InputComment = {
       body: text.trim(),
-      rating: 5,
+      rating: NaN,
       images: [],
     };
 

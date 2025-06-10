@@ -156,7 +156,7 @@ class MongoDBInterface():
     ### Comments Collection Methods ###
     ###################################
 
-    def post_user_comment(self, parent_id: str, user_id: str, body: str, rating: float, images: list[str]) -> str:
+    def post_user_comment(self, parent_id: str, user_id: str, body: str, rating: float, images: list[str], token: Any) -> str:
         '''
         Post a comment made by a user on a restaurant or another comment.
 
@@ -177,6 +177,7 @@ class MongoDBInterface():
             # Insert the comment into the database
             self.comments.insert_one({
                 'parentId': parent_id,
+                'username': token['name'],
                 'id': comment_id,
                 'creatorId': user_id,
                 'rating': rating,
@@ -258,6 +259,7 @@ class MongoDBInterface():
 
             unpacked_comment = Comment(parentId=comment['parentId'],
                 id=comment['id'],
+                username=comment['username'],
                 creatorId=comment['creatorId'],
                 rating=comment['rating'],
                 images=comment['images'],
@@ -289,6 +291,7 @@ class MongoDBInterface():
                 unpacked_comment = Comment(parentId=comment['parentId'],
                     id=comment['id'],
                     creatorId=comment['creatorId'],
+                    username=comment['username'],
                     rating=comment['rating'],
                     images=comment['images'],
                     body=comment['body'],

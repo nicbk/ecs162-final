@@ -21,7 +21,7 @@ export interface Comment {
     body: string;
     images: Base64Data[];
     likes: number;
-    rating: number;
+    rating?: number;
     deleted: boolean;
     replies: Comment[];
     parentId: string;
@@ -52,7 +52,7 @@ export const isUser = (obj: any): obj is User => {
 };
 
 export const isCommentTopLevel = (comment: Comment) => {
-    if (Number.isNaN(comment.rating)) {
+    if (!comment.rating || Number.isNaN(comment.rating)) {
         return true;
     } else {
         return false;
@@ -60,9 +60,9 @@ export const isCommentTopLevel = (comment: Comment) => {
 };
 
 export const didUserLikeComment = (user: UserAuthState, commentId: string) => {
-if (!isUser(user)) {
-    return false;
-}
+    if (!isUser(user)) {
+        return false;
+    }
 
-return ((user as User).likedComments.has(commentId));
+    return ((user as User).likedComments.has(commentId));
 };

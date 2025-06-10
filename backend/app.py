@@ -239,7 +239,7 @@ def postComment(restaurant_id_or_comment_id):
     user_id = token['sub']
     images = data['images']
 
-    mongo_instance.post_user_comment(restaurant_id_or_comment_id, user_id, comment, rating, images)
+    mongo_instance.post_user_comment(restaurant_id_or_comment_id, user_id, comment, rating, images, token)
 
     return jsonify({'status': 'comment posted'})
 

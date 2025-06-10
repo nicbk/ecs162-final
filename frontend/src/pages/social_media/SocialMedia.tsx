@@ -1,36 +1,41 @@
-import { useState, useEffect } from 'react';
-import { type Restaurant, type Comment } from '../../interface_data/index.ts';
-import { getRestaurantsMock, getCommentsMock } from '../../api_data/client.ts';
+import { useState, useEffect, useContext } from 'react';
 import { FaHeart, FaShareSquare,FaRegComment } from 'react-icons/fa';
 import styles from './SocialMedia.module.scss';
 import { useNavigate } from 'react-router-dom';
-import { useComments, useRestaurants } from '../../global_state/cache_hooks.ts';
+import { useComments, useFirstLevelComments, useRestaurants } from '../../global_state/cache_hooks.ts';
+import { didUserLikeComment, type User } from '../../interface_data/index.ts';
+import { GlobalStateContext } from '../../global_state/global_state.ts';
+import { useToggleLike } from '../../global_state/comment_hooks.ts';
 
 export default function SocialMedia() {
-  const restaurants = useRestaurants()[0];
-  const comments = useComments()[0];
-  const [liked, setLiked] = useState<Record<string, boolean>>({});
+  //const restaurants = useRestaurants()[0];
+  //const comments = useComments()[0];
+  const userAuthState = useContext(GlobalStateContext)!.userAuthState[0];
+  const firstLayerComments = useFirstLevelComments();
+  const toggleLike = useToggleLike();
   //I am right now just getting the info using the restaurantId and restaurantTitle
   //But well have to change it later maybe for the nearby info available
+  /*
   const resturantTitleId = restaurants.reduce<Record<string,string>>((account, restaurants) => {
     account[restaurants.restaurantId] = restaurants.restaurantTitle;
     return account;
   }, {});
+  */
 
-  const firstLayerForActive = comments.filter(comm => comm.parentId != null && resturantTitleId[comm.parentId] != null);
-  const togLike = (id: string) => setLiked(pre => ({ ...pre, [id]: !pre[id] }));
+  //const firstLayerForActive = comments.filter(comm => comm.parentId != null && resturantTitleId[comm.parentId] != null);
+  //const togLike = (id: string) => setLiked(pre => ({ ...pre, [id]: !pre[id] }));
   const navigate = useNavigate();
 
   return (
     <div className={styles.socialM}>
       <div className={styles.socialSection}>
-        {firstLayerForActive.map(comm => (
+        {firstLayerComments.map(({ comment: comm, restaurant }) => (
           <div key={comm.id} className={styles.socialCard}>
 
             <div className={styles.socialHeader}>
               {'By ' + comm.username + ' For '}
               <span className={styles.restName}>
-                {comm.parentId && resturantTitleId[comm.parentId]}
+                {restaurant.restaurantTitle}
               </span>
             </div>
 
@@ -46,14 +51,14 @@ export default function SocialMedia() {
 
             <div className={styles.footer}>
               <span
-                className={`${styles.likeIcon} ${liked[comm.id] ? styles.liked : ''}`}
-                onClick={() => togLike(comm.id)}
+                className={`${styles.likeIcon} ${didUserLikeComment(userAuthState, comm.id) ? styles.liked : ''}`}
+                onClick={() => toggleLike(restaurant.restaurantId, comm.id)}
                 role="button"
                 aria-label="Like Comment"
               >
                 <FaHeart />
                 <p className={styles.likeCount}>
-                  {liked[comm.id] ? comm.likes + 1 : comm.likes}
+                  {comm.likes}
                 </p>
               </span>
 
