@@ -4,8 +4,8 @@ import { useContext, useEffect, useState } from "react";
 import defaultAvatar from '../../assets/default-avatar.png';
 import food from '../../assets/food.jpg';
 import placeholder from '../../assets/image2vector.svg';
-import { type CommentId} from '../../interface_data/index.ts';
-import { type Comment } from '../../interface_data/index.ts';
+import { isCommentTopLevel, type CommentId, type Comment } from '../../interface_data/index.ts';
+import { addLike, deleteComment } from '../../api_data/client.ts'
 import { type User } from '../../interface_data/index.ts';
 import { useNavigate } from 'react-router-dom';
 import { FaHeart, FaComment} from "react-icons/fa";
@@ -24,6 +24,7 @@ const mockPosts: Post[] = [
     deleted: false,
     rating: 9,
     likes: 0,
+    parentId: '10',
     replies: [
       {
         id: "2",
@@ -32,6 +33,8 @@ const mockPosts: Post[] = [
         body: "top level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with replies",
         deleted: false,
         likes: 5,
+        rating: 0,
+        parentId: '10',
         replies: [
           {
             id: "3",
@@ -40,6 +43,8 @@ const mockPosts: Post[] = [
             body: "unshown reply",
             deleted: false,
             likes: 0,
+            rating: 0,
+            parentId: '10',
             replies: []
           }
         ]
@@ -51,6 +56,8 @@ const mockPosts: Post[] = [
         body: "top level reply 2 no replies",
         deleted: false,
         likes: 30,
+        rating: 0,
+        parentId: '10',
         replies: []
       }
     ]
@@ -62,6 +69,7 @@ const mockPosts: Post[] = [
     deleted: false,
     rating: 9,
     likes: 0,
+        parentId: '10',
     replies: []
     },
     {id: "20",
@@ -71,6 +79,7 @@ const mockPosts: Post[] = [
     deleted: false,
     rating: 9,
     likes: 0,
+    parentId: '10',
     replies: []
     },
   {
@@ -81,6 +90,7 @@ const mockPosts: Post[] = [
     deleted: false,
     rating: 1,
     likes: 80,
+        parentId: '10',
     replies: [
       {
         id: "6",
@@ -89,6 +99,8 @@ const mockPosts: Post[] = [
         body: "top level reply 1 with replies",
         deleted: false,
         likes: 25,
+                rating: 0,
+        parentId: '10',
         replies: [
           {
             id: "7",
@@ -97,6 +109,8 @@ const mockPosts: Post[] = [
             body: "dont show",
             deleted: false,
             likes: 15,
+                    rating: 0,
+        parentId: '10',
             replies: []
           }
         ]
@@ -110,7 +124,7 @@ const Profile = () => {
   console.log('Component rendering');
   const [posts, setImagePosts] = useState<Post[]>(mockPosts);
   const [username, setUsername] = useState("tempuser");
-  const [bio, setBio] = useState("testbio");
+  const [, setBio] = useState("testbio");
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [profileImage, setProfileImage] = useState<string>();
   const [hoveredPostId, setHoveredPostId] = useState<string | null>(null);
@@ -121,7 +135,7 @@ const Profile = () => {
 
   function deletePost(id: string) { 
     setImagePosts(posts.filter((post) => post.id !== id));
-    fetch(`/api/v1/comment/${id}`, {method: 'DELETE'});
+    deleteComment(id);
   }
 
   useEffect(() => {
@@ -139,10 +153,9 @@ const Profile = () => {
             const response = await fetch(`/api/v1/comment/${commentId}`);
             return await response.json() as Comment;
           });
-
           const comments = await Promise.all(commentFetches);
-          
-          const topLevelComments = comments.filter(comment => comment.rating !== undefined && !comment.deleted);
+
+          const topLevelComments = comments.filter(comment => isCommentTopLevel(comment) && !comment.deleted);
           const imagePosts = topLevelComments.map(comment => ({
             ...comment,
             images: comment.images.length > 0 ? comment.images : [placeholder],
@@ -155,25 +168,7 @@ const Profile = () => {
       }
       fetchComments();
     }
-    
   }, [globalState!.userAuthState[0]]); // run this effect when the user changes
-  //   .catch(error => console.error('Fetch error:', error));
-  // }, []);
-
-      // const topLevelComments = user.comments.filter((comment: Post) => comment.rating !== undefined);
-    // const commentList = topLevelComments.map(async (comment: Post) => {
-    //   const response = await fetch(`/api/v1/comment/${comment.id}`);
-    //   return await response.json();
-    // });
-    // let comments = await Promise.all(commentList);
-    
-    // const imagePosts = comments.filter(post => !post.deleted).map(post => ({
-    // ...post, 
-    // images: post.images?.length > 0 ? post.images : [/*placeholder*/]
-    // }));
-    // // const textPosts = comments.filter(post => post.images.length === 0 && !post.deleted);
-    // setImagePosts(imagePosts);
-    // // setTextPosts(textPosts);
 
   for (const post of posts) {
   post.totalReplies = countReplies(post);
@@ -218,7 +213,7 @@ const Profile = () => {
               {reply.body}
               <strong>
                 <span className={styles.likeCount}>
-                  <button className={styles.likeButton} onClick={() => fetch(`/api/v1/comment/${reply.id}/add_like`)}><FaHeart size=".9rem"/></button>
+                  <button className={styles.likeButton} onClick={() => addLike(reply.id)}><FaHeart size=".9rem"/></button>
                 <span style={{marginLeft: 6, marginTop: 5}}>
                     {reply.likes} likes 
                     <a className={styles.replyLink} onClick={() => navigate(`Threads/${reply.id}`)}>Reply</a> {/* redirect to threads */}
