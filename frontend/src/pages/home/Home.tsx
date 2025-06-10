@@ -2,7 +2,7 @@ import styles from './Home.module.scss';
 import { didUserLikeComment, isUser, type InputComment, type Restaurant, type User } from '../../interface_data/index.ts';
 import { type Comment } from '../../interface_data/index.ts';
 import mapIcon from '../../assets/map-icon.svg';
-import {FaHeart, FaRegComment, FaShareSquare} from "react-icons/fa";
+import {FaHeart, FaRegComment, FaShareSquare, FaRegBookmark, FaBookmark} from "react-icons/fa";
 import { postComment, removeLike, addLike  } from '../../api_data/client.ts';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useContext } from 'react';
@@ -108,14 +108,14 @@ export default function Home() {
               />
             </div>
             <div className={styles.cardFooter}>
-                <span
-                  className={`${styles.likeIcon} ${didUserLikeComment(userAuthState, rest.restaurantId) ? styles.liked : ''}`}
-                  onClick={() => toggleLike(rest.restaurantId, rest.restaurantId)}
-                  role="button"
-                  aria-label="Like"
-                >
-                <FaHeart />
-                </span>
+              <span
+                className={`${styles.wishIcon} ${didUserLikeComment(userAuthState, rest.restaurantId) ? styles.wishedIcon : ''}`}
+                onClick={() => toggleLike(rest.restaurantId, rest.restaurantId)}
+                role="button"
+                aria-label={didUserLikeComment(userAuthState, rest.restaurantId) ? "Remove wishlist" : "Add wishlist"}
+              >
+                {didUserLikeComment(userAuthState, rest.restaurantId) ? <FaBookmark /> : <FaRegBookmark />}
+              </span>
 
               <span
                 className={styles.commentIcon}

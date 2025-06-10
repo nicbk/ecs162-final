@@ -86,7 +86,7 @@
   justify-content: space-between;
   padding: 5px;
   margin: 5px;
-  .likeIcon{
+  .wishIcon {
     color: var(--inverse-background);
     padding: 0 5px;
     font-size: 1.5rem;
@@ -95,10 +95,11 @@
       color: var(--accent);
       transform: scale(1.1);
     }
-    &.liked {
+  }
+  .wishedIcon {
       transform: scale(1.2);
       transition: all 0.2s ease-in-out;
-      color: red;
+      color: var(--accent);
     }
   }
   .commentIcon{
