@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaHeart, FaComment, FaChevronDown} from "react-icons/fa";
 import { GlobalStateContext } from '../../global_state/global_state.ts';
 import { LoadingSpinner } from '../../components/LoadingSpinner/LoadingSpinner.tsx';
-import { useLikedRestaurants } from '../../global_state/user_hooks.ts';
+// import { useLikedRestaurants } from '../../global_state/user_hooks.ts';
 
 interface Post extends Comment{
   totalReplies?: number;
@@ -50,23 +50,23 @@ const Profile = () => {
     console.log('name changed to', user.username);
     setBio(user.bio || "");
     console.log('bio changed to', user.bio);
-    setProfileImage(user.profileImage || defaultAvatar); 
+    setProfileImage(user.profileImage || defaultAvatar);
     if (user.comments && user.comments.length > 0){
       const fetchComments = async () => {
         try {
           const commentFetches = user.comments.map(async (commentId: CommentId) => {
             const response = await fetch(`/api/v1/comment/${commentId}`);
-            // console.log(`Response status for ${commentId}:`, response.status);
-            // if (!response.ok) throw new Error(`HTTP error: ${response.status}`);\
+            console.log(`Response status for ${commentId}:`, response.status);
+            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
             
-            return await response.json() as Comment;
-            // let result = await response.json();
-            // console.log(`Data for ${commentId}:`, result);
-            // return result;
+            // return await response.json() as Comment;
+            let result = await response.json();
+            console.log(`Data for ${commentId}:`, result);
+            return result;
           });
           const comments = await Promise.all(commentFetches);
 
-          const topLevelComments = comments.filter(comment => !isCommentTopLevel(comment) && !comment.deleted);
+          const topLevelComments = comments.filter(comment => isCommentTopLevel(comment) && !comment.deleted);
           const imagePosts = topLevelComments.map(comment => ({
             ...comment,
             images: comment.images.length > 0 ? comment.images : [placeholder],
