@@ -13,6 +13,7 @@ export interface GPSCoordinates {
 export interface GlobalCache {
     restaurants: Record<string, Restaurant>;
     comments: Record<string, Comment>;
+    wishList: string[];
 };
 
 export type GPSCoordinatesNullable = GPSCoordinates | null;

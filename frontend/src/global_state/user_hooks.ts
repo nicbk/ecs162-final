@@ -38,3 +38,10 @@ export const useLikedRestaurants = () => {
 
   return likedRestaurants;
 };
+
+export const useWishListRestaurants = () => {
+  const globalState = useContext(GlobalStateContext)!;
+  const userAuthState = globalState.userAuthState[0] as User;
+
+  return Array.from(userAuthState.wishList)
+};

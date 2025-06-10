@@ -1,5 +1,5 @@
 import styles from './Home.module.scss';
-import { didUserLikeComment, isUser, type InputComment, type Restaurant, type User } from '../../interface_data/index.ts';
+import { didUserLikeComment, didUserWishRestaurant, isUser, type InputComment, type Restaurant, type User } from '../../interface_data/index.ts';
 import { type Comment } from '../../interface_data/index.ts';
 import mapIcon from '../../assets/map-icon.svg';
 import {FaHeart, FaRegComment, FaShareSquare, FaRegBookmark, FaBookmark} from "react-icons/fa";
@@ -13,6 +13,7 @@ import { LoadingSpinner } from '../../components/LoadingSpinner/LoadingSpinner.t
 import { useComments, useFetchCommentForest, useRestaurants, useUpdateRestaurants } from '../../global_state/cache_hooks.ts';
 import { getRestaurants } from '../../api_data/client.ts';
 import { useToggleLike } from '../../global_state/comment_hooks.ts';
+import { useToggleWish } from '../../global_state/wishlist_hooks.ts';
 
 const PAGE_SIZE = 10;
 const SCROLL_THRESHOLD = 100;
@@ -23,6 +24,7 @@ export default function Home() {
 
   const refetchCommentForest = useFetchCommentForest();
   const toggleLike = useToggleLike();
+  const toggleWish = useToggleWish();
   const [restaurants, setRestaurants] = useRestaurants();
   const updateRestaurants = useUpdateRestaurants();
   const comments = useComments()[0];
@@ -150,12 +152,12 @@ export default function Home() {
             </div>
             <div className={styles.cardFooter}>
               <span
-                className={`${styles.wishIcon} ${didUserLikeComment(userAuthState, rest.restaurantId) ? styles.wishedIcon : ''}`}
-                onClick={() => toggleLike(rest.restaurantId, rest.restaurantId)}
+                className={`${styles.wishIcon} ${didUserWishRestaurant(userAuthState, rest.restaurantId) ? styles.wishedIcon : ''}`}
+                onClick={() => toggleWish(rest.restaurantId)}
                 role="button"
-                aria-label={didUserLikeComment(userAuthState, rest.restaurantId) ? "Remove wishlist" : "Add wishlist"}
+                aria-label={didUserWishRestaurant(userAuthState, rest.restaurantId) ? "Remove wishlist" : "Add wishlist"}
               >
-                {didUserLikeComment(userAuthState, rest.restaurantId) ? <FaBookmark /> : <FaRegBookmark />}
+                {didUserWishRestaurant(userAuthState, rest.restaurantId) ? <FaBookmark /> : <FaRegBookmark />}
               </span>
 
               <span

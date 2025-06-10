@@ -195,10 +195,15 @@ class MongoDBInterface():
             # Only add like if user hasn't already liked the comment
             user = self.users.find_one({'oauthId': user_id, 'likedComments': comment_id})
             if user is None:
-                self.comments.update_one(
+                comments_result = self.comments.update_one(
                     {'id': comment_id},
                     {'$inc': {'likes': 1}}
                 )
+
+                # if the comment is not found its an error
+                if comments_result.modified_count == 0:
+                    raise Exception('Comment not found')
+
                 self.users.update_one(
                     {'oauthId': user_id},
                     {'$addToSet': {'likedComments': comment_id}}
@@ -211,10 +216,14 @@ class MongoDBInterface():
             user = self.users.find_one({'oauthId': user_id, 'likedComments': comment_id})
             if user is not None:
                 # Remove the like from the comment and user
-                self.comments.update_one(
+                comments_result = self.comments.update_one(
                     {'id': comment_id},
                     {'$inc': {'likes': -1}}
                 )
+
+                # if the comment is not found its an error
+                if comments_result.modified_count == 0:
+                    raise Exception('Comment not found')
 
                 self.users.update_one(
                     {'oauthId': user_id},
@@ -307,6 +316,42 @@ class MongoDBInterface():
                 all_unpacked_comments.append(unpacked_comment._asdict())
 
             return all_unpacked_comments
+        
+    def get_user_wishlist(self, user_id: str) -> list[str]:
+        '''Get the user's wishlist of restaurant IDs.'''
+        with self.transaction_wrapper(self.mongo) as session:
+            user = self.users.find_one({'oauthId': user_id})
+            if user is None:
+                raise Exception('User not found')
+
+            # Return the user's wishlist
+            return user.get('wishList', [])
+        
+    def add_restaurant_to_wishlist(self, user_id: str, restaurant_id: str):
+        '''Add a restaurant to the user's wishlist.'''
+        with self.transaction_wrapper(self.mongo) as session:
+            user = self.users.find_one({'oauthId': user_id})
+            if user is None:
+                raise Exception('User not found')
+
+            # Add the restaurant to the user's wishlist
+            self.users.update_one(
+                {'oauthId': user_id},
+                {'$addToSet': {'wishList': restaurant_id}}
+            )
+
+    def remove_restaurant_from_wishlist(self, user_id: str, restaurant_id: str):
+        '''Add a restaurant to the user's wishlist.'''
+        with self.transaction_wrapper(self.mongo) as session:
+            user = self.users.find_one({'oauthId': user_id})
+            if user is None:
+                raise Exception('User not found')
+
+            # Remove the restaurant from the user's wishlist
+            self.users.update_one(
+                {'oauthId': user_id},
+                {'$pull': {'wishList': restaurant_id}}
+            )
 
     ### Image Collection Methods ###
     ################################
