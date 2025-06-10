@@ -206,7 +206,9 @@ def getRestaurantInformation():
 @app.route('/api/v1/comment/<string:comment_id>', methods=['GET'])
 def getCommentById(comment_id):
     comment = mongo_instance.get_comment_by_id(comment_id)
-    return jsonify(comment), 200
+    comment_dict = comment._asdict() if hasattr(comment, '_asdict') else dict(comment)
+    
+    return jsonify(comment_dict), 200
 
 # Gets the tree of comments (comments and replies) for either a restaurant or parent comment
 @app.route('/api/v1/comments', methods=['GET'])
@@ -279,24 +281,24 @@ def removeLikeFromComment(comment_id):
 ###############################################
 
 # After creating a new user in dex, we need to create a user in our MongoDB
-@app.route('/api/v1/user/create', methods=['POST'])
-def createUser():
-    # Getting request headers:
-    # https://stackoverflow.com/questions/29386995/how-to-get-http-headers-in-flask
-    token = get_authorization(request.headers.get('Authorization'))
-    if not token:
-        return jsonify({'error': 'User not authenticated'}), 401
+# @app.route('/api/v1/user/create', methods=['POST'])
+# def createUser():
+#     # Getting request headers:
+#     # https://stackoverflow.com/questions/29386995/how-to-get-http-headers-in-flask
+#     token = get_authorization(request.headers.get('Authorization'))
+#     if not token:
+#         return jsonify({'error': 'User not authenticated'}), 401
 
-    user_id = token['sub']
-    user_email = token.get('email', '')
-    username = token.get('username', 'User')
+#     user_id = token['sub']
+#     user_email = token.get('email', '')
+#     username = token.get('username', 'User')
 
-    try:
-        mongo_instance.add_new_user(username, user_email, user_id)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+#     try:
+#         mongo_instance.add_new_user(username, user_email, user_id)
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500
     
-    return jsonify({'status': 'User created successfully'}), 200
+#     return jsonify({'status': 'User created successfully'}), 200
 
 
 @app.route('/api/v1/user/<string:username>', methods=['GET'])
@@ -359,7 +361,7 @@ def getUserInformation():
     
     try :
         mongo_user_data = mongo_instance.get_user_by_oauth_id(user_id)
-        app.logger.warning(mongo_user_data)
+        # app.logger.warning(mongo_user_data)
         return jsonify(mongo_user_data), 200
     except Exception as e:
         if e.args[0] == 'User not found':

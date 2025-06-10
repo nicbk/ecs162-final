@@ -254,9 +254,18 @@ class MongoDBInterface():
             if comment is None:
                 raise Exception('Comment not found')
 
-            comment['replies'] = self.get_all_comments_on_parent(comment_id)
+            unpacked_comment = Comment(parentId=comment['parentId'],
+                id=comment['id'],
+                creatorId=comment['creatorId'],
+                rating=comment['rating'],
+                images=comment['images'],
+                body=comment['body'],
+                likes=comment['likes'],
+                deleted=comment['deleted'],
+                date=str(comment['date']),
+                replies=self.get_all_comments_on_parent(comment['id']))
 
-            return Comment(**comment)
+            return unpacked_comment
 
     def get_user_comments_id(self, user_id: str) -> list[str]:
         comments = self.comments.find({'creatorId': user_id}).sort('date', 1)
