@@ -4,7 +4,7 @@ import { didUserLikeComment, type Comment, type InputComment } from '../../inter
 import { postComment } from '../../api_data/client.ts';
 import { FaHeart, FaShareSquare, FaRegComment } from 'react-icons/fa';
 import styles from './Threads.module.scss';
-import { useInitialDataLoad, useFetchCommentForest, useThread } from '../../global_state/cache_hooks.ts';
+import { useInitialDataLoad, useFetchCommentForest, useThread, useFetchCommentTree } from '../../global_state/cache_hooks.ts';
 import { GlobalStateContext } from '../../global_state/global_state.ts';
 import { useToggleLike } from '../../global_state/comment_hooks.ts';
 
@@ -17,13 +17,14 @@ export default function Threads() {
   const [openChat, onCancel] = useState<Record<string, boolean>>({});
   const [textComm, setReplyText] = useState<Record<string, string>>({});
   const toggleLike = useToggleLike();
-  const fetchCommentTree = useFetchCommentForest();
+  const fetchCommentTree = useFetchCommentTree();
   const parentComment = useThread(commentId!);
   const [loading, setLoading] = useState(true);
   // Fetch comment tree for comment on page load
   useEffect(() => {
     setLoading(true);
-    fetchCommentTree(commentId!).then(() => setLoading(false));
+    //fetchCommentTree(commentId!).then(() => setLoading(false));
+    fetchCommentTree(commentId!).then((val) => console.log(val))
   }, [commentId]);
 
   if (loading) {

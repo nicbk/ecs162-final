@@ -90,19 +90,17 @@ export const useToggleCacheLike = () => {
     const isLiked = user.likedComments.has(commentId);
 
     if (commentId.length === UUID_LENGTH) {
-      setGlobalCache((existingGlobalCache) => {
-        const updatedCache = {
-          ...existingGlobalCache
-        };
+      const updatedCache = {
+        ...globalCache
+      };
 
-        if (isLiked) {
-          updatedCache.comments[commentId].likes -= 1;
-        } else {
-          updatedCache.comments[commentId].likes += 1;
-        }
+      if (isLiked) {
+        updatedCache.comments[commentId].likes -= 1;
+      } else {
+        updatedCache.comments[commentId].likes += 1;
+      }
 
-        return updatedCache;
-      });
+      setGlobalCache(updatedCache);
     }
 
     setUserAuthState((existingUser) => {

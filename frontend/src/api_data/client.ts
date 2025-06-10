@@ -108,9 +108,7 @@ export const getResourceComments = async (resourceId: string) => {
  * @returns promise for when data is retrieved from backend
  */
 export const getCommentTree = async (commentId: string) => {
-  const urlParams = new URLSearchParams({ commentId });
-  
-  return await fetchAPI<Comment[]>(`comments?${urlParams}`);
+  return await fetchAPI<Comment[]>(`comment/${commentId}`);
 }
 
 /*
