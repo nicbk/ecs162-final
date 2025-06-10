@@ -8,119 +8,17 @@ import { isCommentTopLevel, type CommentId, type Comment } from '../../interface
 import { addLike, deleteComment } from '../../api_data/client.ts'
 import { type User } from '../../interface_data/index.ts';
 import { useNavigate } from 'react-router-dom';
-import { FaHeart, FaComment} from "react-icons/fa";
+import { FaHeart, FaComment, FaChevronDown} from "react-icons/fa";
 import { GlobalStateContext } from '../../global_state/global_state.ts';
 import { LoadingSpinner } from '../../components/LoadingSpinner/LoadingSpinner.tsx';
+import { useWishListRestaurants } from '../../global_state/user_hooks.ts';
 
 interface Post extends Comment{
   totalReplies?: number;
 }
 
-/*
-const mockPosts: Post[] = [
-  {
-    id: "1",
-    username: "user_001",
-    images: [food],
-    body: "top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)",
-    deleted: false,
-    rating: 9,
-    likes: 0,
-    parentId: '10',
-    replies: [
-      {
-        id: "2",
-        username: "user_002",
-        images: [food],
-        body: "top level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with repliestop level reply 1 with replies",
-        deleted: false,
-        likes: 5,
-        rating: 0,
-        parentId: '10',
-        replies: [
-          {
-            id: "3",
-            username: "user_003",
-            images: [],
-            body: "unshown reply",
-            deleted: false,
-            likes: 0,
-            rating: 0,
-            parentId: '10',
-            replies: []
-          }
-        ]
-      },
-      {
-        id: "4",
-        username: "user_004",
-        images: [],
-        body: "top level reply 2 no replies",
-        deleted: false,
-        likes: 30,
-        rating: 0,
-        parentId: '10',
-        replies: []
-      }
-    ]
-  },
-  {id: "19",
-    username: "user_001",
-    images: [food],
-    body: "top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)",
-    deleted: false,
-    rating: 9,
-    likes: 0,
-        parentId: '10',
-    replies: []
-    },
-    {id: "20",
-    username: "user_001",
-    images: [food],
-    body: "top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)top level comment (post)",
-    deleted: false,
-    rating: 9,
-    likes: 0,
-    parentId: '10',
-    replies: []
-    },
-  {
-    id: "5",
-    username: "user_005",
-    images: [placeholder],
-    body: "other top level comment text only",
-    deleted: false,
-    rating: 1,
-    likes: 80,
-        parentId: '10',
-    replies: [
-      {
-        id: "6",
-        username: "user_006",
-        images: [],
-        body: "top level reply 1 with replies",
-        deleted: false,
-        likes: 25,
-                rating: 0,
-        parentId: '10',
-        replies: [
-          {
-            id: "7",
-            username: "user_007",
-            images: [],
-            body: "dont show",
-            deleted: false,
-            likes: 15,
-                    rating: 0,
-        parentId: '10',
-            replies: []
-          }
-        ]
-      }
-    ]
-  }
-];
-*/
+const mockPosts: Post[] = [];
+
 
 const Profile = () => {
   console.log('Component rendering');
@@ -134,6 +32,8 @@ const Profile = () => {
   const [hoveredPostId, setHoveredPostId] = useState<string | null>(null);
   const  globalState = useContext(GlobalStateContext)
   const [userAuthenticationState, setUserAuthenticationState] = globalState!.userAuthState;
+  const [isFetched, setIsFetched] = useState(false);
+  const [wishlistOpen, setWishlistOpen] = useState(false);
   console.log(userAuthenticationState)
 
   const navigate = useNavigate();
@@ -256,6 +156,28 @@ const Profile = () => {
   const full = width >= 1200;
   const tablet = width < 1200 && width >= 768;
   const mobile = width < 768;
+
+  const wishlist = useWishListRestaurants();
+
+//   const wishlist: Restaurant[] = [
+//   {
+//     restaurantId: "1",
+//     restaurantTitle: "restaurant1",
+//     rating: 4.5,
+//     address: "",
+//     images: [],
+//     googleMapsUrl: ""
+//   },
+//   {
+//     restaurantId: "2",
+//     restaurantTitle: "restaurant2",
+//     rating: 4.8,
+//     address: "",
+//     images: [],
+//     googleMapsUrl: ""
+//   }
+// ];
+
   return (
     <div className={styles.profile}>
     {/* user info */}
@@ -265,6 +187,26 @@ const Profile = () => {
         <div style={{display: 'flex', flexDirection: 'column'}}>
           <div style={{display: 'flex', flexDirection: 'row', alignItems: 'flex-start', height: 'fit-content'}}>
             <p className={styles.username}>{username}</p>
+            <div style={{position: 'relative'}}>
+              <div className={styles.wishlistDropdown}>
+                <button className={styles.wishlistButton} onClick={() => setWishlistOpen(!wishlistOpen)}>
+                  My Wishlist <FaChevronDown style={{ transform: wishlistOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s'}} />
+                </button>
+                {wishlistOpen && (
+                  <div className={styles.dropdownMenu}>
+                    {wishlist.length > 0 ? (
+                      wishlist.map(restaurant => (
+                        <div className={styles.wishlistItem}>
+                          <span>{restaurant}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{padding: '8px 16px'}}>Your wishlist is empty!</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
           {/* <p>{bio}</p> */}
           <div style={{textAlign: 'left'}}>
