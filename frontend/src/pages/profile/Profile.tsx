@@ -43,7 +43,13 @@ const Profile = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const wishlistIds = useWishListRestaurants();
+  let wishlistIds: string[] = [];
+  try {
+    wishlistIds = useWishListRestaurants();
+  } catch (error) {
+    navigate('/Home');
+  }
+  
 
   useEffect(() => {
     if (wishlistIds.length > 0) {
