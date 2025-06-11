@@ -16,8 +16,6 @@ import { useToggleLike } from '../../global_state/comment_hooks.ts';
 interface Post extends Comment{
   totalReplies?: number;
 }
-
-
 const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [posts, setImagePosts] = useState<Post[]>([]);
@@ -28,11 +26,7 @@ const Profile = () => {
   const [profileImage, setProfileImage] = useState<string>();
   const [hoveredPostId, setHoveredPostId] = useState<string | null>(null);
   const  globalState = useContext(GlobalStateContext)
-  const [userAuthenticationState, setUserAuthenticationState] = globalState!.userAuthState;
-  const [isFetched, setIsFetched] = useState(false);
   const [wishlistOpen, setWishlistOpen] = useState(false);
-  const [refreshLikes, setRefreshLikes] = useState(0);
-  const [replies, setReplies] = useState<Post[]>([]); 
   const [restaurants, setRestaurants] = useState<GoogleApiRestaurantResponse[]>([]);
 
   const navigate = useNavigate();
@@ -52,7 +46,7 @@ const Profile = () => {
   const wishlistIds = useWishListRestaurants();
 
   useEffect(() => {
-    if (wishlistIds && wishlistIds.length > 0) {
+    if (wishlistIds.length > 0) {
       Promise.all(
         wishlistIds.map(id => getRestaurantById(id))
       )
@@ -63,7 +57,7 @@ const Profile = () => {
     else {
       setRestaurants([]);
     }
-  }, [wishlistIds]);
+  }, [wishlistIds.join(',')]);
 
   const user = globalState!.userAuthState[0] as User;
 
@@ -71,38 +65,32 @@ const Profile = () => {
     setUsername(user.username);
     setBio(user.bio || "");
     setProfileImage(user.profileImage || defaultAvatar); 
-    if (user.comments && user.comments.length > 0){
-      const fetchComments = async () => {
+    if (user.comments?.length){
+      (async () => {
         try {
-          const commentFetches = user.comments.map(async (commentId: CommentId) => {
-            const response = await getCommentTree(commentId);
-            return response;
-          });
-          const comments = await Promise.all(commentFetches);
-
+          const comments = await Promise.all(user.comments.map((cid: CommentId) => getCommentTree(cid)));
           const topLevelComments = comments.filter(comment => isCommentTopLevel(comment) && !comment.deleted);
-          const imagePosts = topLevelComments.map(comment => ({
+        setImagePosts(topLevelComments.map(comment => ({
             ...comment,
-            images: comment.images.length > 0 ? comment.images : [placeholder],
-          }));
-          setImagePosts(imagePosts);
-          setLoading(false);
-        } 
-        catch (err) {
-          console.error('Error fetching comments:', err);
-        }
+            images: comment.images.length ? comment.images : [placeholder],
+          }))
+        );
+      } catch (err) {
+        console.error('Error fetching comments:', err);
+      } finally {
+        setLoading(false);
       }
-      fetchComments();
+    })();
     } else {
       setLoading(false);
     }
-  }, [globalState!.userAuthState[0], user.comments]); // run this effect when the user changes
+  }, [user.username, user.comments.length]); 
 
   function countReplies(comment: Post){
     let count = 0;
-    const countRecursive = (c: Post) => {
+    const countRecursive = (comment: Post) => {
       count++;
-      c.replies.forEach(reply => countRecursive(reply));
+      comment.replies.forEach(reply => countRecursive(reply));
     };
     countRecursive(comment);
     return count - 1;
@@ -175,27 +163,6 @@ const Profile = () => {
   const full = width >= 1200;
   const tablet = width < 1200 && width >= 768;
   const mobile = width < 768;
-
- 
-
-//   const wishlist: Restaurant[] = [
-//   {
-//     restaurantId: "1",
-//     restaurantTitle: "restaurant1",
-//     rating: 4.5,
-//     address: "",
-//     images: [],
-//     googleMapsUrl: ""
-//   },
-//   {
-//     restaurantId: "2",
-//     restaurantTitle: "restaurant2",
-//     rating: 4.8,
-//     address: "",
-//     images: [],
-//     googleMapsUrl: ""
-//   }
-// ];
 
   return (
     <div className={styles.profile}>
