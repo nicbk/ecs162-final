@@ -8,6 +8,7 @@ import { useInitialDataLoad, useFetchCommentForest, useThread, useFetchCommentTr
 import { GlobalStateContext } from '../../global_state/global_state.ts';
 import { useToggleLike } from '../../global_state/comment_hooks.ts';
 import { LoadingSpinner } from '../../components/LoadingSpinner/LoadingSpinner.tsx';
+import { CommImgUpload } from '../../components/ImgUploader/CommImgUpload.tsx';
 
 const flattenComment = (comment: Comment | null, depth = 0): Comment[] | null => {
   if (!comment) {
@@ -52,11 +53,11 @@ export default function Threads() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [openChat, onCancel] = useState<Record<string, boolean>>({});
   const [textComm, setReplyText] = useState<Record<string, string>>({});
+  const [replyImages, setReplyImages] = useState<Record<string, string[]>>({});
   const toggleLike = useToggleLike();
   const fetchCommentTree = useFetchCommentTree();
   const parentCommentListNullable = flattenComment(useThread(commentId || null));
   const parentComment = parentCommentListNullable ? parentCommentListNullable[0] : null;
-  console.log(parentComment);
 
   const [loading, setLoading] = useState(true);
   // Fetch comment tree for comment on page load
@@ -84,8 +85,9 @@ export default function Threads() {
 
   const handlePostComment = async (parentId: string) => {
     const body = (textComm[parentId] || '').trim();
-    if (!body) return;
-    const newComment: InputComment = { body, rating: NaN, images: [] };
+    const images = replyImages[parentId] || [];
+    if (!body && images.length === 0) return;
+    const newComment: InputComment = { body, rating: NaN, images };
     await postComment(newComment, parentId);
     await fetchCommentTree(commentId!);
     setReplyText(pre => ({ ...pre, [parentId]: '' }));
@@ -120,9 +122,9 @@ export default function Threads() {
         <div className={styles.descripModel}>
           <p>
             {displayHeader ? (
-              <div className={styles.commBody}>
+              <span className={styles.commBody}>
                 {displayHeader} {comment.body}
-              </div>
+              </span>
             ) : (
               comment.body
             )}
@@ -177,6 +179,7 @@ export default function Threads() {
         </div>
         {openChat[comment.id] && (
           <div className={styles.replycomm}>
+            <CommImgUpload onChange={imgs=>setReplyImages(prevRImg=>({...prevRImg,[comment.id]:imgs}))} />
             <textarea value={textComm[comment.id] || ''}
               onChange={event => setReplyText(pre => ({ ...pre, [comment.id]: event.target.value }))}
               placeholder="Write your reply..."
@@ -270,6 +273,7 @@ export default function Threads() {
         </div>
         {openChat[parentComment.id] && (
           <div className={styles.replycomm}>
+            <CommImgUpload onChange={imgs=>setReplyImages(prevRImg=>({...prevRImg,[parentComment.id]:imgs}))} />
             <textarea value={textComm[parentComment.id] || ''}
               onChange={event => setReplyText(pre => ({ ...pre, [parentComment.id]: event.target.value,}))}
               placeholder="Write your reply . . ."

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styles from './CommImgUpload.module.scss';
 
 export interface CommImgUploadmyProp {
@@ -11,6 +11,11 @@ export const CommImgUpload: React.FC<CommImgUploadmyProp> = ({ onChange, resetCo
   const [preview, setPreviews] = useState<string[]>([]);
   const [error, setError] = useState<string>('');
 
+  const onChangeRef = useRef<(base64Images: string[]) => void>(onChange);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
   useEffect(() => {
     if (resetCounter !== undefined) {
       setFiles([]);
@@ -19,6 +24,11 @@ export const CommImgUpload: React.FC<CommImgUploadmyProp> = ({ onChange, resetCo
   }, [resetCounter]);
 
   useEffect(() => {
+    if (files.length === 0) {
+      setPreviews([]);
+      onChangeRef.current([]);
+      return;
+    }
     const possURL = files.map(file => URL.createObjectURL(file));
     setPreviews(possURL);
 
@@ -31,10 +41,10 @@ export const CommImgUpload: React.FC<CommImgUploadmyProp> = ({ onChange, resetCo
           reader.readAsDataURL(file);
         })
       )
-    ).then(base64A => onChange(base64A)).catch(error => console.error('There Error converting files:', error));
+    ).then(base64A => onChangeRef.current(base64A)).catch(error => console.error('There Error converting files:', error));
 
     return () => possURL.forEach(URL.revokeObjectURL);
-  }, [files, onChange]);
+  }, [files,]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) return;
