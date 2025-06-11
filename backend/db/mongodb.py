@@ -245,10 +245,18 @@ class MongoDBInterface():
             for image_id in comment['images']:
                 self.images.delete_one({'imageId': image_id})
 
-            # Mark the comment as deleted
-            self.comments.update_one(
-                {'id': comment_id},
-                {'$set': {'deleted': True}}
+            # # Mark the comment as deleted
+            # self.comments.update_one(
+            #     {'id': comment_id},
+            #     {'$set': {'deleted': True}}
+            # )
+            # Remove the comment from the database
+            self.comments.delete_one({'id': comment_id})
+
+            # Remove the comment from the user's liked comments
+            self.users.update_many(
+                {'likedComments': comment_id},
+                {'$pull': {'likedComments': comment_id}}
             )
 
     '''
