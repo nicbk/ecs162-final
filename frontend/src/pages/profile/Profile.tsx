@@ -283,9 +283,9 @@ const Profile = () => {
                 <ReplyList parentId={selectedPost.id} replies={selectedPost.replies} toggleLikes={toggleLikes}/>
               </div>
               <div className={styles.commentInfo}>
-                <div style={{display: 'flex', flexDirection: 'row'}}> 
-                  <button onClick={() => { deletePost(selectedPost.id); setSelectedPost(null); }}>Delete Post</button>
-                  <button onClick={() => setSelectedPost(null)} style={{marginLeft: "8px"}}>Close</button>
+                <div style={{display: 'flex', flexDirection: 'row', fontSize: 'rerem'}}> 
+                  <button onClick={() => { deletePost(selectedPost.id); setSelectedPost(null); }} className={styles.commentInfoButton}>Delete Post</button>
+                  <button onClick={() => setSelectedPost(null)} className={styles.commentInfoButton}>Close</button>
                 </div>
               </div>
             </div>

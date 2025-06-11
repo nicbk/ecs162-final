@@ -149,6 +149,9 @@ section button:active {
   &:hover {
     background: #f5f5f5;
   }
+  :root[data-theme="dark"] &:hover {
+    background: #696969;
+  }
 }
 
 .galleryGrid {
@@ -279,19 +282,26 @@ $themes: (
   font-weight: bold;
   overflow-y: auto;
   // max-width: 40%
-  font-size: 1.4rem;
+  font-size: 1.3rem;
 }
 
 .commentsSection {
   flex: 1;
   overflow-y: auto;
-  background: #cfcfcf;
+  background: #dcdbdb;
   border-radius: 6px;
   padding: 8px;
   // max-width: 0%;
   margin-bottom: 8px;
   min-height: 60%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   // max-height: 80%;
+}
+
+:root[data-theme="dark"] .commentsSection, .dropdownMenu {
+  background: #2c2c2c;
+  box-shadow:  0 0 0 1px rgba(255, 255, 255, 0.1),     
+    0 0 8px 0 rgba(255, 255, 255, 0.2);
 }
 
 .commentItem {
@@ -301,6 +311,7 @@ $themes: (
 
 .commentInfo {
   justify-content: flex-end;
+  font-size: 1.1rem;
   // flex: 0 0 15%;
   // margin-top: auto;
 }
@@ -310,6 +321,11 @@ $themes: (
   margin-top: 8px;
   display: flex;
   gap: 8px;
+}
+
+.commentInfoButton{
+  font-size: 1.4rem;
+  margin-right: 10px;
 }
 
 @media (min-width: 724px) and (max-width: 1200px) {
@@ -338,6 +354,10 @@ $themes: (
       width: 100%;
       height: auto;
     }
+    .commentInfoButton{
+    font-size: .8rem;
+    margin-right: 8px;
+  }
   }
   .popupContent img {
     width: 100%;
@@ -376,6 +396,10 @@ $themes: (
     }
   .popupContent img {
     display: none;
+  }
+  .commentInfoButton{
+    font-size: .8rem;
+    margin-right: 8px;
   }
 
     .popupRightSide {
