@@ -489,6 +489,12 @@ img{
   margin: 0;
   padding: 0;
 }
+.sliderError {
+  color: #e63946;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 20px 0;
+}
 
 @media screen and (max-width: 768px) {
   .home {

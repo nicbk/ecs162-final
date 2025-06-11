@@ -16,9 +16,8 @@ import { useToggleLike } from '../../global_state/comment_hooks.ts';
 import { useToggleWish } from '../../global_state/wishlist_hooks.ts';
 import { CommImgUpload } from '../../components/ImgUploader/CommImgUpload.tsx';
 import { useDebounce, useRestaurantLazyLoad, useSelectedRestaurant } from '../../global_state/restaurant_hooks.ts';
+import { RateSlide } from '../../components/Slider/RateSlide.tsx';
 
-const PAGE_SIZE = 10;
-const SCROLL_THRESHOLD = 100;
 const DEBOUNCER_DELAY = 2500; // in milliseconds
 
 function StarRating({ ratingofRest }: { ratingofRest: number }) {
@@ -105,12 +104,12 @@ export default function Home() {
     ? comments.filter((comm: Comment) => comm.parentId === activeRest.restaurantId)
     : [];
 
-  const handlePostComment = (restaurantId: string, parentId: string, images: string[]) => {
+  const handlePostComment = (restaurantId: string, parentId: string, images: string[], rating: number) => {
     if (!activeRest || (!text.trim() && images.length === 0)) return;
 
     const newComment: InputComment = {
       body: text.trim(),
-      rating: 5,
+      rating,
       images,
     };
 
@@ -265,13 +264,14 @@ function CommentingPost({
   text: string;
   setText: (s: string) => void;
   didUserLikeComment: (user: UserAuthState, commentId: string) => boolean;
-  handlePostComment: (restaurantId: string, parentId: string, images: string[]) => void;
+  handlePostComment: (restaurantId: string, parentId: string, images: string[], rating: number) => void;
 }) {
   const globalState = useContext(GlobalStateContext);
   const userAuthState = globalState!.userAuthState[0];
   const navigate = useNavigate();
   const [images, setImages] = useState<string[]>([]);
-
+  const [rating, setRating] = useState<number | null>(null);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   return (
       <div className={styles.popupModelBody}>
         <div className={styles.commentListCon}>
@@ -284,6 +284,7 @@ function CommentingPost({
 
                 <div className={styles.commentHeader}>
                   <strong>{comm.username}</strong>
+                  {comm.rating !== undefined && (<div className={styles.commentRating}> <p>{comm.rating}</p></div>)}
                 </div>
 
                 <div className={styles.description}>
@@ -342,6 +343,8 @@ function CommentingPost({
         <div className={styles.popupBoxBody}>
           <h3>Comments for {activeRest.restaurantTitle}</h3>
           <CommImgUpload onChange={setImages} resetCounter={resetCounter}/>
+          <RateSlide value={rating} slideChange={val => setRating(val)} />
+            {submitAttempted && rating === null && (<p className={styles.sliderError}> Please pick a rating for this restaurant.</p>)}
           <textarea
             className={styles.textarea}
             placeholder="Write a Comment. . . ."
@@ -351,7 +354,11 @@ function CommentingPost({
           <div className={styles.popupBoxFooter}>
             <p className={styles.limited}>You can upload up to 3 max images.</p>
             <button
-              onClick={() => handlePostComment(activeRest.restaurantId, activeRest.restaurantId, images)}
+              onClick={() => {
+                setSubmitAttempted(true);
+                if (rating === null) return;
+                handlePostComment(activeRest.restaurantId, activeRest.restaurantId, images,rating);
+              }}
               disabled={!text.trim() && images.length === 0}
             >
               Post!
