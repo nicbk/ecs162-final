@@ -279,12 +279,13 @@ $themes: (
   font-weight: bold;
   overflow-y: auto;
   // max-width: 40%
+  font-size: 1.4rem;
 }
 
 .commentsSection {
   flex: 1;
   overflow-y: auto;
-  background: #a1a1a1;
+  background: #cfcfcf;
   border-radius: 6px;
   padding: 8px;
   // max-width: 0%;
@@ -295,6 +296,7 @@ $themes: (
 
 .commentItem {
   margin-bottom: 6px;
+  font-size: 1.2rem;
 }
 
 .commentInfo {

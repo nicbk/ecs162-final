@@ -5,13 +5,14 @@ import defaultAvatar from '../../assets/default-avatar.png';
 import food from '../../assets/food.jpg';
 import placeholder from '../../assets/image2vector.svg';
 import { isCommentTopLevel, type CommentId, type Comment } from '../../interface_data/index.ts';
-import { addLike, deleteComment } from '../../api_data/client.ts'
+import { addLike, deleteComment, removeLike, getCommentTree } from '../../api_data/client.ts'
 import { type User } from '../../interface_data/index.ts';
 import { useNavigate } from 'react-router-dom';
 import { FaHeart, FaComment, FaChevronDown} from "react-icons/fa";
 import { GlobalStateContext } from '../../global_state/global_state.ts';
 import { LoadingSpinner } from '../../components/LoadingSpinner/LoadingSpinner.tsx';
 import { useWishListRestaurants } from '../../global_state/user_hooks.ts';
+import { useToggleLike } from '../../global_state/comment_hooks.ts';
 
 interface Post extends Comment{
   totalReplies?: number;
@@ -34,9 +35,12 @@ const Profile = () => {
   const [userAuthenticationState, setUserAuthenticationState] = globalState!.userAuthState;
   const [isFetched, setIsFetched] = useState(false);
   const [wishlistOpen, setWishlistOpen] = useState(false);
-  console.log('usreauth', userAuthenticationState)
+  const [refreshLikes, setRefreshLikes] = useState(0);
+  const [replies, setReplies] = useState<Post[]>([]);
+  // console.log(userAuthenticationState)
 
   const navigate = useNavigate();
+  const toggleLikes = useToggleLike();
 
   function deletePost(id: string) { 
     setImagePosts(posts.filter((post) => post.id !== id));
@@ -49,9 +53,10 @@ const Profile = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const user = globalState!.userAuthState[0] as User;
+
   useEffect(() => {
     console.log('fetching user data');
-    const user = globalState!.userAuthState[0] as User;
     setUsername(user.username);
     console.log('name changed to', user.username);
     setBio(user.bio || "");
@@ -61,8 +66,8 @@ const Profile = () => {
       const fetchComments = async () => {
         try {
           const commentFetches = user.comments.map(async (commentId: CommentId) => {
-            const response = await fetch(`/api/v1/comment/${commentId}`);
-            return await response.json() as Comment;
+            const response = await getCommentTree(commentId);
+            return response;
           });
           const comments = await Promise.all(commentFetches);
 
@@ -82,7 +87,7 @@ const Profile = () => {
     } else {
       setLoading(false);
     }
-  }, [globalState!.userAuthState[0]]); // run this effect when the user changes
+  }, [globalState!.userAuthState[0], user.comments]); // run this effect when the user changes
 
   function countReplies(comment: Post){
     let count = 0;
@@ -95,14 +100,15 @@ const Profile = () => {
   }
 
   /* function that, given an array of Post objects (replies to a comment), will render the top level ones */
-  function ReplyList({ replies }: { replies: Post[] }) {
+  function ReplyList({ parentId, replies, toggleLikes }: { parentId: string, replies: Post[], toggleLikes: (parentId: string, replyId: string) => void }) {
+
     if (!replies || replies.length === 0) {
       return <div>No replies yet!</div>;
     }
     return (
       <div>
         {replies.map(reply => (
-          <div key={reply.id} className={styles.reply}>
+          <div key={reply.id} className={styles.commentItem}>
             <div style={{marginBottom:4, display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
               <span><strong>{reply.username}</strong></span>
               <span style={{marginLeft: 'auto', display: 'flex', alignItems: 'center'}}>
@@ -123,7 +129,12 @@ const Profile = () => {
               {reply.body}
               <strong>
                 <span className={styles.likeCount}>
-                  <button className={styles.likeButton} onClick={() => addLike(reply.id)}><FaHeart size=".9rem"/></button>
+                  <button className={styles.likeButton} onClick={() => {
+                    toggleLikes(parentId, reply.id);
+                    console.log('toggling like');
+                  }}>
+                    <FaHeart size=".9rem"/>
+                    </button>
                 <span style={{marginLeft: 6, marginTop: 5}}>
                     {reply.likes} likes 
                     <a className={styles.replyLink} onClick={() => navigate(`/Threads/${reply.id}`)}>Reply</a> {/* redirect to threads */}
@@ -266,10 +277,10 @@ const Profile = () => {
             <div className={styles.popupRightSide}> 
               {full && (
                 <div className={styles.mainComment}>
-                  <p>{selectedPost.body}</p> 
+                  <h2>{selectedPost.body}</h2> 
                 </div>)}
               <div className={styles.commentsSection}> 
-                <ReplyList replies={selectedPost.replies}/>
+                <ReplyList parentId={selectedPost.id} replies={selectedPost.replies} toggleLikes={toggleLikes}/>
               </div>
               <div className={styles.commentInfo}>
                 <div style={{display: 'flex', flexDirection: 'row'}}> 
