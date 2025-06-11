@@ -90,6 +90,15 @@ export const getRestaurants = async (latitude: number, longitude: number, limit:
 };
 
 /*
+ * Gets a restaurant by its ID
+ * @param restaurantId ID of the restaurant to fetch
+ * @returns promise for when data is retrieved from backend
+ */
+export const getRestaurantById = async (restaurantId: string) => {
+  return await fetchAPI<Restaurant>(`restaurant/${restaurantId}`);
+}
+
+/*
 const commentify = (comment: Comment) => {
   comment.replies = comment.replies.map(reply => reply as Comment);
 

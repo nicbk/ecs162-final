@@ -6,10 +6,10 @@ from flask_cors import CORS
 import werkzeug
 import requests
 from werkzeug.exceptions import BadRequest
-from google_maps import get_nearby_restaurants
+from google_maps import get_nearby_restaurants, get_restaurant_details
 import json
 from db.mongodb import MongoDBInterface
-from db.data import Comment
+from db.data import Comment, Restaurant
 import base64
 import jwt
 
@@ -194,13 +194,55 @@ def getRestaurantInformation():
     if radius > 50000:
         raise BadRequest('radius must be less than 500000 meters')
 
-    nearbyRestaurants = get_nearby_restaurants(app, latitude, longitude, limit, radius)
+    nearbyRestaurants = get_nearby_restaurants(latitude, longitude, limit, radius)
 
     if mongo_instance.isMock:
         mock_restaurants = mongo_instance.get_mock_restaurants()
         return jsonify(nearbyRestaurants + mock_restaurants)
     
-    return get_nearby_restaurants(app, latitude, longitude, limit, radius)
+    return nearbyRestaurants
+
+@app.route('/api/v1/restaurant/<string:restaurant_id>', methods=['GET'])
+def getRestaurantById(restaurant_id):
+    if restaurant_id is None:
+        return jsonify({'error': 'restaurantId is required'}), 400
+    
+    # # Get restaurant details from the database
+    # restaurantDetails = mongo_instance.get_restaurant_by_id(restaurant_id)
+    # if restaurantDetails is not None:
+    #     return jsonify(restaurantDetails), 200
+    
+    restaurantDetails = get_restaurant_details(restaurant_id)
+
+    if restaurantDetails is None:
+        return jsonify({'error': 'Restaurant not found'}), 404
+    
+    # # If the restaurant is not found in the database, we can add it to the database
+    # try:
+    #     new_restaurant:Restaurant = Restaurant(
+    #         id=restaurantDetails['restaurantId'],
+    #         displayName=restaurantDetails['restaurantTitle'],
+    #         formattedAddress=restaurantDetails['address'],
+    #         location={
+    #             'latitude': restaurantDetails['latitude'],
+    #             'longitude': restaurantDetails['longitude']
+    #         },
+    #         rating=restaurantDetails['rating'],
+    #         googleMapsUri=restaurantDetails['googleMapsUrl'],
+    #         regularOpeningHours=restaurantDetails.get('regularOpeningHours', {}),
+    #         priceLevel=restaurantDetails.get('priceLevel', 'unknown'),
+    #         priceRange=restaurantDetails.get('priceRange', {}),
+    #         takeout=restaurantDetails.get('takeout', False),
+    #         delivery=restaurantDetails.get('delivery', False),
+    #         dineIn=restaurantDetails.get('dineIn', False),
+    #         images=restaurantDetails.get('images', [])
+    #     )
+
+    #     mongo_instance.update_restaurant(restaurantDetails)
+    # except Exception as e:
+    #     return jsonify({'error': str(e)}), 500
+
+    return restaurantDetails
 
 #Gets a comment, as well as all nested replies for that comment.
 @app.route('/api/v1/comment/<string:comment_id>', methods=['GET'])

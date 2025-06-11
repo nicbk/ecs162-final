@@ -4,6 +4,7 @@ import { type Comment } from '../../interface_data/index.ts';
 import mapIcon from '../../assets/map-icon.svg';
 import {FaHeart, FaRegComment, FaShareSquare, FaRegBookmark, FaBookmark, FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import { postComment} from '../../api_data/client.ts';
+import { getRestaurantById, postComment} from '../../api_data/client.ts';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useContext, useCallback } from 'react';
 import { GlobalStateContext, type UserAuthState } from '../../global_state/global_state.ts';
@@ -58,7 +59,7 @@ export default function Home() {
   const [loadMorePost, setLoadingMore] = useState(false);
   const [isThereMore, setHasMore] = useState(true);
 
-  console.log(comments)
+  // console.log(comments)
 
   // We need to come up with a way of sharing the restaurant.
   const giveShare = () => {
@@ -89,6 +90,10 @@ export default function Home() {
     } finally {
       setLoadingMore(false);
     }
+
+    const restaurantData = await getRestaurantById("ChIJlT_WX1TRhIARD2VPR8j0kgE");
+    console.log('Restaurant Data:', restaurantData);
+    
 },[globalState , restaurants, updateRestaurants, page, isThereMore]);
 
   useEffect(() => {

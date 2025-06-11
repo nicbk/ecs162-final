@@ -28,11 +28,28 @@ class Comment(NamedTuple):
     date: str
     replies: list['Comment']  # List of reply comments
 
+class Location(NamedTuple):
+    latitude: float
+    longitude: float
+
+class PriceRange(NamedTuple):
+    currency: str
+    startPrice: str
+    endPrice: str
+
 class Restaurant(NamedTuple):
-    restaurantId: str
-    restaurantTitle: str
+    id: str
+    displayName: str
+    formattedAddress: str
+    location: Location
     rating: float
-    address: str
-    images: list[str]
-    googleMapsUrl: str
+    googleMapsUri: str
+    regularOpeningHours: dict
+    priceLevel: str
+    priceRange: dict
+    takeout: bool
+    delivery: bool
+    dineIn: bool
+    images: list[Image]
+
 
