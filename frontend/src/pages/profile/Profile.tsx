@@ -84,7 +84,7 @@ const Profile = () => {
     } else {
       setLoading(false);
     }
-  }, [user.username, user.comments.length]); 
+  }, [user.username, user.comments]); 
 
   function countReplies(comment: Post){
     let count = 0;
