@@ -138,6 +138,8 @@ section button:active {
   padding: 8px 0;
   width: 240px;
   margin-top: 8px;
+  z-index: 2;
+  background-color: var(--background);
 }
 
 .wishlistItem {

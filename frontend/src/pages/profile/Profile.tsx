@@ -50,7 +50,6 @@ const Profile = () => {
     navigate('/Home');
   }
   
-
   useEffect(() => {
     if (wishlistIds.length > 0) {
       Promise.all(
