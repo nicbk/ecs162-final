@@ -126,13 +126,13 @@ const Profile = () => {
                   <button className={styles.likeButton} onClick={() => addLike(reply.id)}><FaHeart size=".9rem"/></button>
                 <span style={{marginLeft: 6, marginTop: 5}}>
                     {reply.likes} likes 
-                    <a className={styles.replyLink} onClick={() => navigate(`Threads/${reply.id}`)}>Reply</a> {/* redirect to threads */}
+                    <a className={styles.replyLink} onClick={() => navigate(`/Threads/${reply.id}`)}>Reply</a> {/* redirect to threads */}
                   </span>
                 </span>
               </strong>
             </div>
             {reply.replies.length > 0 && (
-              <div className={styles.moreReplies} onClick={() => navigate(`Threads/${reply.id}`)}>
+              <div className={styles.moreReplies} onClick={() => navigate(`/Threads/${reply.id}`)}>
                 <span style={{marginTop:8, marginRight:15}} className={styles.line}></span>
                 <span>See more replies ({reply.replies.length})</span>
               </div>
