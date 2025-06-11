@@ -1,9 +1,9 @@
 import styles from './Home.module.scss';
-import { didUserLikeComment, didUserWishRestaurant, isUser, type InputComment, type Restaurant, type User } from '../../interface_data/index.ts';
+import { didUserLikeComment, didUserWishRestaurant, type InputComment, type Restaurant} from '../../interface_data/index.ts';
 import { type Comment } from '../../interface_data/index.ts';
 import mapIcon from '../../assets/map-icon.svg';
 import {FaHeart, FaRegComment, FaShareSquare, FaRegBookmark, FaBookmark} from "react-icons/fa";
-import { postComment, removeLike, addLike  } from '../../api_data/client.ts';
+import { postComment} from '../../api_data/client.ts';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useContext, useCallback } from 'react';
 import { GlobalStateContext, type UserAuthState } from '../../global_state/global_state.ts';
@@ -14,6 +14,7 @@ import { useComments, useFetchCommentForest, useRestaurants, useUpdateRestaurant
 import { getRestaurants } from '../../api_data/client.ts';
 import { useToggleLike } from '../../global_state/comment_hooks.ts';
 import { useToggleWish } from '../../global_state/wishlist_hooks.ts';
+import { CommImgUpload } from '../../components/ImgUploader/CommImgUpload.tsx';
 
 const PAGE_SIZE = 10;
 const SCROLL_THRESHOLD = 100;
@@ -21,6 +22,7 @@ const SCROLL_THRESHOLD = 100;
 export default function Home() {
   const globalState = useContext(GlobalStateContext);
   const userAuthState = globalState!.userAuthState[0];
+  const [resetUploader, setResetUploader] = useState(0);
 
   const refetchCommentForest = useFetchCommentForest();
   const toggleLike = useToggleLike();
@@ -99,19 +101,21 @@ export default function Home() {
     ? comments.filter((comm: Comment) => comm.parentId === activeRest.restaurantId)
     : [];
 
-  const handlePostComment = (restaurantId: string, parentId: string) => {
-    if (!activeRest || !text.trim()) return;
+  const handlePostComment = (restaurantId: string, parentId: string, images: string[]) => {
+    if (!activeRest || (!text.trim() && images.length === 0)) return;
 
     const newComment: InputComment = {
       body: text.trim(),
       rating: 5,
-      images: [],
+      images,
     };
 
     postComment(newComment, parentId)
-      .then(() => refetchCommentForest(restaurantId));
+      .then(() =>{ refetchCommentForest(restaurantId);
 
     setText('');
+      setResetUploader(comm => comm + 1);
+    });
   }
 
   const openModal = (rest: Restaurant) => {
@@ -226,6 +230,7 @@ export default function Home() {
                 setText={setText}
                 didUserLikeComment={didUserLikeComment}
                 handlePostComment={handlePostComment}
+                resetCounter={resetUploader}
               />
             )}
           </div>
@@ -236,10 +241,9 @@ export default function Home() {
 }
 
 function CommentingPost({
-  // onSubmit,
-  onCancel, activeRest, comments, toggleLike, text, setText, didUserLikeComment, handlePostComment,
+  onCancel, activeRest, comments, toggleLike, text, setText, didUserLikeComment, handlePostComment, resetCounter,
 }: {
-  // onSubmit: (text: string) => void,
+  resetCounter: number
   onCancel: () => void
   activeRest: Restaurant;
   comments: Comment[];
@@ -247,11 +251,12 @@ function CommentingPost({
   text: string;
   setText: (s: string) => void;
   didUserLikeComment: (user: UserAuthState, commentId: string) => boolean;
-  handlePostComment: (restaurantId: string, parentId: string) => void;
+  handlePostComment: (restaurantId: string, parentId: string, images: string[]) => void;
 }) {
   const globalState = useContext(GlobalStateContext);
   const userAuthState = globalState!.userAuthState[0];
   const navigate = useNavigate();
+  const [images, setImages] = useState<string[]>([]);
 
   return (
       <div className={styles.popupModelBody}>
@@ -322,6 +327,7 @@ function CommentingPost({
 
         <div className={styles.popupBoxBody}>
           <h3>Comments for {activeRest.restaurantTitle}</h3>
+          <CommImgUpload onChange={setImages} resetCounter={resetCounter}/>
           <textarea
             className={styles.textarea}
             placeholder="Write a Comment. . . ."
@@ -329,9 +335,10 @@ function CommentingPost({
             onChange={(event) => setText(event.target.value)}
           />
           <div className={styles.popupBoxFooter}>
+            <p className={styles.limited}>You can upload up to 3 max images.</p>
             <button
-              onClick={() => handlePostComment(activeRest.restaurantId, activeRest.restaurantId)}
-              disabled={!text}
+              onClick={() => handlePostComment(activeRest.restaurantId, activeRest.restaurantId, images)}
+              disabled={!text.trim() && images.length === 0}
             >
               Post!
             </button>

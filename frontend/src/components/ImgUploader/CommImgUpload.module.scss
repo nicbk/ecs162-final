@@ -1,0 +1,30 @@
+.uploader {
+  margin: 1rem 0;
+}
+.inputLabel {
+  display: block;
+  cursor: pointer;
+  input[type="file"] {
+    display: block;
+    margin-top: 0.5rem;
+  }
+}
+.previewList {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  img {
+    max-width: 100px;
+    max-height: 100px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+}
+.error {
+  color: red;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  font-weight: 800;
+  text-align: center;
+  max-width: 80%;
+}
