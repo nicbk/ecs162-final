@@ -58,6 +58,7 @@ export const CommImgUpload: React.FC<CommImgUploadmyProp> = ({ onChange, resetCo
       <label className={styles.inputLabel}>
         Attach images (max {MaxImg})
         <input
+          className={styles.inputFile}
           type="file"
           accept="image/*"
           multiple

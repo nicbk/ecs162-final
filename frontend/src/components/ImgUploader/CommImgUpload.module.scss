@@ -1,16 +1,45 @@
 .uploader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   margin: 1rem 0;
 }
 .inputLabel {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 1rem;
   cursor: pointer;
-  input[type="file"] {
-    display: block;
-    margin-top: 0.5rem;
-  }
+}
+
+.inputFile {
+  display: flex;
+  margin: auto;
+  cursor: pointer;
+  background-color: var(--background);
+  border: 1px solid var(--inverse-background);
+  border-radius: 4px;
+  font-size: 15px;
+  color: #495057;
+  transition: border-color 0.2s ease-in-out;
+  box-sizing: border-box;
+}
+
+.inputFile::-webkit-file-upload-button {
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
 }
 .previewList {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
   gap: 0.5rem;
   margin-top: 0.75rem;
   img {
@@ -18,6 +47,26 @@
     max-height: 100px;
     object-fit: cover;
     border-radius: 4px;
+  }
+}
+.previewItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  .removeBtn{
+    background-color: rgba(red, 0.57);
+    color: var(--background);
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color 0.2s ease-in-out;
+
+    &:hover {
+      background-color: rgba(red, 1);
+    }
   }
 }
 .error {

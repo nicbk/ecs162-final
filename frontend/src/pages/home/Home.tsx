@@ -359,7 +359,6 @@ function CommentingPost({
             onChange={(event) => setText(event.target.value)}
           />
           <div className={styles.popupBoxFooter}>
-            <p className={styles.limited}>You can upload up to 3 max images.</p>
             <button
               onClick={() => {
                 setSubmitAttempted(true);
