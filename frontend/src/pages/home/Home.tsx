@@ -16,6 +16,7 @@ import { useToggleWish } from '../../global_state/wishlist_hooks.ts';
 import { CommImgUpload } from '../../components/ImgUploader/CommImgUpload.tsx';
 import { useDebounce, useRestaurantLazyLoad, useSelectedRestaurant } from '../../global_state/restaurant_hooks.ts';
 import { RateSlide } from '../../components/Slider/RateSlide.tsx';
+import { useFetchUser } from '../../global_state/user_hooks.ts';
 
 const DEBOUNCER_DELAY = 2500; // in milliseconds
 
@@ -59,6 +60,7 @@ export default function Home() {
   const [isEndOfLoad, fetchNextRestaurants] = useRestaurantLazyLoad(RESTAURANTS_FETCH_LIMIT);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const scrollDebouncer = useDebounce(DEBOUNCER_DELAY);
+  const refetchUser = useFetchUser();
 
   const giveShare = () => {
     if (!activeRest) return;
@@ -105,6 +107,7 @@ export default function Home() {
     postComment(newComment, parentId)
       .then(() =>{ refetchCommentForest(restaurantId);
 
+        refetchUser();
     setText('');
       setResetUploader(comm => comm + 1);
     });
