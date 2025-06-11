@@ -188,7 +188,12 @@ const Profile = () => {
                   {restaurants.length > 0 ? (
                     restaurants.map(restaurant => (
                       <div key={restaurant.id} className={styles.wishlistItem}>
-                        <span>{restaurant.displayName}</span>
+                        <span
+                          onClick={() => {
+                            globalState!.globalCache[0].selectedRestaurantId = restaurant.id;
+                            navigate(`/Restaurant`);
+                          }}
+                        >{restaurant.displayName}</span>
                       </div>
                     ))
                   ) : (
