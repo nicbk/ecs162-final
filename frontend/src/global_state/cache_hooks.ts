@@ -3,7 +3,6 @@ import { GlobalStateContext, UUID_LENGTH } from "./global_state";
 import { isCommentTopLevel, isUser, type Comment, type Restaurant, type User } from "../interface_data";
 import { getCommentTree, getResourceComments, getRestaurants } from "../api_data/client";
 import { useGpsSetter } from "./gps_hooks";
-import { GiConsoleController } from "react-icons/gi";
 
 export const useRestaurants = (): [Restaurant[], (restaurants: Restaurant[]) => void] => {
   const globalState = useContext(GlobalStateContext);
@@ -155,7 +154,6 @@ export const useToggleCacheWish = () => {
     }
     const user = userAuthState as User;
     const isWished = user.wishList.has(restaurantId);
-    console.log('toggleCacheWish', restaurantId, isWished);
 
     if (restaurantId.length === UUID_LENGTH) {
       const updatedCache = {

@@ -143,9 +143,6 @@ export const getLoggedInUser = () => fetchAPI<User | boolean>('authed-user').the
     return user;
   } else {
     const userCasted = user as User;
-
-    console.log('User fetched from backend:', userCasted);
-
     return {
       ...userCasted,
       likedComments: new Set(userCasted.likedComments),

@@ -30,7 +30,6 @@ export default function App() {
       lazyLoadOffset
     }}>
       <Routes>
-        {/* for now temp we will have the login stuff here but we need to remove it after it is done */}
         <Route path="/Login" element={<div>dex stuff will be used here</div>} />
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />

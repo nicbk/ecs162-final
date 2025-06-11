@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { UserAuthState } from "../../global_state/global_state";
 import { firebaseAuth } from "../../global_state/firebase";
-import { getRedirectResult, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, type User as FirebaseUser } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, signOut, type User as FirebaseUser } from "firebase/auth";
 import { FirebaseJWT, getLoggedInUser } from "../../api_data/client";
 import type { User } from "../../interface_data";
 
@@ -60,15 +60,4 @@ export const initFirebaseHandler = (
   firebaseAuth.onAuthStateChanged((user) => {
     statusHandler(user);
   });
-
-  // Register handler for when redirect to application occurs
-  /*
-  getRedirectResult(firebaseAuth)
-    .then(user => {
-      console.log(user)
-      if (user) {
-        statusHandler(user.user!)
-      }
-    });
-  */
 };

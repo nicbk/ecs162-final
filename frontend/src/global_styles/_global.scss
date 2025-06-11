@@ -1,8 +1,5 @@
-//everyone should add the global fonts and colors here to keep it clean and organized
-// this will be filled as we go.
 @use "sass:map" as map;
 
-//don't touch this untill you ask someone about ur idea.
 html, body {
   min-height: 100vh;
   padding: 0;
@@ -11,7 +8,6 @@ p, h1,h2,h3,h4 a, body{
   color: var(--text);
   overflow-wrap: anywhere;
 }
-//same here as mentioned above
 :root{
   width: 100%;
   height: 100%;

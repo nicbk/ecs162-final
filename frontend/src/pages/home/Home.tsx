@@ -3,15 +3,14 @@ import { didUserLikeComment, didUserWishRestaurant, type InputComment, type Rest
 import { type Comment } from '../../interface_data/index.ts';
 import mapIcon from '../../assets/map-icon.svg';
 import {FaHeart, FaRegComment, FaShareSquare, FaRegBookmark, FaBookmark, FaStar, FaStarHalfAlt, FaRegStar} from "react-icons/fa";
-import { postComment, removeLike, addLike, RESTAURANTS_FETCH_LIMIT } from '../../api_data/client.ts';
+import { postComment, RESTAURANTS_FETCH_LIMIT } from '../../api_data/client.ts';
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect, useContext, useCallback } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { GlobalStateContext, type UserAuthState } from '../../global_state/global_state.ts';
 import { useParams } from 'react-router-dom'
 import { ThrottledImage } from '../../components/ThrottledImage/ThrottledImage.tsx';
 import { LoadingSpinner } from '../../components/LoadingSpinner/LoadingSpinner.tsx';
-import { useComments, useFetchCommentForest, useRestaurants, useUpdateRestaurants } from '../../global_state/cache_hooks.ts';
-import { getRestaurants } from '../../api_data/client.ts';
+import { useComments, useFetchCommentForest, useRestaurants } from '../../global_state/cache_hooks.ts';
 import { useToggleLike } from '../../global_state/comment_hooks.ts';
 import { useToggleWish } from '../../global_state/wishlist_hooks.ts';
 import { CommImgUpload } from '../../components/ImgUploader/CommImgUpload.tsx';
@@ -49,10 +48,9 @@ export default function Home() {
   const refetchCommentForest = useFetchCommentForest();
   const toggleLike = useToggleLike();
   const toggleWish = useToggleWish();
-  const [restaurants, setRestaurants] = useRestaurants();
+  const [restaurants, ] = useRestaurants();
   const selectRestaurantToView = useSelectedRestaurant();
   const navigate = useNavigate();
-  const updateRestaurants = useUpdateRestaurants();
   const comments = useComments()[0];
   const [activeRest, setActiveRest] = useState<Restaurant | null>(null)
   const [popupType, setpopupType] = useState<'comment' | 'share' | null>(null)
@@ -62,7 +60,6 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const scrollDebouncer = useDebounce(DEBOUNCER_DELAY);
 
-  // We need to come up with a way of sharing the restaurant.
   const giveShare = () => {
     if (!activeRest) return;
     const shareUrl = `${activeRest.address}`;
@@ -77,10 +74,9 @@ export default function Home() {
   }, [copyId, restaurants]);
 
   useEffect(() => {
-    const PAGE_BOTTOM_TRIGGER_OFFSET = 300; // units in CSS pixels
+    const PAGE_BOTTOM_TRIGGER_OFFSET = 300;
     const onScrollBottom = async () => {
       if (userLocation && !isLoading && !isEndOfLoad && window.innerHeight + window.scrollY >= document.body.scrollHeight - PAGE_BOTTOM_TRIGGER_OFFSET) {
-        console.log('triggered')
         scrollDebouncer(async () => {
           setIsLoading(true);
           await fetchNextRestaurants();
@@ -92,8 +88,6 @@ export default function Home() {
     window.addEventListener('scroll', onScrollBottom);
     return () => window.removeEventListener('scroll', onScrollBottom);
   }, [fetchNextRestaurants, isLoading, isEndOfLoad, userLocation]);
-
-
 
   const firstLayerForActive = activeRest
     ? comments.filter((comm: Comment) => comm.parentId === activeRest.restaurantId)
@@ -203,7 +197,6 @@ export default function Home() {
               </div>
             </div>
           ))}
-        {/*loadMorePost && <div className={styles.loadMorePost}>Loading more...</div>*/}
         {isLoading && <LoadingSpinner />}
         {isEndOfLoad && <p>No more restaurants have been found in your nearest area! Walk around to find some more.</p>}
 
@@ -235,7 +228,6 @@ export default function Home() {
 
               {popupType === 'comment' && activeRest && (
                 <CommentingPost
-                  // onSubmit ={subComment} 
                   onCancel={closeModal}
                   activeRest={activeRest}
                   comments={firstLayerForActive}

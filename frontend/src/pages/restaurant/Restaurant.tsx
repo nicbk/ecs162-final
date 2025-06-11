@@ -1,5 +1,5 @@
 import styles from './Restaurant.module.scss';
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import mapIcon from '../../assets/map-icon.svg';
 import { type GoogleApiRestaurantResponse, type PriceLevel } from '../../interface_data/index';
 import { LoadingSpinner } from '../../components/LoadingSpinner/LoadingSpinner.tsx';
@@ -20,9 +20,6 @@ export default function Restaurant() {
       }
 
       const restaurantInfo = await getRestaurantById(selectedRestaurantId)
-      console.log(restaurantInfo);
-
-      console.log("Price Level: ", restaurantInfo.priceLevel);
       setRestaurant(restaurantInfo);
     };
 

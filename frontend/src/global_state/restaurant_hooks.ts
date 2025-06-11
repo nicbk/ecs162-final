@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { useContext, useRef} from "react";
 import { GlobalStateContext } from "./global_state";
 import { getRestaurants } from "../api_data/client";
 import type { Restaurant } from "../interface_data";
@@ -15,18 +15,13 @@ export const degreesToMeters = (degrees: number) => {
 };
 
 const DEFAULT_CIRCLE_NUM_RESTAURANTS = 5;
-const DEBOUNCER_DELAY = 3000; // in milliseconds
 
 export const useRestaurantLazyLoad = (radiusMeters: number): [boolean, () => Promise<any>] => {
   const [offset, setOffset] = useContext(GlobalStateContext)!.lazyLoadOffset;
   const updateRestaurants = useUpdateRestaurants();
   const userPosition = useContext(GlobalStateContext)!.userLocationState[0];
-  console.log('x: ', offset.offsetX);
-  console.log('y: ', offset.offsetY)
 
   const updateNextRestaurants = async () => {
-    console.log('initial')
-    console.log(userPosition)
     if (!userPosition) {
       return;
     }
@@ -34,7 +29,6 @@ export const useRestaurantLazyLoad = (radiusMeters: number): [boolean, () => Pro
     let localXOffset = offset.offsetX;
     let localYOffset = offset.offsetY; 
     let circleRestaurants: Restaurant[] = [];
-    console.log('retrieving user stuff')
 
     while (localYOffset < 2 && circleRestaurants.length === 0) {
       const radiusDegrees = metersToDegrees(radiusMeters);
@@ -42,7 +36,6 @@ export const useRestaurantLazyLoad = (radiusMeters: number): [boolean, () => Pro
       const degreesXNew = userPosition!.latitude + 2*radiusDegrees*localXOffset;
       const degreesYNew = userPosition!.longitude + 2*radiusDegrees*localYOffset;
 
-      console.log('new one')
       circleRestaurants = circleRestaurants.concat(await getRestaurants(degreesXNew, degreesYNew, DEFAULT_CIRCLE_NUM_RESTAURANTS, radiusMeters));
 
       if (localXOffset < 1) {
@@ -99,7 +92,6 @@ export const useSelectedRestaurant = () => {
       return;
     }
 
-    // Check if the restaurant exists in the cache
     if (!globalCache.restaurants[restaurantId]) {
       console.warn(`Restaurant with ID ${restaurantId} not found in cache`);
       return;

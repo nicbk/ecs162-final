@@ -4,7 +4,7 @@ import { didUserLikeComment, type Comment, type InputComment } from '../../inter
 import { postComment } from '../../api_data/client.ts';
 import { FaHeart, FaShareSquare, FaRegComment } from 'react-icons/fa';
 import styles from './Threads.module.scss';
-import { useInitialDataLoad, useFetchCommentForest, useThread, useFetchCommentTree } from '../../global_state/cache_hooks.ts';
+import {useThread, useFetchCommentTree } from '../../global_state/cache_hooks.ts';
 import { GlobalStateContext } from '../../global_state/global_state.ts';
 import { useToggleLike } from '../../global_state/comment_hooks.ts';
 import { LoadingSpinner } from '../../components/LoadingSpinner/LoadingSpinner.tsx';
@@ -60,10 +60,8 @@ export default function Threads() {
   const parentComment = parentCommentListNullable ? parentCommentListNullable[0] : null;
 
   const [loading, setLoading] = useState(true);
-  // Fetch comment tree for comment on page load
   useEffect(() => {
     setLoading(true);
-    //fetchCommentTree(commentId!).then(() => setLoading(false));
     if (commentId) {
       fetchCommentTree(commentId!);
     }
@@ -106,8 +104,6 @@ export default function Threads() {
         </Link>
       ) : null;
 
-    //Need this so I can customize each of the classes separately not as one div.
-    // But also made it so all the comments after the 2nd level will have the same way of looking
     let depClasses = '';
     if (level === 1)
       {depClasses = styles.chComm;}
@@ -201,7 +197,6 @@ export default function Threads() {
         {comment.replies?.length > 0 && (
           <div className={styles.showMore}>
             <button onClick={() => togExp(comment.id)} aria-label="Nested Replies">
-              {/*I will change the Icons after this is from google for now */}
               {expanded[comment.id] ? '▼' : '►'}{' '}
               {expanded[comment.id]
                 ? ` Hide replies (${comment.replies.length})`
@@ -218,8 +213,6 @@ export default function Threads() {
     );
   }
 
-  //I need to fast check before anything else to see if the it is null or not
-  //IDK if this is a good way yet?
   if (!parentComment) {
     return <p>Sorry, No Comment found.</p>;
   }

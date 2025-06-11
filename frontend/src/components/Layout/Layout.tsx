@@ -1,4 +1,3 @@
-//this is where the layout will be and including the header and any nvaigation bars please keep it simple and clean
 import { useNavigate, Outlet, useLocation, useParams } from 'react-router-dom'
 import styles from './Layout.module.scss'
 import { useState, useEffect, useContext } from 'react';
@@ -18,12 +17,10 @@ export default function Layout() {
 
   useInitialDataLoad();
 
-  // Init the firebase auth event handler
   useEffect(() => {
     initFirebaseHandler(setUserAuthenticationState);
   }, []);
 
-  // added theme toggle functionality but we will make it more optimized later for this is good enough 
   const [theme, setTheme] = useState<'light'|'dark'>(() => (localStorage.getItem('theme') as 'light'|'dark') || 'light');
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -33,14 +30,11 @@ export default function Layout() {
     setTheme(current => (current === 'light' ? 'dark' : 'light'));
   };
   const [PUserName, setParentUserN] = useState<string | null>(null)
-  // needs to change it once we decide the final way of getting the comments
-  // but for now I think the rough idea is there
   useEffect(() => {
     if (!commentId) {
       setParentUserN(null)
       return
     }
-    // I am loading the parent username using the commentId which is for now mock
     async function loadPUserName() {
       try {
         const comments = await getCommentsMock();
@@ -121,7 +115,6 @@ export default function Layout() {
         )}
       </div>
       <div className={styles.container}>
-        {/* for now this is gonna be just toggle menu but later maybe we can also do hover on side? */}
         <aside className={`${styles.sidebar} ${navigOpen ? styles.open : ''}`}>
           {navigOpen && (
             <button className={styles.navigClose}
@@ -138,7 +131,6 @@ export default function Layout() {
               {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
             </button>
           </div>
-          {/* talked with the team but still thinking about it maybe or maybe not leave this part. */}
           {PUserName && (
             <div className={styles.threadnavigation}>
               <h4 className={styles.threadTitle}>
@@ -146,7 +138,6 @@ export default function Layout() {
               </h4>
             </div>
           )}
-          {/* we as a team decided maybe the side bar will look better then the top so I change it to see how it looks like */}
           <nav className={styles.pageNav}>
             <button className={`${styles.Home} ${location.pathname === '/Home' ? styles.active : ''}`}
               onClick={() => navigate('/Home')}>Home</button>

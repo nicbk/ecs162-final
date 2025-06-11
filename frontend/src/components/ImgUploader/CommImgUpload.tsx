@@ -86,7 +86,6 @@ export const CommImgUpload: React.FC<CommImgUploadmyProp> = ({ onChange, resetCo
                 className={styles.removeBtn}
                 onClick={() => removeImage(i)}
               >
-                {/* for now I will do X but I will change it later no time rn */}
                 X
               </button>
             </div>
