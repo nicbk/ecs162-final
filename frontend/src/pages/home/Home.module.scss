@@ -439,6 +439,41 @@ img{
   color: red;
   margin-top: 0.25rem;
 }
+.stars{
+  display: flex;
+  gap: 2px;
+  .starFilled{
+    color: #FF912C;
+    margin: 1px;
+    font-size: 1.0rem;
+    cursor: pointer;
+    &:hover {
+      transform: scale(1.2);
+      transition: all 0.2s ease-in-out;
+    }
+  }
+  .halfStar{
+    color: #FF912C;
+    margin: 1px;
+    font-size: 1.0rem;
+    cursor: pointer;
+    &:hover {
+      transform: scale(1.2);
+      transition: all 0.2s ease-in-out;
+    }
+  }
+  .emptyStar{
+    color: #FF912C;
+    margin: 1px;
+    font-size: 1.0rem;
+    cursor: pointer;
+    &:hover {
+      transform: scale(1.2);
+      transition: all 0.2s ease-in-out;
+    }
+  }
+}
+
 
 .solo {
   text-align: center;

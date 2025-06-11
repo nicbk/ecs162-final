@@ -2,7 +2,7 @@ import styles from './Home.module.scss';
 import { didUserLikeComment, didUserWishRestaurant, type InputComment, type Restaurant} from '../../interface_data/index.ts';
 import { type Comment } from '../../interface_data/index.ts';
 import mapIcon from '../../assets/map-icon.svg';
-import {FaHeart, FaRegComment, FaShareSquare, FaRegBookmark, FaBookmark} from "react-icons/fa";
+import {FaHeart, FaRegComment, FaShareSquare, FaRegBookmark, FaBookmark, FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import { postComment} from '../../api_data/client.ts';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useContext, useCallback } from 'react';
@@ -18,6 +18,26 @@ import { CommImgUpload } from '../../components/ImgUploader/CommImgUpload.tsx';
 
 const PAGE_SIZE = 10;
 const SCROLL_THRESHOLD = 100;
+
+function StarRating({ ratingofRest }: { ratingofRest: number }) {
+  const roundRating = Math.round(ratingofRest * 2) / 2;
+  const fStarRating = Math.floor(roundRating);
+
+  const HalfStarRating = roundRating - fStarRating === 0.5;
+  const emptyCount = 5 - fStarRating - (HalfStarRating ? 1 : 0);
+  
+  const stars = [];
+  for (let i = 0; i < fStarRating; i++) {
+    stars.push(<FaStar className={styles.starFilled} />);
+  }
+  if (HalfStarRating) {
+    stars.push(<FaStarHalfAlt className={styles.halfStar} />);
+  }
+  for (let i = 0; i < emptyCount; i++) {
+    stars.push(<FaRegStar className={styles.emptyStar} />);
+  }
+  return <div className={styles.stars}>{stars}</div>; 
+}
 
 export default function Home() {
   const globalState = useContext(GlobalStateContext);
@@ -152,7 +172,7 @@ export default function Home() {
                 />
                 <p>{rest.address}</p>
               </div>
-              <p>{rest.rating.toPrecision(2)}</p>
+              <StarRating ratingofRest={rest.rating} />
             </div>
             <div className={styles.cardImage}>
               <ThrottledImage
