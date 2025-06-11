@@ -43,7 +43,7 @@ section button{
   border-radius: 8px;                
   padding: 4px 8px;                  
   cursor: pointer;
-  transition: background 0.15s, border 0.15s;
+  transition: 0.15s, border 0.15s;
   outline: none;
 }
 
@@ -298,7 +298,7 @@ $themes: (
   // max-height: 80%;
 }
 
-:root[data-theme="dark"] .commentsSection, .dropdownMenu {
+:root[data-theme="dark"] .commentsSection, :root[data-theme="dark"] .dropdownMenu {
   background: #2c2c2c;
   box-shadow:  0 0 0 1px rgba(255, 255, 255, 0.1),     
     0 0 8px 0 rgba(255, 255, 255, 0.2);

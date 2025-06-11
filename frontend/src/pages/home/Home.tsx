@@ -19,7 +19,7 @@ import { RateSlide } from '../../components/Slider/RateSlide.tsx';
 
 const DEBOUNCER_DELAY = 2500; // in milliseconds
 
-function StarRating({ ratingofRest }: { ratingofRest: number }) {
+export function StarRating({ ratingofRest }: { ratingofRest: number }) {
   const roundRating = Math.round(ratingofRest * 2) / 2;
   const fStarRating = Math.floor(roundRating);
 
