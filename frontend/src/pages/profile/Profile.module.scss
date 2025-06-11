@@ -139,7 +139,7 @@ section button:active {
   width: 240px;
   margin-top: 8px;
   z-index: 2;
-  background-color: var(--background);
+  background: linear-gradient(135deg, #e8eff3 0%, #b3c6e0 100%);
 }
 
 .wishlistItem {
