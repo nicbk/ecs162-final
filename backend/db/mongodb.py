@@ -394,17 +394,17 @@ class MongoDBInterface():
     def get_restaurant_by_id(self, restaurant_id: str) -> Restaurant:
         '''Get a restaurant by its ID.'''
         with self.transaction_wrapper(self.mongo) as session:
-            restaurant = self.restaurants.find_one({'restaurantId': restaurant_id})
+            restaurant = self.restaurants.find_one({'id': restaurant_id})
             if restaurant is None:
                 return None
 
             unpacked_restaurant = Restaurant(
                 id=restaurant['id'],
                 displayName=restaurant['displayName'],
-                formattedAddress=restaurant['_asdict()'],
+                formattedAddress=restaurant['formattedAddress'],
                 location=restaurant['location'],
                 rating=restaurant['rating'],
-                googleMapsUrl=restaurant['googleMapsUri'],
+                googleMapsUri=restaurant['googleMapsUri'],
                 regularOpeningHours=restaurant.get('regularOpeningHours', {}),
                 priceLevel=restaurant.get('priceLevel', ''),
                 priceRange=restaurant.get('priceRange', {}),
@@ -420,9 +420,12 @@ class MongoDBInterface():
         '''Update a restaurant in the database.'''
         with self.transaction_wrapper(self.mongo) as session:
             # Update the restaurant in the database insert if it does not exist
-            result = self.restaurants.update_one(
-                {'id': restaurant.id},
-                {'$set': {
+            # Check if the restaurant exists
+            existing_restaurant = self.restaurants.find_one({'id': restaurant.id})
+            if existing_restaurant is None:
+                # Insert new restaurant
+                self.restaurants.insert_one({
+                    'id': restaurant.id,
                     'displayName': restaurant.displayName,
                     'formattedAddress': restaurant.formattedAddress,
                     'location': restaurant.location,
@@ -435,11 +438,27 @@ class MongoDBInterface():
                     'delivery': restaurant.delivery,
                     'dineIn': restaurant.dineIn,
                     'images': restaurant.images,
-                }},
-                upsert=True
-            )
-
-            print(f'Updated {result.modified_count} restaurant(s) in the database.')
+                })
+            else:
+                # Update existing restaurant
+                self.restaurants.update_one(
+                    {'id': restaurant.id},
+                    {'$set': {
+                        'displayName': restaurant.displayName,
+                        'formattedAddress': restaurant.formattedAddress,
+                        'location': restaurant.location,
+                        'rating': restaurant.rating,
+                        'googleMapsUri': restaurant.googleMapsUri,
+                        'regularOpeningHours': restaurant.regularOpeningHours,
+                        'priceLevel': restaurant.priceLevel,
+                        'priceRange': restaurant.priceRange,
+                        'takeout': restaurant.takeout,
+                        'delivery': restaurant.delivery,
+                        'dineIn': restaurant.dineIn,
+                        'images': restaurant.images,
+                    }},
+                    upsert=False
+                )
 
     ### MOCK SETUP METHODS #########
     ################################

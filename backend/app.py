@@ -207,42 +207,42 @@ def getRestaurantById(restaurant_id):
     if restaurant_id is None:
         return jsonify({'error': 'restaurantId is required'}), 400
     
-    # # Get restaurant details from the database
-    # restaurantDetails = mongo_instance.get_restaurant_by_id(restaurant_id)
-    # if restaurantDetails is not None:
-    #     return jsonify(restaurantDetails), 200
+    # Get restaurant details from the database
+    restaurantDetails = mongo_instance.get_restaurant_by_id(restaurant_id)
+    if restaurantDetails is not None:
+        return jsonify(restaurantDetails), 200
     
     restaurantDetails = get_restaurant_details(restaurant_id)
 
     if restaurantDetails is None:
         return jsonify({'error': 'Restaurant not found'}), 404
     
-    # # If the restaurant is not found in the database, we can add it to the database
-    # try:
-    #     new_restaurant:Restaurant = Restaurant(
-    #         id=restaurantDetails['restaurantId'],
-    #         displayName=restaurantDetails['restaurantTitle'],
-    #         formattedAddress=restaurantDetails['address'],
-    #         location={
-    #             'latitude': restaurantDetails['latitude'],
-    #             'longitude': restaurantDetails['longitude']
-    #         },
-    #         rating=restaurantDetails['rating'],
-    #         googleMapsUri=restaurantDetails['googleMapsUrl'],
-    #         regularOpeningHours=restaurantDetails.get('regularOpeningHours', {}),
-    #         priceLevel=restaurantDetails.get('priceLevel', 'unknown'),
-    #         priceRange=restaurantDetails.get('priceRange', {}),
-    #         takeout=restaurantDetails.get('takeout', False),
-    #         delivery=restaurantDetails.get('delivery', False),
-    #         dineIn=restaurantDetails.get('dineIn', False),
-    #         images=restaurantDetails.get('images', [])
-    #     )
+    # If the restaurant is not found in the database, we can add it to the database
+    try:
+        new_restaurant:Restaurant = Restaurant(
+            id=restaurantDetails['id'],
+            displayName=restaurantDetails['displayName'],
+            formattedAddress=restaurantDetails['formattedAddress'],
+            location={
+                'latitude': restaurantDetails['location']['latitude'],
+                'longitude': restaurantDetails['location']['longitude']
+            },
+            rating=restaurantDetails['rating'],
+            googleMapsUri=restaurantDetails['googleMapsUri'],
+            regularOpeningHours=restaurantDetails.get('regularOpeningHours', {}),
+            priceLevel=restaurantDetails.get('priceLevel', 'PRICE_LEVEL_UNKNOWN'),
+            priceRange=restaurantDetails.get('priceRange', {}),
+            takeout=restaurantDetails.get('takeout', False),
+            delivery=restaurantDetails.get('delivery', False),
+            dineIn=restaurantDetails.get('dineIn', False),
+            images=restaurantDetails.get('images', [])
+        )
 
-    #     mongo_instance.update_restaurant(restaurantDetails)
-    # except Exception as e:
-    #     return jsonify({'error': str(e)}), 500
+        mongo_instance.update_restaurant(new_restaurant)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-    return restaurantDetails
+    return jsonify(restaurantDetails), 200
 
 #Gets a comment, as well as all nested replies for that comment.
 @app.route('/api/v1/comment/<string:comment_id>', methods=['GET'])
