@@ -4,8 +4,8 @@ import { useContext, useEffect, useState } from "react";
 import defaultAvatar from '../../assets/default-avatar.png';
 import food from '../../assets/food.jpg';
 import placeholder from '../../assets/image2vector.svg';
-import { isCommentTopLevel, type CommentId, type Comment } from '../../interface_data/index.ts';
-import { addLike, deleteComment, removeLike, getCommentTree } from '../../api_data/client.ts'
+import { isCommentTopLevel, type CommentId, type Comment, type Restaurant, type GoogleApiRestaurantResponse } from '../../interface_data/index.ts';
+import { addLike, deleteComment, removeLike, getCommentTree, getRestaurantById } from '../../api_data/client.ts'
 import { type User } from '../../interface_data/index.ts';
 import { useNavigate } from 'react-router-dom';
 import { FaHeart, FaComment, FaChevronDown} from "react-icons/fa";
@@ -36,7 +36,10 @@ const Profile = () => {
   const [isFetched, setIsFetched] = useState(false);
   const [wishlistOpen, setWishlistOpen] = useState(false);
   const [refreshLikes, setRefreshLikes] = useState(0);
-  const [replies, setReplies] = useState<Post[]>([]);
+  const [replies, setReplies] = useState<Post[]>([]); 
+  const [restaurants, setRestaurants] = useState<GoogleApiRestaurantResponse[]>([]);
+
+
   // console.log(userAuthenticationState)
 
   const navigate = useNavigate();
@@ -52,6 +55,22 @@ const Profile = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const wishlistIds = useWishListRestaurants();
+
+  useEffect(() => {
+    if (wishlistIds && wishlistIds.length > 0) {
+      Promise.all(
+        wishlistIds.map(id => getRestaurantById(id))
+      )
+      .then(results => {
+        setRestaurants(results);
+      });
+    } 
+    else {
+      setRestaurants([]);
+    }
+  }, [wishlistIds]);
 
   const user = globalState!.userAuthState[0] as User;
 
@@ -168,7 +187,7 @@ const Profile = () => {
   const tablet = width < 1200 && width >= 768;
   const mobile = width < 768;
 
-  const wishlist = useWishListRestaurants();
+ 
 
 //   const wishlist: Restaurant[] = [
 //   {
@@ -205,16 +224,16 @@ const Profile = () => {
                 </button>
                 {wishlistOpen && (
                   <div className={styles.dropdownMenu}>
-                    {wishlist.length > 0 ? (
-                      wishlist.map(restaurant => (
-                        <div className={styles.wishlistItem}>
-                          <span>{restaurant}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <div style={{padding: '8px 16px'}}>Your wishlist is empty!</div>
-                    )}
-                  </div>
+                  {restaurants.length > 0 ? (
+                    restaurants.map(restaurant => (
+                      <div key={restaurant.id} className={styles.wishlistItem}>
+                        <span>{restaurant.displayName}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div style={{padding: '8px 16px'}}>Your wishlist is empty!</div>
+                  )}
+                </div>
                 )}
               </div>
             </div>
