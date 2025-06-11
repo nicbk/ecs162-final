@@ -34,7 +34,7 @@ const Profile = () => {
   const [userAuthenticationState, setUserAuthenticationState] = globalState!.userAuthState;
   const [isFetched, setIsFetched] = useState(false);
   const [wishlistOpen, setWishlistOpen] = useState(false);
-  console.log(userAuthenticationState)
+  console.log('usreauth', userAuthenticationState)
 
   const navigate = useNavigate();
 

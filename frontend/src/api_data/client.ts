@@ -78,7 +78,8 @@ export const postComment = async (newComment: InputComment, parentResourceId: st
  * @param radius radius in meters to search within
  * @returns promise for when data is retrieved from backend
  */
-export const getRestaurants = async (latitude: number, longitude: number, limit: number = 5, radius: number = 10000) => {
+export const RESTAURANTS_FETCH_LIMIT = 3300;
+export const getRestaurants = async (latitude: number, longitude: number, limit: number = 5, radius: number = RESTAURANTS_FETCH_LIMIT) => {
   const urlParams = new URLSearchParams({
     latitude: latitude.toString(),
     longitude: longitude.toString(),
