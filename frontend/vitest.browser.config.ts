@@ -12,11 +12,31 @@ export default defineConfig(({ mode }) => {
   return {
     // vite config: Edited with help of https://github.com/vitest-dev/vitest-browser-react?tab=readme-ov-file#vitest-browser-react
     plugins: [react()],
+
+    //Server proxy for browser tests (similar to the defineConfig within vite.config.ts)
+    server: {
+      proxy: {
+        '/api': {
+          target: 'http://backend:8000',
+          changeOrigin: true,
+          secure: false,
+          configure: (proxy, _options) => {
+            proxy.on('proxyReq', (_proxyReq, req, _res) => {
+              console.log ('Browser test proxying request:', req.url) // For debugging since no UI for headless docker testing
+            })
+            proxy.on('error', (err, req, res) => {
+              console.log('Browser test proxy error:', err.message)
+            })
+          }
+        }
+      }
+    },
     test: {
       setupFiles: ['./setup-file.ts'],
       browser: {
         enabled: true,
         provider: 'playwright',
+        headless: true, //For docker, makes it so no ui with browser testing
         instances: [
           { browser: 'chromium' },
         ],
@@ -29,10 +49,12 @@ export default defineConfig(({ mode }) => {
         '**/vite-env.d.ts',
         '**/helpers.ts', // Implicitly tested
         '**/client.ts', //Implicitly tested
+        '**/cache_hooks.ts',
        ]
       },
       env: {
-        VITE_GOOGLE_FIREBASE_API_KEY: env.VITE_GOOGLE_FIREBASE_API_KEY
+        VITE_GOOGLE_FIREBASE_API_KEY: env.VITE_GOOGLE_FIREBASE_API_KEY,
+        GOOGLE_API_KEY: env.GOOGLE_API_KEY
       }
     },
   }
