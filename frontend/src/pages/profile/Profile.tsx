@@ -43,8 +43,13 @@ const Profile = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const wishlistIds = useWishListRestaurants();
-
+  let wishlistIds: string[] = [];
+  try {
+    wishlistIds = useWishListRestaurants();
+  } catch (error) {
+    navigate('/Home');
+  }
+  
   useEffect(() => {
     if (wishlistIds.length > 0) {
       Promise.all(
@@ -84,7 +89,7 @@ const Profile = () => {
     } else {
       setLoading(false);
     }
-  }, [user.username, user.comments.length]); 
+  }, [user.username, user.comments]); 
 
   function countReplies(comment: Post){
     let count = 0;
@@ -183,7 +188,12 @@ const Profile = () => {
                   {restaurants.length > 0 ? (
                     restaurants.map(restaurant => (
                       <div key={restaurant.id} className={styles.wishlistItem}>
-                        <span>{restaurant.displayName}</span>
+                        <span
+                          onClick={() => {
+                            globalState!.globalCache[0].selectedRestaurantId = restaurant.id;
+                            navigate(`/Restaurant`);
+                          }}
+                        >{restaurant.displayName}</span>
                       </div>
                     ))
                   ) : (

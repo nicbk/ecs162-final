@@ -62,7 +62,7 @@ export default function Restaurant() {
           <p>Dine In: {boolTickCross(restaurant.dineIn)}</p>
         </div>
         <p>Price Level: {getPriceLevelText(restaurant.priceLevel)}</p>
-        <p>{getOpeningHoursText(restaurant.regularOpeningHours)}</p>
+        {getOpeningHoursText(restaurant.regularOpeningHours)}
       </div>
       <div className={styles.images}>
         {restaurant.images.map((image, index) => (

@@ -93,10 +93,8 @@ def get_restaurant_details(restaurant_id: str) -> Any:
     restaurant['images'] = list(map(lambda image_obj: get_image(image_obj['name']), restaurant['photos'][:6]))
     restaurant['displayName'] = restaurant['displayName']['text']
 
-    print("\n\n\nRequesting Google Data")
 
-
-    return jsonify(restaurant), 200
+    return restaurant
 
 '''
 {
