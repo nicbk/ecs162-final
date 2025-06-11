@@ -2,10 +2,9 @@
 import styles from './Profile.module.scss';
 import { useContext, useEffect, useState } from "react";
 import defaultAvatar from '../../assets/default-avatar.png';
-import food from '../../assets/food.jpg';
 import placeholder from '../../assets/image2vector.svg';
-import { isCommentTopLevel, type CommentId, type Comment, type Restaurant, type GoogleApiRestaurantResponse } from '../../interface_data/index.ts';
-import { addLike, deleteComment, removeLike, getCommentTree, getRestaurantById } from '../../api_data/client.ts'
+import { isCommentTopLevel, type CommentId, type Comment, type GoogleApiRestaurantResponse } from '../../interface_data/index.ts';
+import { deleteComment, getCommentTree, getRestaurantById } from '../../api_data/client.ts'
 import { type User } from '../../interface_data/index.ts';
 import { useNavigate } from 'react-router-dom';
 import { FaHeart, FaComment, FaChevronDown} from "react-icons/fa";
@@ -18,11 +17,8 @@ interface Post extends Comment{
   totalReplies?: number;
 }
 
-const mockPosts: Post[] = [];
-
 
 const Profile = () => {
-  console.log('Component rendering');
   const [loading, setLoading] = useState(true);
   const [posts, setImagePosts] = useState<Post[]>([]);
   const [username, setUsername] = useState("tempuser");
@@ -38,9 +34,6 @@ const Profile = () => {
   const [refreshLikes, setRefreshLikes] = useState(0);
   const [replies, setReplies] = useState<Post[]>([]); 
   const [restaurants, setRestaurants] = useState<GoogleApiRestaurantResponse[]>([]);
-
-
-  // console.log(userAuthenticationState)
 
   const navigate = useNavigate();
   const toggleLikes = useToggleLike();
@@ -75,11 +68,8 @@ const Profile = () => {
   const user = globalState!.userAuthState[0] as User;
 
   useEffect(() => {
-    console.log('fetching user data');
     setUsername(user.username);
-    console.log('name changed to', user.username);
     setBio(user.bio || "");
-    console.log('bio changed to', user.bio);
     setProfileImage(user.profileImage || defaultAvatar); 
     if (user.comments && user.comments.length > 0){
       const fetchComments = async () => {
@@ -150,7 +140,6 @@ const Profile = () => {
                 <span className={styles.likeCount}>
                   <button className={styles.likeButton} onClick={() => {
                     toggleLikes(parentId, reply.id);
-                    console.log('toggling like');
                   }}>
                     <FaHeart size=".9rem"/>
                     </button>
