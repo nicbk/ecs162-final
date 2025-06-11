@@ -90,7 +90,7 @@ def get_restaurant_details(restaurant_id: str) -> Any:
         return jsonify({'error': 'Restaurant not found'}), 404
     
     restaurant = google_response.json()
-    restaurant['images'] = list(map(lambda image_obj: get_image(image_obj['name']), restaurant['photos'][:GOOGLE_PLACE_IMAGES_LIMIT]))
+    restaurant['images'] = list(map(lambda image_obj: get_image(image_obj['name']), restaurant['photos'][:6]))
     restaurant['displayName'] = restaurant['displayName']['text']
 
     print("\n\n\nRequesting Google Data")
