@@ -10,6 +10,11 @@ export interface GPSCoordinates {
     longitude: number;
 };
 
+export interface LazyLoadOffset {
+    offsetX: -1 | 0 | 1,
+    offsetY: -1 | 0 | 1 | 2
+};
+
 export interface GlobalCache {
     restaurants: Record<string, Restaurant>;
     comments: Record<string, Comment>;
@@ -23,6 +28,7 @@ export interface GlobalStateProps {
     userLocationState: [GPSCoordinatesNullable, Dispatch<SetStateAction<GPSCoordinatesNullable>>];
     userAuthState: [UserAuthState, Dispatch<SetStateAction<UserAuthState>>];
     globalCache: [GlobalCache, Dispatch<SetStateAction<GlobalCache>>];
+    lazyLoadOffset: [LazyLoadOffset, Dispatch<SetStateAction<LazyLoadOffset>>];
 };
 
 export const GlobalStateContext = createContext<GlobalStateProps | null>(null);

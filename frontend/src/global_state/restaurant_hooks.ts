@@ -4,8 +4,6 @@ import { getRestaurants } from "../api_data/client";
 import type { Restaurant } from "../interface_data";
 import { useUpdateRestaurants } from "./cache_hooks";
 
-export type LoadRestaurantPos = -1 | 0 | 1 | 2;
-
 export const metersToDegrees = (meters: number) => {
   // https://stackoverflow.com/questions/7477003/calculating-new-longitude-latitude-from-old-n-meters
   // Number of meters in a GPS coordinate degree
@@ -16,14 +14,15 @@ export const degreesToMeters = (degrees: number) => {
   return degrees / 11320;
 };
 
-const DEFAULT_CIRCLE_NUM_RESTAURANTS = 20;
-const DEBOUNCER_DELAY = 2500; // in milliseconds
+const DEFAULT_CIRCLE_NUM_RESTAURANTS = 5;
+const DEBOUNCER_DELAY = 3000; // in milliseconds
 
 export const useRestaurantLazyLoad = (radiusMeters: number): [boolean, () => Promise<any>] => {
-  const [xOffset, setXOffset] = useState<LoadRestaurantPos>(-1);
-  const [yOffset, setYOffset] = useState<LoadRestaurantPos>(-1);
+  const [offset, setOffset] = useContext(GlobalStateContext)!.lazyLoadOffset;
   const updateRestaurants = useUpdateRestaurants();
   const userPosition = useContext(GlobalStateContext)!.userLocationState[0];
+  console.log('x: ', offset.offsetX);
+  console.log('y: ', offset.offsetY)
 
   const updateNextRestaurants = async () => {
     console.log('initial')
@@ -32,8 +31,8 @@ export const useRestaurantLazyLoad = (radiusMeters: number): [boolean, () => Pro
       return;
     }
 
-    let localXOffset = xOffset;
-    let localYOffset = yOffset; 
+    let localXOffset = offset.offsetX;
+    let localYOffset = offset.offsetY; 
     let circleRestaurants: Restaurant[] = [];
     console.log('retrieving user stuff')
 
@@ -43,6 +42,7 @@ export const useRestaurantLazyLoad = (radiusMeters: number): [boolean, () => Pro
       const degreesXNew = userPosition!.latitude + 2*radiusDegrees*localXOffset;
       const degreesYNew = userPosition!.longitude + 2*radiusDegrees*localYOffset;
 
+      console.log('new one')
       circleRestaurants = circleRestaurants.concat(await getRestaurants(degreesXNew, degreesYNew, DEFAULT_CIRCLE_NUM_RESTAURANTS, radiusMeters));
 
       if (localXOffset < 1) {
@@ -55,11 +55,13 @@ export const useRestaurantLazyLoad = (radiusMeters: number): [boolean, () => Pro
 
     updateRestaurants(circleRestaurants);
 
-    setXOffset(localXOffset);
-    setYOffset(localYOffset);
+    setOffset({
+      offsetX: localXOffset,
+      offsetY: localYOffset
+    });
   };
 
-  const isEndOfList = yOffset === 2;
+  const isEndOfList = offset.offsetY === 2;
 
   return [isEndOfList, updateNextRestaurants];
 };
@@ -67,16 +69,16 @@ export const useRestaurantLazyLoad = (radiusMeters: number): [boolean, () => Pro
 // Realtime-based debouncer that can be used with scroll event
 // https://www.sitepoint.com/throttle-scroll-events/
 export const useDebounce = (delay: number) => {
-  const timeout = useRef<number>(new Date().getMilliseconds());
+  const timeout = useRef<number>(Date.now());
 
   const debouncer = async (callback: () => Promise<any>) => {
-    const currTime = new Date().getMilliseconds();
+    const currTime = Date.now();
 
     if (currTime < timeout.current) {
       return;
     }
 
-    timeout.current = new Date().getMilliseconds() + delay;
+    timeout.current = Date.now() + delay;
     return await callback();
   };
 

@@ -78,8 +78,13 @@ export default function Home() {
   useEffect(() => {
     const PAGE_BOTTOM_TRIGGER_OFFSET = 300; // units in CSS pixels
     // Here we borrow code from Nicolas and Andrew's HW3 for lazyloading when the mouse scroll reaches near the bottom of the body height
+    // console.log('here1')
+    // console.log(isLoading)
+    // console.log(isEndOfLoad)
+    // console.log('here2')
     const onScrollBottom = async () => {
       if (userLocation && !isLoading && !isEndOfLoad && window.innerHeight + window.scrollY >= document.body.scrollHeight - PAGE_BOTTOM_TRIGGER_OFFSET) {
+        console.log('triggered')
         scrollDebouncer(async () => {
           setIsLoading(true);
           await fetchNextRestaurants();
@@ -90,7 +95,7 @@ export default function Home() {
 
     window.addEventListener('scroll', onScrollBottom);
     return () => window.removeEventListener('scroll', onScrollBottom);
-  }, [fetchNextRestaurants]);
+  }, [fetchNextRestaurants, isLoading, isEndOfLoad, userLocation]);
 
   const firstLayerForActive = activeRest
     ? comments.filter((comm: Comment) => comm.parentId === activeRest.restaurantId)
