@@ -1,3 +1,11 @@
+
+## To run the Foodie website please get the follow done
+- The google api key and put it in your .env file
+- The firebase api key from firebase
+- Add the port number
+- Set the mongoDB
+- Run the docker using the run-dev.sh script
+
 ## Running the unit tests
 
 We went with playwright and vitest browser in writing our unit tests so that we
