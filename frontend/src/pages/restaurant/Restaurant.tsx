@@ -61,7 +61,12 @@ export default function Restaurant() {
           <p>Delivery: {boolTickCross(restaurant.delivery)}</p>
           <p>Dine In: {boolTickCross(restaurant.dineIn)}</p>
         </div>
-        <p>Price Level: {getPriceLevelText(restaurant.priceLevel)}</p>
+        <div className={styles.priceLevels}>
+          <p>{getPriceLevelText(restaurant.priceLevel)}</p>
+          <span className={styles.priceLevelGap}>•</span>
+          <p>{getPriceRangeText(restaurant.priceRange)}</p>
+        </div>
+        
         {getOpeningHoursText(restaurant.regularOpeningHours)}
       </div>
       <div className={styles.images}>
@@ -83,19 +88,23 @@ const getPriceLevelText = (priceLevel: PriceLevel) => {
     case 'PRICE_LEVEL_FREE':
       return 'Free';
     case 'PRICE_LEVEL_INEXPENSIVE':
-      return '$';
+      return <span style={{ color: 'green' }}>$</span>;
     case 'PRICE_LEVEL_MODERATE':
-      return '$$';
+      return <span style={{ color: '#fdfd33'}}>$$</span>;
     case 'PRICE_LEVEL_EXPENSIVE':
-      return '$$$';
+      return <span style={{ color: '#EFAB35' }}>$$$</span>;
     case 'PRICE_LEVEL_VERY_EXPENSIVE':
-      return '$$$$';
+      return <span style={{ color: '#F6291A' }}>$$$$</span>;
     default:
       return 'Unknown Price Level';
   }
 }
 
 const todaysOpeningHours = (todaysHours: Object) => {
+  if (!todaysHours || Object.keys(todaysHours).length === 0) {
+    return 'No opening hours available for today';
+  }
+
   const openTime = (todaysHours as any).open;
   const closeTime = (todaysHours as any).close;
 
@@ -138,4 +147,17 @@ const getOpeningHoursText = (openingHours: Object) => {
     </div>
 
   );
+}
+
+const getPriceRangeText = (priceRange: Object) => {
+  if (!priceRange || Object.keys(priceRange).length === 0) {
+    return 'No price range available';
+  }
+
+  console.log(priceRange);
+
+  const startPrice = (priceRange as any).startPrice.units;
+  const endPrice = (priceRange as any).endPrice.units;
+
+  return `$${startPrice} - $${endPrice}`;
 }

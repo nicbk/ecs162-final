@@ -9,6 +9,7 @@ import { GlobalStateContext } from '../../global_state/global_state.ts';
 import { useToggleLike } from '../../global_state/comment_hooks.ts';
 import { LoadingSpinner } from '../../components/LoadingSpinner/LoadingSpinner.tsx';
 import { CommImgUpload } from '../../components/ImgUploader/CommImgUpload.tsx';
+import { useFetchUser } from '../../global_state/user_hooks.ts';
 
 const flattenComment = (comment: Comment | null, depth = 0): Comment[] | null => {
   if (!comment) {
@@ -58,6 +59,7 @@ export default function Threads() {
   const fetchCommentTree = useFetchCommentTree();
   const parentCommentListNullable = flattenComment(useThread(commentId || null));
   const parentComment = parentCommentListNullable ? parentCommentListNullable[0] : null;
+  const refetchUser = useFetchUser();
 
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -88,6 +90,7 @@ export default function Threads() {
     const newComment: InputComment = { body, rating: NaN, images };
     await postComment(newComment, parentId);
     await fetchCommentTree(commentId!);
+    refetchUser();
     setReplyText(pre => ({ ...pre, [parentId]: '' }));
     onCancel(pre => ({ ...pre, [parentId]: false }));
   };

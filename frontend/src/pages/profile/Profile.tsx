@@ -28,6 +28,7 @@ const Profile = () => {
   const  globalState = useContext(GlobalStateContext)
   const [wishlistOpen, setWishlistOpen] = useState(false);
   const [restaurants, setRestaurants] = useState<GoogleApiRestaurantResponse[]>([]);
+  const commentMap = useContext(GlobalStateContext)!.globalCache[0].comments;
 
   const navigate = useNavigate();
   const toggleLikes = useToggleLike();
@@ -73,7 +74,14 @@ const Profile = () => {
     if (user.comments?.length){
       (async () => {
         try {
-          const comments = await Promise.all(user.comments.map((cid: CommentId) => getCommentTree(cid)));
+          //const comments = await Promise.all(user.comments.map((cid: CommentId) => getCommentTree(cid)));
+          const comments = await Promise.all(user.comments.map((cid: CommentId) => {
+            if (cid in commentMap) {
+              return commentMap[cid];
+            } else {
+              return getCommentTree(cid);
+            }
+          }));
           const topLevelComments = comments.filter(comment => isCommentTopLevel(comment) && !comment.deleted);
         setImagePosts(topLevelComments.map(comment => ({
             ...comment,
