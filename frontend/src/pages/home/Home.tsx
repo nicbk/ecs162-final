@@ -149,7 +149,14 @@ export default function Home() {
                   selectRestaurantToView(rest.restaurantId);
                   navigate(`/Restaurant`);
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.cursor = 'pointer'}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.cursor = 'pointer'
+                  e.currentTarget.style.textDecoration = 'underline';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.cursor = 'default';
+                  e.currentTarget.style.textDecoration = 'none';
+                }}
                 >
                 <h2>{rest.restaurantTitle}</h2>
               </div>
