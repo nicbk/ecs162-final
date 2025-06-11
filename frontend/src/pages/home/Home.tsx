@@ -291,7 +291,7 @@ function CommentingPost({
 
                 <div className={styles.commentHeader}>
                   <strong>{comm.username}</strong>
-                  {comm.rating !== undefined && (<div className={styles.commentRating}> <p>{comm.rating}</p></div>)}
+                  {comm.rating !== undefined && (<div className={styles.commentRating}> <p className={styles.rating}>{comm.rating}</p></div>)}
                 </div>
 
                 <div className={styles.description}>

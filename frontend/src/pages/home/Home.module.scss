@@ -334,19 +334,25 @@ img{
 
 .commentHeader {
   display: flex;
-  margin: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px;
+  margin: 5px;
   font-size: 1.5rem;
-  margin: auto;
   width: 100%;
+  .rating{
+    padding-right: 10px;
+    margin-right: 10px;
+  }
 }
 .description {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  margin: auto;
+  flex-direction: row;
+  justify-content: flex-start;
+  padding: 5px;
+  margin: 5px;
   width: 100%;
-  font-size: 1.25rem;
+  font-size: auto;
 }
 .commentimgs {
   display: flex;
