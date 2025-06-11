@@ -1,4 +1,5 @@
 import Home from './pages/home/Home';
+import Restaurant from './pages/restaurant/Restaurant';
 import Layout from './components/Layout/Layout';
 import { Routes, Route } from 'react-router-dom'
 import Profile from './pages/profile/Profile';
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/SocialMedia" element={<SocialMedia/>} />
           <Route path="/threads/:commentId" element={<Threads />} />
           <Route path="/Home/:restaurantId?" element={<Home />} />
+          <Route path="/Restaurant/" element={<Restaurant />} />
           <Route path="404" element={<div><strong>COMING SOON!!! FOR NOW WORKING ON HOMEPAGE</strong></div>} />
         </Route>
       </Routes>

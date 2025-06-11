@@ -19,6 +19,7 @@ export interface GlobalCache {
     restaurants: Record<string, Restaurant>;
     comments: Record<string, Comment>;
     wishList: string[];
+    selectedRestaurantId?: string; // Optional, used to store the currently selected restaurant ID
 };
 
 export type GPSCoordinatesNullable = GPSCoordinates | null;

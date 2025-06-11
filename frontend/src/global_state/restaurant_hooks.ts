@@ -84,3 +84,32 @@ export const useDebounce = (delay: number) => {
 
   return debouncer;
 }
+
+export const useSelectedRestaurant = () => {
+  const globalState = useContext(GlobalStateContext);
+  if (!globalState) {
+    throw new Error("GlobalStateContext is not available");
+  }
+
+  const [globalCache, setGlobalCache] = globalState.globalCache;
+
+  const selectRestaurantToView = (restaurantId: string) => {
+    if (!restaurantId) {
+      console.error("Invalid restaurant ID provided");
+      return;
+    }
+
+    // Check if the restaurant exists in the cache
+    if (!globalCache.restaurants[restaurantId]) {
+      console.warn(`Restaurant with ID ${restaurantId} not found in cache`);
+      return;
+    }
+
+    setGlobalCache((prevCache) => ({
+      ...prevCache,
+      selectedRestaurantId: restaurantId
+    }));
+  }
+
+  return selectRestaurantToView;
+}

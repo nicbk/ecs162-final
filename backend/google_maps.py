@@ -81,7 +81,7 @@ def get_restaurant_details(restaurant_id: str) -> Any:
     headers = {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': GOOGLE_API_KEY,
-        'X-Goog-FieldMask': 'id,displayName,photos,formattedAddress,location,priceRange,priceLevel,regularOpeningHours,delivery,takeout,dineIn,rating'
+        'X-Goog-FieldMask': 'id,displayName,photos,formattedAddress,location,priceRange,priceLevel,regularOpeningHours,delivery,takeout,dineIn,rating,googleMapsUri'
     }
 
     google_response = requests.get(url, headers=headers)
@@ -91,6 +91,7 @@ def get_restaurant_details(restaurant_id: str) -> Any:
     
     restaurant = google_response.json()
     restaurant['images'] = list(map(lambda image_obj: get_image(image_obj['name']), restaurant['photos'][:GOOGLE_PLACE_IMAGES_LIMIT]))
+    restaurant['displayName'] = restaurant['displayName']['text']
 
     print("\n\n\nRequesting Google Data")
 

@@ -15,7 +15,7 @@ import { getRestaurants } from '../../api_data/client.ts';
 import { useToggleLike } from '../../global_state/comment_hooks.ts';
 import { useToggleWish } from '../../global_state/wishlist_hooks.ts';
 import { CommImgUpload } from '../../components/ImgUploader/CommImgUpload.tsx';
-import { useDebounce, useRestaurantLazyLoad } from '../../global_state/restaurant_hooks.ts';
+import { useDebounce, useRestaurantLazyLoad, useSelectedRestaurant } from '../../global_state/restaurant_hooks.ts';
 
 const PAGE_SIZE = 10;
 const SCROLL_THRESHOLD = 100;
@@ -51,6 +51,8 @@ export default function Home() {
   const toggleLike = useToggleLike();
   const toggleWish = useToggleWish();
   const [restaurants, setRestaurants] = useRestaurants();
+  const selectRestaurantToView = useSelectedRestaurant();
+  const navigate = useNavigate();
   const updateRestaurants = useUpdateRestaurants();
   const comments = useComments()[0];
   const [activeRest, setActiveRest] = useState<Restaurant | null>(null)
@@ -97,6 +99,8 @@ export default function Home() {
     return () => window.removeEventListener('scroll', onScrollBottom);
   }, [fetchNextRestaurants, isLoading, isEndOfLoad, userLocation]);
 
+
+
   const firstLayerForActive = activeRest
     ? comments.filter((comm: Comment) => comm.parentId === activeRest.restaurantId)
     : [];
@@ -141,7 +145,13 @@ export default function Home() {
         {restaurants.map(rest => (
           <div id={rest.restaurantId} className={styles.card} key={rest.restaurantId}>
             <div className={styles.post}>
-              <div className={styles.cardHeader}>
+              <div className={styles.cardHeader}
+                onClick={() => {
+                  selectRestaurantToView(rest.restaurantId);
+                  navigate(`/Restaurant`);
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.cursor = 'pointer'}
+                >
                 <h2>{rest.restaurantTitle}</h2>
               </div>
               <div className={styles.cardBody}>

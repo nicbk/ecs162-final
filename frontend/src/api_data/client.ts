@@ -1,4 +1,4 @@
-import type { Restaurant, Comment, User, InputComment } from '../interface_data/index.ts';
+import type { Restaurant, Comment, User, InputComment, GoogleApiRestaurantResponse } from '../interface_data/index.ts';
 import { mockResturantsData, mockPublish } from './mock_data'
 
 // Mock data retrieval so that frontend still works disconnected from server
@@ -96,7 +96,7 @@ export const getRestaurants = async (latitude: number, longitude: number, limit:
  * @returns promise for when data is retrieved from backend
  */
 export const getRestaurantById = async (restaurantId: string) => {
-  return await fetchAPI<Restaurant>(`restaurant/${restaurantId}`);
+  return await fetchAPI<GoogleApiRestaurantResponse>(`restaurant/${restaurantId}`);
 }
 
 /*

@@ -1,0 +1,45 @@
+p {
+  font-size: 18px;
+}
+
+.restaurantContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+}
+
+.restaurantDetails {
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 10px;
+}
+
+.restaurantTitle{
+  display: flex;
+  flex-direction: row;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.restaurantFoodOptions {
+  width: 100%;
+  max-width: 800px;
+  margin: 10px 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+ img.mapIcon {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  max-width: 30px;
+  max-height: 30px;
+  padding: 5px;
+  margin: 5px;
+  border-radius: 50%;
+}

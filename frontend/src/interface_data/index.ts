@@ -1,11 +1,20 @@
 //This wil be used for the data interfaces and also fields that we will get from the backend for now it is all mock data
 
+import { useNavigate } from "react-router-dom";
 import { getLoggedInUser } from "../api_data/client";
 import type { UserAuthState } from "../global_state/global_state";
 
 export type Base64Data = string; // example: [ 'data:image/jpeg;base64,sdifjaijewfijaisefjawje9fja8wjef...', 'data:image/jpeg;base64,aifwjwjefijaweifjaiwejf' ]
 export type CommentId = string; // UUID of a comment
 export type RestaurantId = string; // UUID of a restaurant
+
+// Price Levels https://googlemaps.github.io/google-maps-services-java/v0.1.17/javadoc/com/google/maps/model/PriceLevel.html
+export type PriceLevel =
+    | 'PRICE_LEVEL_FREE'
+    | 'PRICE_LEVEL_INEXPENSIVE'
+    | 'PRICE_LEVEL_MODERATE'
+    | 'PRICE_LEVEL_EXPENSIVE'
+    | 'PRICE_LEVEL_VERY_EXPENSIVE';
 
 export interface Restaurant {
     restaurantId: string;
@@ -15,6 +24,23 @@ export interface Restaurant {
     images: Base64Data[];
     googleMapsUrl: string;
 }
+
+export interface GoogleApiRestaurantResponse {
+    id: string;
+    displayName: string;
+    formattedAddress: string;
+    location: Object;
+    rating: number;
+    googleMapsUri: string;
+    regularOpeningHours: Object;
+    priceLevel: PriceLevel;
+    priceRange: Object;
+    takeout: boolean
+    delivery: boolean;
+    dineIn: boolean;
+    images: Base64Data[];
+}
+
 
 export interface Comment { 
     id: string;

@@ -467,12 +467,12 @@ class MongoDBInterface():
 
         for restaurant in restaurants:
             restaurant_data = {
-                'restaurantId': restaurant.restaurantId,
-                'restaurantTitle': restaurant.restaurantTitle,
+                'id': restaurant.id,
+                'displayName': restaurant.displayName,
                 'rating': restaurant.rating,
-                'address': restaurant.address,
+                'formattedAddress': restaurant.formattedAddress,
                 'images': restaurant.images,
-                'googleMapsUrl': restaurant.googleMapsUrl,
+                'googleMapsUri': restaurant.googleMapsUri,
             }
             self.restaurants.insert_one(restaurant_data)
 
