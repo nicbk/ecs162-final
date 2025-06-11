@@ -137,109 +137,110 @@ export default function Home() {
 
   return (
     <div className={styles.homeLoadingContainer}>
-    <div className={styles.home}>
-      {restaurants.map(rest => (
-        <div id={rest.restaurantId} className={styles.card} key={rest.restaurantId}>
-          <div className={styles.post}>
-            <div className={styles.cardHeader}>
-              <h2>{rest.restaurantTitle}</h2>
-            </div>
-            <div className={styles.cardBody}>
-              <div className={styles.address}>
-                <img
-                  src={mapIcon}
-                  alt="Map Icon"
-                  className={styles.mapIcon}
-                />
-                <p>{rest.address}</p>
+      <div className={styles.home}>
+        {restaurants.map(rest => (
+          <div id={rest.restaurantId} className={styles.card} key={rest.restaurantId}>
+            <div className={styles.post}>
+              <div className={styles.cardHeader}>
+                <h2>{rest.restaurantTitle}</h2>
               </div>
-              <StarRating ratingofRest={rest.rating} />
-            </div>
-            <div className={styles.cardImage}>
-              <ThrottledImage
-                src={rest.images[0]}
-                alt="Card Image"
-              />
-            </div>
-            <div className={styles.cardFooter}>
-              <span
-                className={`${styles.wishIcon} ${didUserWishRestaurant(userAuthState, rest.restaurantId) ? styles.wishedIcon : ''}`}
-                onClick={() => toggleWish(rest.restaurantId)}
-                role="button"
-                aria-label={didUserWishRestaurant(userAuthState, rest.restaurantId) ? "Remove wishlist" : "Add wishlist"}
-              >
-                {didUserWishRestaurant(userAuthState, rest.restaurantId) ? <FaBookmark /> : <FaRegBookmark />}
-              </span>
-
-                <span
-                  className={styles.commentIcon}
-                  onClick={() => openModal(rest)}
-                  role="button"
-                  aria-label="Comment"
-                >
-                  <FaRegComment />
-                </span>
-
-                <span
-                  className={styles.shareIcon}
-                  onClick={() => openShareModal(rest)}
-                  role="button"
-                  aria-label="Share"
-                >
-                  <FaShareSquare />
-                </span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      {/*loadMorePost && <div className={styles.loadMorePost}>Loading more...</div>*/}
-      {isLoading && <LoadingSpinner />}
-
-      {activeRest && popupType && (
-        <div className={styles.popupOverlay} onClick={closeModal}>
-          <div
-            className={styles.popupBody}
-            onClick={(event) => event.stopPropagation()}
-          >
-            {popupType === 'share' && (
-              <>
-                <h3>
-                Share {activeRest.restaurantTitle}
-                </h3>
-                <div className={styles.popupBoxBody}>
-                  <p>Either copy and paste this to a new link or click the copy button to copy it to your clipboard:</p>
-                  <input className={styles.shareInput}
-                    readOnly
-                    value={`${activeRest.address}`}
-                    onFocus={(event) => event.target.select()}
+              <div className={styles.cardBody}>
+                <div className={styles.address}>
+                  <img
+                    src={mapIcon}
+                    alt="Map Icon"
+                    className={styles.mapIcon}
                   />
-                  <div className={styles.popupBoxFooter}>
-                    <button onClick={giveShare}>Copy!</button>
-                    <button onClick={closeModal}>Cancel</button>
-                  </div>
+                  <p>{rest.address}</p>
                 </div>
-              </>
-            )}
+                <StarRating ratingofRest={rest.rating} />
+              </div>
+              <div className={styles.cardImage}>
+                <ThrottledImage
+                  src={rest.images[0]}
+                  alt="Card Image"
+                />
+              </div>
+              <div className={styles.cardFooter}>
+                <span
+                  className={`${styles.wishIcon} ${didUserWishRestaurant(userAuthState, rest.restaurantId) ? styles.wishedIcon : ''}`}
+                  onClick={() => toggleWish(rest.restaurantId)}
+                  role="button"
+                  aria-label={didUserWishRestaurant(userAuthState, rest.restaurantId) ? "Remove wishlist" : "Add wishlist"}
+                >
+                  {didUserWishRestaurant(userAuthState, rest.restaurantId) ? <FaBookmark /> : <FaRegBookmark />}
+                </span>
 
-            {popupType === 'comment' && activeRest && (
-              <CommentingPost
-                // onSubmit ={subComment} 
-                onCancel={closeModal}
-                activeRest={activeRest}
-                comments={firstLayerForActive}
-                toggleLike={toggleLike}
-                text={text}
-                setText={setText}
-                didUserLikeComment={didUserLikeComment}
-                handlePostComment={handlePostComment}
-                resetCounter={resetUploader}
-              />
-            )}
+                  <span
+                    className={styles.commentIcon}
+                    onClick={() => openModal(rest)}
+                    role="button"
+                    aria-label="Comment"
+                  >
+                    <FaRegComment />
+                  </span>
+
+                  <span
+                    className={styles.shareIcon}
+                    onClick={() => openShareModal(rest)}
+                    role="button"
+                    aria-label="Share"
+                  >
+                    <FaShareSquare />
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        {/*loadMorePost && <div className={styles.loadMorePost}>Loading more...</div>*/}
+        {isLoading && <LoadingSpinner />}
+        {isEndOfLoad && <p>No more restaurants have been found in your nearest area! Walk around to find some more.</p>}
+
+        {activeRest && popupType && (
+          <div className={styles.popupOverlay} onClick={closeModal}>
+            <div
+              className={styles.popupBody}
+              onClick={(event) => event.stopPropagation()}
+            >
+              {popupType === 'share' && (
+                <>
+                  <h3>
+                  Share {activeRest.restaurantTitle}
+                  </h3>
+                  <div className={styles.popupBoxBody}>
+                    <p>Either copy and paste this to a new link or click the copy button to copy it to your clipboard:</p>
+                    <input className={styles.shareInput}
+                      readOnly
+                      value={`${activeRest.address}`}
+                      onFocus={(event) => event.target.select()}
+                    />
+                    <div className={styles.popupBoxFooter}>
+                      <button onClick={giveShare}>Copy!</button>
+                      <button onClick={closeModal}>Cancel</button>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {popupType === 'comment' && activeRest && (
+                <CommentingPost
+                  // onSubmit ={subComment} 
+                  onCancel={closeModal}
+                  activeRest={activeRest}
+                  comments={firstLayerForActive}
+                  toggleLike={toggleLike}
+                  text={text}
+                  setText={setText}
+                  didUserLikeComment={didUserLikeComment}
+                  handlePostComment={handlePostComment}
+                  resetCounter={resetUploader}
+                />
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
+    </div>
   );
 }
 
