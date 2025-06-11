@@ -49,12 +49,17 @@
     border: 1px solid var(--inverse-background);
     border-radius: 10px 10px 0px 0px;
     padding: 10px;
-    margin: 5px;
+    margin: 10px;
     display: flex;
+    justify-content: center;
+    align-items: center;
+    object-fit:contain;
     gap: 0.5rem;
     overflow-x: auto;
     img {
-      max-height: 250px;
+      width: 500px;
+      height: 400px;
+      object-fit:contain;
       border-radius: 5px;
     }
   }
