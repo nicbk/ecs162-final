@@ -2,9 +2,8 @@ import styles from './Home.module.scss';
 import { didUserLikeComment, didUserWishRestaurant, type InputComment, type Restaurant} from '../../interface_data/index.ts';
 import { type Comment } from '../../interface_data/index.ts';
 import mapIcon from '../../assets/map-icon.svg';
-import {FaHeart, FaRegComment, FaShareSquare, FaRegBookmark, FaBookmark, FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
-import { postComment} from '../../api_data/client.ts';
-import { getRestaurantById, postComment} from '../../api_data/client.ts';
+import {FaHeart, FaRegComment, FaShareSquare, FaRegBookmark, FaBookmark, FaStar, FaStarHalfAlt, FaRegStar} from "react-icons/fa";
+import { postComment, removeLike, addLike, RESTAURANTS_FETCH_LIMIT } from '../../api_data/client.ts';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useContext, useCallback } from 'react';
 import { GlobalStateContext, type UserAuthState } from '../../global_state/global_state.ts';
@@ -16,9 +15,11 @@ import { getRestaurants } from '../../api_data/client.ts';
 import { useToggleLike } from '../../global_state/comment_hooks.ts';
 import { useToggleWish } from '../../global_state/wishlist_hooks.ts';
 import { CommImgUpload } from '../../components/ImgUploader/CommImgUpload.tsx';
+import { useDebounce, useRestaurantLazyLoad } from '../../global_state/restaurant_hooks.ts';
 
 const PAGE_SIZE = 10;
 const SCROLL_THRESHOLD = 100;
+const DEBOUNCER_DELAY = 2500; // in milliseconds
 
 function StarRating({ ratingofRest }: { ratingofRest: number }) {
   const roundRating = Math.round(ratingofRest * 2) / 2;
@@ -43,6 +44,7 @@ function StarRating({ ratingofRest }: { ratingofRest: number }) {
 export default function Home() {
   const globalState = useContext(GlobalStateContext);
   const userAuthState = globalState!.userAuthState[0];
+  const userLocation = globalState!.userLocationState[0];
   const [resetUploader, setResetUploader] = useState(0);
 
   const refetchCommentForest = useFetchCommentForest();
@@ -55,11 +57,9 @@ export default function Home() {
   const [popupType, setpopupType] = useState<'comment' | 'share' | null>(null)
   const [text, setText] = useState('')
   const { restaurantId: copyId } = useParams<{ restaurantId?: string }>();
-  const [page, setPage] = useState(0);
-  const [loadMorePost, setLoadingMore] = useState(false);
-  const [isThereMore, setHasMore] = useState(true);
-
-  // console.log(comments)
+  const [isEndOfLoad, fetchNextRestaurants] = useRestaurantLazyLoad(RESTAURANTS_FETCH_LIMIT);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const scrollDebouncer = useDebounce(DEBOUNCER_DELAY);
 
   // We need to come up with a way of sharing the restaurant.
   const giveShare = () => {
@@ -68,59 +68,29 @@ export default function Home() {
     navigator.clipboard.writeText(shareUrl);
     closeModal()
   };
-  const loadMoreR = useCallback(async () => {
-    if (!isThereMore) return;
-    const loc = globalState!.userLocationState[0];
-    if (!loc) return;
-    setLoadingMore(true);
-    try {
-      const newData = await getRestaurants(loc.latitude, loc.longitude, ((page + 2) * PAGE_SIZE), 10000);
-      if (newData.length === 0) {
-        setHasMore(false);
-        return;
-      }
-      const Idchecker = new Set(restaurants.map(r => r.restaurantId));
-      const uniq = newData.filter(r => !Idchecker.has(r.restaurantId));
-      if (uniq.length) {
-        updateRestaurants(uniq);
-        setPage(pages => pages + 1);
-      }
-    } catch (err) {
-      console.error('Error loading more restaurants', err);
-    } finally {
-      setLoadingMore(false);
-    }
-
-    const restaurantData = await getRestaurantById("ChIJlT_WX1TRhIARD2VPR8j0kgE");
-    console.log('Restaurant Data:', restaurantData);
-    
-},[globalState , restaurants, updateRestaurants, page, isThereMore]);
-
-  useEffect(() => {
-    loadMoreR();
-  }, []);
-
-  useEffect(() => {
-    const onScroll = () => {
-      if (loadMorePost)
-         return;
-      const goDown = window.scrollY || window.pageYOffset;
-      const viewP = window.innerHeight;
-      const fullH = document.documentElement.scrollHeight;
-
-      if (goDown + viewP >= fullH - SCROLL_THRESHOLD) {
-        loadMoreR();
-      }
-    };
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [loadMorePost, loadMoreR]);
 
   useEffect(() => {
     if (!copyId) return;
     const element = document.getElementById(copyId);
     if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [copyId, restaurants]);
+
+  useEffect(() => {
+    const PAGE_BOTTOM_TRIGGER_OFFSET = 300; // units in CSS pixels
+    // Here we borrow code from Nicolas and Andrew's HW3 for lazyloading when the mouse scroll reaches near the bottom of the body height
+    const onScrollBottom = async () => {
+      if (userLocation && !isLoading && !isEndOfLoad && window.innerHeight + window.scrollY >= document.body.scrollHeight - PAGE_BOTTOM_TRIGGER_OFFSET) {
+        scrollDebouncer(async () => {
+          setIsLoading(true);
+          await fetchNextRestaurants();
+          setIsLoading(false);
+        });
+      }
+    };
+
+    window.addEventListener('scroll', onScrollBottom);
+    return () => window.removeEventListener('scroll', onScrollBottom);
+  }, [fetchNextRestaurants]);
 
   const firstLayerForActive = activeRest
     ? comments.filter((comm: Comment) => comm.parentId === activeRest.restaurantId)
@@ -161,6 +131,7 @@ export default function Home() {
   if (!restaurants.length) return <LoadingSpinner />;
 
   return (
+    <div className={styles.homeLoadingContainer}>
     <div className={styles.home}>
       {restaurants.map(rest => (
         <div id={rest.restaurantId} className={styles.card} key={rest.restaurantId}>
@@ -195,28 +166,30 @@ export default function Home() {
                 {didUserWishRestaurant(userAuthState, rest.restaurantId) ? <FaBookmark /> : <FaRegBookmark />}
               </span>
 
-              <span
-                className={styles.commentIcon}
-                onClick={() => openModal(rest)}
-                role="button"
-                aria-label="Comment"
-              >
-                <FaRegComment />
-              </span>
+                <span
+                  className={styles.commentIcon}
+                  onClick={() => openModal(rest)}
+                  role="button"
+                  aria-label="Comment"
+                >
+                  <FaRegComment />
+                </span>
 
-              <span
-                className={styles.shareIcon}
-                onClick={() => openShareModal(rest)}
-                role="button"
-                aria-label="Share"
-              >
-                <FaShareSquare />
-              </span>
+                <span
+                  className={styles.shareIcon}
+                  onClick={() => openShareModal(rest)}
+                  role="button"
+                  aria-label="Share"
+                >
+                  <FaShareSquare />
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
-      {loadMorePost && <div className={styles.loadMorePost}>Loading more...</div>}
+        ))}
+      </div>
+      {/*loadMorePost && <div className={styles.loadMorePost}>Loading more...</div>*/}
+      {isLoading && <LoadingSpinner />}
 
       {activeRest && popupType && (
         <div className={styles.popupOverlay} onClick={closeModal}>

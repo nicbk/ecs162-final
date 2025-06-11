@@ -481,6 +481,15 @@ img{
   margin: 1rem 0;
 }
 
+.homeLoadingContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
+  margin: 0;
+  padding: 0;
+}
+
 @media screen and (max-width: 768px) {
   .home {
     grid-template-columns: 1fr;
